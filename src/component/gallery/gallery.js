@@ -6,11 +6,11 @@ const data = [
         url: 'kiwi.ryumy.com',
         images: [
             {
-                url: 'assets/kiwi_bird.png',
+                url: '/assets/kiwi_bird.png',
                 width: '30vh',
                 height: 'auto'
             }, {
-                url: 'assets/kiwi_fruit.png',
+                url: '/assets/kiwi_fruit.png',
                 width: '40vh',
                 height: 'auto'
             }
@@ -21,7 +21,7 @@ const data = [
         url: 'aimhightrust.co.nz',
         images: [
             {
-                url: 'assets/aimhigh.png',
+                url: '/assets/aimhigh.png',
                 width: '40vh',
                 height: 'auto'
             },

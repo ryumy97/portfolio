@@ -7,9 +7,9 @@ export class linkButtonContainer {
         this.buttonContainer = document.createElement('div');
         this.buttonContainer.className = 'threeButtonContainer'
 
-        this.insta = new buttonContainer(this.buttonContainer, '@ryumy97', 'https://www.instagram.com/ryumy97/', 'assets/instagram.png', 'insta');
-        this.github = new buttonContainer(this.buttonContainer, 'github:ryumy97', 'https://github.com/ryumy97', 'assets/github.png', 'github')
-        this.email = new buttonContainer(this.buttonContainer, 'inha.ryu.97@gmail.com', 'mailto:inha.ryu.97@gmail.com', 'assets/email.png', 'email');
+        this.insta = new buttonContainer(this.buttonContainer, '@ryumy97', 'https://www.instagram.com/ryumy97/', '/assets/instagram.png', 'insta');
+        this.github = new buttonContainer(this.buttonContainer, 'github:ryumy97', 'https://github.com/ryumy97', '/assets/github.png', 'github')
+        this.email = new buttonContainer(this.buttonContainer, 'inha.ryu.97@gmail.com', 'mailto:inha.ryu.97@gmail.com', '/assets/email.png', 'email');
 
         this.container.append(this.buttonContainer);
 
