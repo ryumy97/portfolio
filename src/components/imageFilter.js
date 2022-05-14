@@ -147,6 +147,10 @@ export class ContentFigure {
         window.addEventListener('mousedown', this.onDown.bind(this), false);
         window.addEventListener('mouseup', this.onUp.bind(this), false);
 
+        window.addEventListener('touchmove', this.onTouchMove.bind(this), false);
+        window.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        window.addEventListener('touchend', this.onTouchEnd.bind(this), false);
+
         window.addEventListener('_enable_figures', this.enableFigures.bind(this), false);
         window.addEventListener('_disable_figures', this.disableFigures.bind(this), false);
     }
@@ -382,6 +386,19 @@ export class ContentFigure {
         this.mouseDown = false;
     }
 
+    onTouchMove(event) {
+        this.mouseSaved.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        this.mouseSaved.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+    }
+
+    onTouchStart(event) {
+        this.mouseDown = true;
+    }
+
+    onTouchEnd(event) {
+        this.mouseDown = false;
+    }
+
     disableFigures(e) {
         this.enable = false;
     }
@@ -419,6 +436,10 @@ export class Figure {
         window.addEventListener('mousemove', this.onMove.bind(this), false);
         window.addEventListener('mousedown', this.onDown.bind(this), false);
         window.addEventListener('mouseup', this.onUp.bind(this), false);
+
+        window.addEventListener('touchmove', this.onTouchMove.bind(this), false);
+        window.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        window.addEventListener('touchend', this.onTouchEnd.bind(this), false);
 
         window.addEventListener('_enable_figures', this.enableFigures.bind(this), false);
         window.addEventListener('_disable_figures', this.disableFigures.bind(this), false);
@@ -645,6 +666,19 @@ export class Figure {
         this.mouseSaved.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
 
+    onTouchMove(event) {
+        this.mouseSaved.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        this.mouseSaved.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+    }
+
+    onTouchStart(event) {
+        this.mouseDown = true;
+    }
+
+    onTouchEnd(event) {
+        this.mouseDown = false;
+    }
+
     onDown(event) {
         this.mouseDown = true;
     }
@@ -666,7 +700,7 @@ export class AnimationFigure {
     constructor(scene, video, wrapper, container) {
         this.wrapper = wrapper;
         this.video = video;
-        
+
         this.video.play();
         this.video.muted = true;
         this.video.loop = true;
@@ -700,6 +734,10 @@ export class AnimationFigure {
         window.addEventListener('mousemove', this.onMove.bind(this), false);
         window.addEventListener('mousedown', this.onDown.bind(this), false);
         window.addEventListener('mouseup', this.onUp.bind(this), false);
+
+        window.addEventListener('touchmove', this.onTouchMove.bind(this), false);
+        window.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        window.addEventListener('touchend', this.onTouchEnd.bind(this), false);
 
         window.addEventListener('_enable_figures', this.enableFigures.bind(this), false);
         window.addEventListener('_disable_figures', this.disableFigures.bind(this), false);
@@ -934,6 +972,19 @@ export class AnimationFigure {
     }
 
     onUp(event) {
+        this.mouseDown = false;
+    }
+
+    onTouchMove(event) {
+        this.mouseSaved.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        this.mouseSaved.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+    }
+
+    onTouchStart(event) {
+        this.mouseDown = true;
+    }
+
+    onTouchEnd(event) {
         this.mouseDown = false;
     }
 

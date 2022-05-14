@@ -62,6 +62,10 @@ export class Intro {
         window.addEventListener('mousedown', this.onDown.bind(this), false);
         window.addEventListener('mouseup', this.onUp.bind(this), false);
 
+        window.addEventListener('touchmove', this.onTouchMove.bind(this), false);
+        window.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        window.addEventListener('touchend', this.onTouchEnd.bind(this), false);
+
         window.addEventListener('_mouse_init', this.enableMouse.bind(this), false);
 
         this.state = 'loading';
@@ -98,6 +102,29 @@ export class Intro {
 
         this.mouseSavedY = e.clientY;
         this.mouseSavedY2 = e.clientY;
+        this.barProgressSavedY = this.barProgressY;
+    }
+
+    onTouchMove(e) {
+        if (this.pressed) {
+            this.mouseSavedY = e.touches[0].clientY;
+        }
+    }
+
+    onTouchStart(e) {
+        if (!this.mouseEnabled) {
+            return
+        }
+
+        this.pressed = true;
+
+        this.mouseY = e.touches[0].clientY;
+        this.mouseSavedY = e.touches[0].clientY;
+        this.mouseSavedY2 = e.touches[0].clientY;
+    }
+
+    onTouchEnd(e) {
+        this.pressed = false;
         this.barProgressSavedY = this.barProgressY;
     }
 

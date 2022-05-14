@@ -104,6 +104,10 @@ export class Content {
         this.onUpEventHandler = this.onUp.bind(this);
         this.onMoveEventHandler = this.onMove.bind(this);
 
+        this.onTouchStartEventHandler = this.onTouchStart.bind(this);
+        this.onTouchEndEventHandler = this.onTouchEnd.bind(this);
+        this.onTouchMoveEventHandler = this.onTouchMove.bind(this);
+
         this.loadingFinishEventListener = this.loadingFinish.bind(this)
         this.contentLoadingFinishEventListner = this.contentLoadingFinish.bind(this);
 
@@ -113,9 +117,13 @@ export class Content {
     }
 
     onMouseInit(e) {
-        window.addEventListener('mousedown', this.onDownEventHandler,false);
-        window.addEventListener('mouseup', this.onUpEventHandler,false);
+        window.addEventListener('mousedown', this.onDownEventHandler, false);
+        window.addEventListener('mouseup', this.onUpEventHandler, false);
         window.addEventListener('mousemove', this.onMoveEventHandler, false);
+
+        window.addEventListener('touchstart', this.onTouchStartEventHandler, false);
+        window.addEventListener('touchend', this.onTouchEndEventHandler, false);
+        window.addEventListener('touchmove', this.onTouchMoveEventHandler, false);
 
         if (this.state === 'about') {
             this.workContainer.addEventListener('pointerdown', this.toWorkEventHandler, false);
@@ -249,6 +257,7 @@ export class Content {
     }
 
     initWork() {
+        // debugger;
         this.articles.forEach(_ => {
             _.show(),
             _.showStrip()
@@ -396,6 +405,90 @@ export class Content {
         }
     }
 
+
+    onTouchStart(e) {
+        if (this.state === 'new' || this.state === 'work') {
+            this.pressed = true;
+            this.content.style.transitionDuration = '0.5s';
+            this.content.style.height = '40%';
+
+            this.articles.forEach(_ => {
+                _.onDown();
+                _.hide('left');
+            })
+
+            this.savedY = e.touches[0].clientY;
+        }
+        else if (this.state === 'about') {
+            this.aboutPage && this.aboutPage.onTouchStart(e);
+        }
+        else if (this.state === 'article') {
+            this.articleDetail && this.articleDetail.onTouchStart(e);
+        }
+    }
+    
+    onTouchMove(e) {
+        if (this.state === 'new' || this.state === 'work') {
+            if (this.pressed) {
+                this.selectedIndex += (this.savedY - e.touches[0].clientY) / this.content.clientHeight * 2;
+                if (this.selectedIndex < 0) {
+                    this.selectedIndex = 0;
+                }
+                else if (this.selectedIndex > this.getTotalLength() - 1) {
+                    this.selectedIndex = this.getTotalLength() - 1
+                }
+                this.savedY = e.touches[0].clientY;
+            }
+        }
+        else if (this.state === 'about') {
+            this.aboutPage && this.aboutPage.onTouchMove(e);
+        }
+        else if (this.state === 'article') {
+            this.articleDetail && this.articleDetail.onTouchMove(e);
+        }
+    }
+
+    onTouchEnd(e) {
+        if (this.state === 'new' || this.state === 'work') {
+            this.pressed = false;
+            this.content.style.transitionDuration = '0.5s';
+            this.content.style.height = '90%';
+
+            this.articles.forEach(_ => {
+                _.onUp()
+            })
+            
+            let acc = 0;
+            let result = 0;
+            this.articles.forEach(_ => {
+                if (acc <= this.selectedIndex && acc + _.ratio > this.selectedIndex) {
+                    if (_.isBlock) {
+                        result = acc + _.ratio;
+                    }
+                    else {
+                        result = acc;
+                    }
+                    
+                    acc += _.ratio;
+                    return;
+                }
+                acc += _.ratio;
+            })
+
+            this.selectedIndex = result;
+
+            const article = this.getCurrentArticle();
+            this.overlayContainer.style.transform = `translateY(${-(article.number - 1) * 100}%)`;
+            article.show();
+        }
+        else if (this.state === 'about') {
+            this.aboutPage && this.aboutPage.onTouchEnd(e);
+        }
+        else if (this.state === 'article') {
+            this.articleDetail && this.articleDetail.onTouchEnd(e);
+        }
+    }
+
     getTotalLength() {
         const total = this.articles.reduce((acc, value) => {
             return acc + value.ratio;
@@ -427,6 +520,11 @@ export class Content {
         window.removeEventListener('mousedown', this.onDownEventHandler,false);
         window.removeEventListener('mouseup', this.onUpEventHandler,false);
         window.removeEventListener('mousemove', this.onMoveEventHandler, false);
+
+        window.removeEventListener('touchstart', this.onTouchStartEventHandler,false);
+        window.removeEventListener('touchmove', this.onTouchMoveEventHandler,false);
+        window.removeEventListener('touchend', this.onTouchEndEventHandler, false);
+
         this.aboutContainer.removeEventListener('pointerdown', this.toAboutEventHandler, false);
 
         document.querySelectorAll('.pointer_opacity').forEach(_ => {
@@ -469,6 +567,11 @@ export class Content {
         window.removeEventListener('mousedown', this.onDownEventHandler,false);
         window.removeEventListener('mouseup', this.onUpEventHandler,false);
         window.removeEventListener('mousemove', this.onMoveEventHandler, false);
+
+        window.removeEventListener('touchstart', this.onTouchStartEventHandler,false);
+        window.removeEventListener('touchmove', this.onTouchMoveEventHandler,false);
+        window.removeEventListener('touchend', this.onTouchEndEventHandler, false);
+
         this.aboutContainer.removeEventListener('pointerdown', this.toAboutEventHandler, false);
 
         document.querySelectorAll('.pointer_opacity').forEach(_ => {
@@ -506,6 +609,11 @@ export class Content {
         window.removeEventListener('mousedown', this.onDownEventHandler,false);
         window.removeEventListener('mouseup', this.onUpEventHandler,false);
         window.removeEventListener('mousemove', this.onMoveEventHandler, false);
+
+        window.removeEventListener('touchstart', this.onTouchStartEventHandler,false);
+        window.removeEventListener('touchmove', this.onTouchMoveEventHandler,false);
+        window.removeEventListener('touchend', this.onTouchEndEventHandler, false);
+
         this.workContainer.removeEventListener('pointerdown', this.toWorkEventHandler, false);
         
         this.aboutPage && this.aboutPage.remove();

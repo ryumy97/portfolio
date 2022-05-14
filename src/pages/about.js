@@ -61,6 +61,30 @@ export class About {
         }
     }
 
+    onTouchStart(e) {
+        this.pressed = true;
+        this.savedX = e.touches[0].clientX;
+    }
+
+    onTouchMove(e) {
+        if (this.pressed) {
+            this.selectedIndex += (this.savedX - e.touches[0].clientX) / this.runner.clientWidth;
+            if (this.selectedIndex < 0) {
+                this.selectedIndex = 0;
+            }
+            else if (this.selectedIndex > this.length - 1) {
+                this.selectedIndex = this.length - 1
+            }
+            this.savedX = e.touches[0].clientX;
+        }
+    }
+
+    onTouchEnd(e) {
+        this.pressed = false;
+
+        this.selectedIndex = Math.round(this.selectedIndex);
+    }
+
     add() {
         this.page1.add(0);
         this.page2.add();

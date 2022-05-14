@@ -37,6 +37,10 @@ export class Pointer {
         window.addEventListener('mousemove', this.onMove.bind(this), false);
         window.addEventListener('mousedown', this.onDown.bind(this), false);
         window.addEventListener('mouseup', this.onUp.bind(this), false);
+        
+        window.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        window.addEventListener('touchend', this.onTouchEnd.bind(this), false);
+        window.addEventListener('touchmove', this.onTouchMove.bind(this), false);
 
         window.addEventListener('_enterContent', this.enterContent.bind(this), false);
         window.addEventListener('_initPointer', this.initPointer.bind(this), false);
@@ -119,6 +123,25 @@ export class Pointer {
 
     onUp(e) {
         this.pressed = false;
+    }
+
+    onTouchStart(e) {
+        this.pressed = true;
+        this.mouse.savedX = e.touches[0].clientX;
+        this.mouse.savedY = e.touches[0].clientY;
+        this.mouse.trueX = e.touches[0].clientX;
+        this.mouse.trueY = e.touches[0].clientY;
+    }
+
+    onTouchEnd(e) {
+        this.pressed = false;
+    }
+
+    onTouchMove(e) {
+        this.mouse.savedX = e.touches[0].clientX;
+        this.mouse.savedY = e.touches[0].clientY;
+        this.mouse.trueX = e.touches[0].clientX;
+        this.mouse.trueY = e.touches[0].clientY;
     }
 
     resize(sw, sh) {
