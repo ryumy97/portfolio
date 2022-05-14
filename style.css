@@ -362,24 +362,6 @@ body {
     height: 50%;
 }
 
-@media screen and (min-width: 860px) and (max-width: 1200px) {
-    .titleContainer h1 { 
-        font-size: 10rem;
-    }
-}
-
-@media screen and (min-width: 601px) and (max-width: 859px) {
-    .titleContainer h1 { 
-        font-size: 7rem;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    .titleContainer h1 { 
-        font-size: 5rem;
-    }
-}
-
 .aboutPageContainer {
     position: fixed;
     top: 0;
@@ -391,6 +373,8 @@ body {
 }
 
 .aboutPage {
+    max-height: calc(100vh - 16vh - 2rem);
+
     grid-column: 4;
     grid-row: 3;
 
@@ -519,6 +503,21 @@ body {
 .clippingImageContainer {
     transform: translate3d(-110%, 0, 0);
     transition: all 1s ease-in-out;
+
+    opacity: 0 !important;
+    width: 100%;
+}
+
+.clippingVideoContainer {
+    transform: translate3d(-110%, 0, 0);
+    transition: all 1s ease-in-out;
+
+    opacity: 0 !important;
+    width: 100%;
+}
+
+.clippedVideoFilter {
+    width: 100%;
 }
 
 .image-half {
@@ -561,11 +560,45 @@ body {
 }
 
 .image-block .clippingImageContainer {
-    
-    width: 90%;
+    width: 100%;
     /* height: 100%; */
 }
 
 .image-block .clippingImageContainer img {
     width: 100%;
+}
+
+.imageFilter {
+    opacity: 0 !important;
+}
+
+.imageFilterCanvas {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    z-index: 0;
+}
+
+@media screen and (min-width: 860px) and (max-width: 1200px) {
+    .titleContainer h1 { 
+        font-size: 10rem;
+    }
+}
+
+@media screen and (min-width: 601px) and (max-width: 859px) {
+    .titleContainer h1 { 
+        font-size: 7rem;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .titleContainer h1 { 
+        font-size: 5rem;
+    }
+
+    .container {
+        grid-template-columns: 5vw 2rem 5vw 1fr 5vw 2rem 5vw;
+        grid-template-rows: 3vh 1rem 1fr 1rem 3vh;
+    }
 }

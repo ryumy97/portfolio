@@ -1,3 +1,5 @@
+import { getNewImageEvent } from '../lib/event.js';
+
 export class ClipedCharacter {
     constructor(element, content, className, direction) {
         this.container = document.createElement('div');
@@ -196,12 +198,13 @@ export class ClippedImage{
     constructor(src, direction, className) {
         this.image = new Image();
         this.image.src = src;
+        this.image.className = 'clippedImageFilter';
 
         this.imageContainer = document.createElement('div');
         this.imageContainer.className = `clippingImageContainer`;
 
         this.container = document.createElement('div');
-        this.container.className = `${className}`;
+        this.container.className = `${className} clippingImageStrip`;
 
         this.imageContainer.append(this.image);
 
@@ -239,17 +242,81 @@ export class ClippedImage{
         this.imageContainer.style.transitionDelay =`${delay}s`
         switch(direction) {
             case 'left':
-                this.imageContainer.style.transform = 'translate3d(-200%, 0, 0)';
+                this.imageContainer.style.transform = 'translate3d(-100%, 0, 0)';
                 break;
             case 'right':
-                this.imageContainer.style.transform = 'translate3d(200%, 0, 0)';
+                this.imageContainer.style.transform = 'translate3d(100%, 0, 0)';
                 break;
             case 'bottom':
-                this.imageContainer.style.transform = 'translate3d(0, 200%, 0)';
+                this.imageContainer.style.transform = 'translate3d(0, 100%, 0)';
                 break;
             case 'top':
             default:
-                this.imageContainer.style.transform = 'translate3d(0, -200%, 0)';
+                this.imageContainer.style.transform = 'translate3d(0, -100%, 0)';
+                break;
+        }
+    }
+}
+
+export class ClippedVideo{
+    constructor(src, direction, className) {
+        this.video = document.createElement('video');
+        this.video.src = src;
+        this.video.className = 'clippedVideoFilter';
+
+        this.imageContainer = document.createElement('div');
+        this.imageContainer.className = `clippingVideoContainer`;
+
+        this.container = document.createElement('div');
+        this.container.className = `${className} clippingVideoStrip`;
+
+        this.imageContainer.append(this.video);
+
+        this.container.append(this.imageContainer);
+
+        switch(direction) {
+            case 'left':
+                this.imageContainer.style.transform = 'translate3d(-100%, 0, 0)';
+                break;
+            case 'right':
+                this.imageContainer.style.transform = 'translate3d(100%, 0, 0)';
+                break;
+            case 'top':
+                this.imageContainer.style.transform = 'translate3d(0, -100%, 0)';
+                break;
+            case 'bottom':
+            default: 
+                this.imageContainer.style.transform = 'translate3d(0, 100%, 0)';
+                return
+        }
+    }
+
+    getElement() {
+        return this.container;
+    }
+
+    add(delay, duration) {
+        this.imageContainer.style.transitionDuration = `${duration}s`;
+        this.imageContainer.style.transitionDelay =`${delay}s`;
+        this.imageContainer.style.transform = 'translate3d(0, 0, 0)';
+    }
+
+    remove(delay, direction, duration) {
+        this.imageContainer.style.transitionDuration = `${duration}s`;
+        this.imageContainer.style.transitionDelay =`${delay}s`
+        switch(direction) {
+            case 'left':
+                this.imageContainer.style.transform = 'translate3d(-100%, 0, 0)';
+                break;
+            case 'right':
+                this.imageContainer.style.transform = 'translate3d(100%, 0, 0)';
+                break;
+            case 'bottom':
+                this.imageContainer.style.transform = 'translate3d(0, 100%, 0)';
+                break;
+            case 'top':
+            default:
+                this.imageContainer.style.transform = 'translate3d(0, -100%, 0)';
                 break;
         }
     }

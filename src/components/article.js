@@ -15,6 +15,7 @@ export class Article {
 
         this.image = new Image();
         this.image.src = url;
+        this.image.className = 'imageFilter'
 
         this.imageContainer.append(this.image);
         

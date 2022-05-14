@@ -1,6 +1,8 @@
 import { Pointer } from './components/pointer.js';
 import { Intro } from './pages/intro.js'
 import { Content } from './pages/content.js'
+import { ImageFilter } from './components/imageFilter.js';
+
 class App {
     constructor() {
         this.container = document.createElement('div');
@@ -10,8 +12,11 @@ class App {
         this.intro = new Intro(this.container);
         this.pointer = new Pointer();
 
+        this.imageFilter = new ImageFilter()
+
         document.body.append(this.container);
         document.body.append(this.pointer.canvas);
+        this.container.append(this.imageFilter.getElement());
 
         this.progress = 0;
 
@@ -48,6 +53,7 @@ class App {
         this.pointer.draw(elapsed);
         this.intro && this.intro.draw(elapsed);
         this.content && this.content.draw(elapsed);
+        this.imageFilter.draw(elapsed);
         
         this.then = this.now;
 

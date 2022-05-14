@@ -3,6 +3,7 @@ import { ArticleDetail } from "../components/articleDetail.js";
 import { ClipedCharacter } from "../components/cliped.js";
 import { Number } from '../components/number.js';
 import { About } from "./about.js";
+import { getNewImageEvent, getEnableImageEvent, getDisableImageEvent } from '../lib/event.js';
 
 export class Content {
     constructor(container, detail) {
@@ -32,6 +33,7 @@ export class Content {
         this.image = new Image();
         this.image.src = '/assets/typography/typography05.png';
         this.image.style.opacity = 0;
+        this.image.className = 'imageFilter';
 
         this.image.opacity = 0;
 
@@ -94,6 +96,8 @@ export class Content {
         this.state = 'loading';
         this.selectedIndex = 0;
         this.currentIndex = 0;
+
+        getNewImageEvent(0);
     }
 
     initEventHandlers() {
@@ -185,14 +189,14 @@ export class Content {
                     ),
                 new Block(),
                 new Article(
-                    '/assets/kiwi_bird.png',
+                    '/assets/kiwi/kiwi_bird.png',
                     'Kiwi', 
                     2, 
                     this.toContentEventHandler
                     ),
                 new Block(),
                 new Article(
-                    '/assets/aimhigh.png',
+                    '/assets/aimhigh/aimhigh.png',
                     'Aim High',
                     3,
                     this.toContentEventHandler
@@ -205,6 +209,9 @@ export class Content {
 
             this.number = new Number(3);
             this.number.appendTo(this.container);
+
+            getNewImageEvent(0);
+            getEnableImageEvent();
         }
     }
 
@@ -276,6 +283,8 @@ export class Content {
         this.aboutContainer.classList.add('clickableContainer');
     
         window.dispatchEvent(addClickableEvent);
+
+        getEnableImageEvent();
 
         document.body.removeEventListener('transitionend', this.loadingFinishEventListener, false);
 
@@ -444,6 +453,7 @@ export class Content {
         });
 
         window.dispatchEvent(nextContentEvent);
+        getDisableImageEvent();
     
         this.aboutPage = new About(3);
         this.aboutPage.appendTo(this.container)
@@ -455,7 +465,6 @@ export class Content {
     }
 
     toContent(e) {
-        console.log(e);
         this.state = 'article';
         
         window.removeEventListener('mousedown', this.onDownEventHandler,false);
@@ -488,6 +497,8 @@ export class Content {
         });
 
         window.dispatchEvent(nextContentEvent);
+
+        getDisableImageEvent();
     }
 
     toWork(e) {
@@ -560,8 +571,12 @@ export class Content {
     
                 document.body.removeEventListener('transitionend', this.loadingFinishEventListener, false);
 
-                this.articleDetail = new ArticleDetail(this.getCurrentArticle().str, this.selectedIndex)
+                const current = this.getCurrentArticle();
+
+                this.articleDetail = new ArticleDetail(current.str, current.number)
                 this.articleDetail.appendTo(this.container);
+
+                getNewImageEvent();
 
             }, 500)
             return;

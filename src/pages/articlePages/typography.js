@@ -1,4 +1,4 @@
-import { ClipedCharacter, ClippedParagraph, ClippedImage } from '../../components/cliped.js'
+import { ClipedCharacter, ClippedParagraph, ClippedImage, ClippedVideo } from '../../components/cliped.js'
 import { getBreak } from '../../components/break.js';
 
 export class TypographyPage1 {
@@ -49,8 +49,41 @@ export class TypographyPage1 {
         return this.page
     }
 }
-
 export class TypographyPage2 {
+    constructor() {
+        this.image1 = new ClippedVideo('/assets/typography/typography.mp4', 'bottom', '');
+
+        this.page = document.createElement('div');
+        this.page.className = 'aboutPage'
+        this.page.style.flexWrap = 'nowrap'
+
+        this.content = document.createElement('div');
+        this.content.className = 'aboutPageContent images';
+        
+        this.content.append(
+            this.image1.getElement(),
+        )
+
+        this.page.append(
+            this.content
+        )
+    }
+
+    add(delay) {
+        this.image1.add(0);
+    }
+
+    remove(delay) {
+        this.image1.remove(0);
+    }
+
+    getElement() {
+        return this.page
+    }
+}
+
+
+export class TypographyPage3 {
     constructor() {
         this.image = new ClippedImage('/assets/typography/page2.png', 'bottom', 'image-half');
 
@@ -58,7 +91,7 @@ export class TypographyPage2 {
 
         this.paragraph1 = new ClippedParagraph('p', 'A small project that holds a collection of interactive experiences of kinetic typography.');
         
-        this.paragraph2 = new ClippedParagraph('p', 'The aim of this project is to try out different skills and interactions and potentially list the growth of my visual programming skills.');
+        this.paragraph2 = new ClippedParagraph('p', 'The aim of this project is to try out different skills and interactions and potentially visualise the growth of my visual programming skills.');
 
         this.page = document.createElement('div');
         this.page.className = 'aboutPage'
@@ -107,8 +140,8 @@ export class TypographyPage2 {
     remove(delay) {
         this.image.remove(0);
         this.title.remove(0);
-        this.paragraph1.remove(0.25, 0);
-        this.paragraph2.remove(0.5, 0);
+        this.paragraph1.remove(0.25, 0.01);
+        this.paragraph2.remove(0.5, 0.01);
     }
 
     getElement() {
@@ -116,7 +149,7 @@ export class TypographyPage2 {
     }
 }
 
-export class TypographyPage3 {
+export class TypographyPage4 {
     constructor() {
         this.image1 = new ClippedImage('/assets/typography/typography01.png', 'bottom', 'image-block');
         this.image2 = new ClippedImage('/assets/typography/typography02.png', 'bottom', 'image-block');

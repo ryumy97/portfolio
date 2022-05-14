@@ -1,4 +1,6 @@
-import { TypographyPage1, TypographyPage2, TypographyPage3 } from "../pages/articlePages/typography.js";
+import { AimHighPage1, AimHighPage2, AimHighPage3, AimHighPage4 } from "../pages/articlePages/aimHigh.js";
+import { KiwiPage1, KiwiPage2, KiwiPage3, KiwiPage4 } from "../pages/articlePages/kiwi.js";
+import { TypographyPage1, TypographyPage2, TypographyPage3, TypographyPage4 } from "../pages/articlePages/typography.js";
 import { ClipedCharacter, ClippedArticleDetailTitle } from "./cliped.js";
 import { Line } from "./line.js";
 
@@ -64,13 +66,32 @@ export class ArticleDetail {
     getContents(index) {
         this.content = [];
         switch(index) {
-            case 0:
+            case 1:
                 this.content = [
                     new TypographyPage1(),
                     new TypographyPage2(),
-                    new TypographyPage3()
+                    new TypographyPage3(),
+                    new TypographyPage4()
                 ]
                 this.link = 'http://typography.ryumy.com'
+                break;
+            case 2:
+                this.content = [
+                    new KiwiPage1(),
+                    new KiwiPage2(),
+                    new KiwiPage3(),
+                    new KiwiPage4(),
+                ]
+                this.link = 'https://kiwi.ryumy.com/'
+                break;
+            case 3:
+                this.content = [
+                    new AimHighPage1(),
+                    new AimHighPage2(),
+                    new AimHighPage3(),
+                    new AimHighPage4()
+                ]
+                this.link = 'https://www.aimhightrust.co.nz/'
                 break;
             default: 
                 console.error('error');
@@ -136,6 +157,6 @@ export class ArticleDetail {
         this.content.forEach((_, i) => {
             _.getElement().style.transform = `translate3d(${-this.currentIndex * 100 + i * 100}vw, 0, 0)`
         })
-        this.frontLayer.style.transform = `translate3d(${-this.currentIndex * 100 / (this.length + 1)}%, 0, 0)`;
+        this.frontLayer.style.transform = `translate3d(${(- this.currentIndex / (this.length - 1)) * 50}%, 0, 0)`;
     }
 }
