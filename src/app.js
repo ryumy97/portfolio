@@ -67,5 +67,6 @@ class App {
 }
 
 window.onload = () => {
+    console.log('Init')
     new App();
 }
