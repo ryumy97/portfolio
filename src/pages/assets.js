@@ -31,12 +31,24 @@ class AssetsManager {
     createAsset(type, src) {
         if (type === 'image') {
             const dom = new Image();
+            dom.addEventListener('loadstart', () => {
+                console.log('loadstart', src)
+            })
+            dom.addEventListener('loadeddata', () => {
+                console.log('loadeddata', src)
+            })
             dom.src = src;
 
             return dom;
         }
         else if (type === 'video') {
             const video = document.createElement('video');
+            video.addEventListener('loadstart', () => {
+                console.log('loadstart', src)
+            })
+            video.addEventListener('loadeddata', () => {
+                console.log('loadeddata', src)
+            })
             video.src = src;
 
             return video;
