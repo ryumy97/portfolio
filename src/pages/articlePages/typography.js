@@ -51,7 +51,7 @@ export class TypographyPage1 {
 }
 export class TypographyPage2 {
     constructor() {
-        this.image1 = new ClippedVideo('/assets/typography/typography.mp4', 'bottom', '');
+        this.image1 = new ClippedVideo('typographyRec', 'bottom', '');
 
         this.page = document.createElement('div');
         this.page.className = 'aboutPage'
@@ -85,7 +85,7 @@ export class TypographyPage2 {
 
 export class TypographyPage3 {
     constructor() {
-        this.image = new ClippedImage('/assets/typography/page2.png', 'bottom', 'image-half');
+        this.image = new ClippedImage('typographyPage2', 'bottom', 'image-half');
 
         this.title = new ClipedCharacter('h3', 'Kinetic Typography Study')
 
@@ -151,11 +151,11 @@ export class TypographyPage3 {
 
 export class TypographyPage4 {
     constructor() {
-        this.image1 = new ClippedImage('/assets/typography/typography01.png', 'bottom', 'image-block');
-        this.image2 = new ClippedImage('/assets/typography/typography02.png', 'bottom', 'image-block');
-        this.image3 = new ClippedImage('/assets/typography/typography03.png', 'bottom', 'image-block');
-        this.image4 = new ClippedImage('/assets/typography/typography04.png', 'bottom', 'image-block');
-        this.image5 = new ClippedImage('/assets/typography/typography05.png', 'bottom', 'image-block');
+        this.image1 = new ClippedImage('typography01', 'bottom', 'image-block');
+        this.image2 = new ClippedImage('typography02', 'bottom', 'image-block');
+        this.image3 = new ClippedImage('typography03', 'bottom', 'image-block');
+        this.image4 = new ClippedImage('typography04', 'bottom', 'image-block');
+        this.image5 = new ClippedImage('typography05', 'bottom', 'image-block');
         
         this.page = document.createElement('div');
         this.page.className = 'aboutPage'

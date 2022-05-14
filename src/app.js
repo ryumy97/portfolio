@@ -2,6 +2,7 @@ import { Pointer } from './components/pointer.js';
 import { Intro } from './pages/intro.js'
 import { Content } from './pages/content.js'
 import { ImageFilter } from './components/imageFilter.js';
+import { Assets } from './pages/assets.js';
 
 class App {
     constructor() {
@@ -68,5 +69,6 @@ class App {
 
 window.onload = () => {
     console.log('Init')
+
     new App();
 }

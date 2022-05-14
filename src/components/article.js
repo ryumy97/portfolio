@@ -1,3 +1,4 @@
+import { Assets } from "../pages/assets.js";
 import { ClipedCharacter, ClippedWord } from "./cliped.js";
 
 export class Article {
@@ -13,9 +14,7 @@ export class Article {
 
         this.stripWrap.append(this.imageContainer);
 
-        this.image = new Image();
-        this.image.src = url;
-        this.image.className = 'imageFilter'
+        this.image = Assets.getAsset(url, 'imageFilter')
 
         this.imageContainer.append(this.image);
         

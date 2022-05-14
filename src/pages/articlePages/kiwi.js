@@ -1,4 +1,4 @@
-import { ClipedCharacter, ClippedParagraph, ClippedImage, ClippedWord, ClippedVideo } from '../../components/cliped.js'
+import { ClipedCharacter, ClippedParagraph, ClippedImage, ClippedVideo } from '../../components/cliped.js'
 import { getBreak } from '../../components/break.js';
 
 export class KiwiPage1 {
@@ -47,7 +47,7 @@ export class KiwiPage1 {
 
 export class KiwiPage2 {
     constructor() {
-        this.image1 = new ClippedVideo('/assets/kiwi/kiwi.mp4', 'bottom', '');
+        this.image1 = new ClippedVideo('kiwiRec', 'bottom', '');
 
         this.page = document.createElement('div');
         this.page.className = 'aboutPage'
@@ -130,9 +130,9 @@ export class KiwiPage3 {
 
 export class KiwiPage4 {
     constructor() {
-        this.image1 = new ClippedImage('/assets/kiwi/kiwi_bird.png', 'bottom', 'image-block');
+        this.image1 = new ClippedImage('kiwiBird', 'bottom', 'image-block');
         this.image1.container.style.width = '42%';
-        this.image2 = new ClippedImage('/assets/kiwi/kiwi_fruit.png', 'bottom', 'image-block');
+        this.image2 = new ClippedImage('kiwiFruit', 'bottom', 'image-block');
         this.image2.container.style.width = '58%';
 
         this.page = document.createElement('div');

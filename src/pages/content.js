@@ -4,6 +4,7 @@ import { ClipedCharacter } from "../components/cliped.js";
 import { Number } from '../components/number.js';
 import { About } from "./about.js";
 import { getNewImageEvent, getEnableImageEvent, getDisableImageEvent } from '../lib/event.js';
+import { Assets } from "./assets.js";
 
 export class Content {
     constructor(container, detail) {
@@ -30,10 +31,8 @@ export class Content {
         this.stripWrap = detail.stripWrap;
         this.strip = detail.strip;
 
-        this.image = new Image();
-        this.image.src = '/assets/typography/typography05.png';
+        this.image = Assets.getAsset('typography', 'imageFilter');
         this.image.style.opacity = 0;
-        this.image.className = 'imageFilter';
 
         this.image.opacity = 0;
 
@@ -189,14 +188,14 @@ export class Content {
                     ),
                 new Block(),
                 new Article(
-                    '/assets/kiwi/kiwi_bird.png',
+                    'kiwiMain',
                     'Kiwi', 
                     2, 
                     this.toContentEventHandler
                     ),
                 new Block(),
                 new Article(
-                    '/assets/aimhigh/aimhigh.png',
+                    'aimhigh',
                     'Aim High',
                     3,
                     this.toContentEventHandler

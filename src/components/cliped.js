@@ -1,4 +1,5 @@
 import { getNewImageEvent } from '../lib/event.js';
+import { Assets } from '../pages/assets.js';
 
 export class ClipedCharacter {
     constructor(element, content, className, direction) {
@@ -196,9 +197,7 @@ export class ClippedParagraph {
 
 export class ClippedImage{
     constructor(src, direction, className) {
-        this.image = new Image();
-        this.image.src = src;
-        this.image.className = 'clippedImageFilter';
+        this.image = Assets.getAsset(src, 'clippedImageFilter');
 
         this.imageContainer = document.createElement('div');
         this.imageContainer.className = `clippingImageContainer`;
@@ -260,9 +259,7 @@ export class ClippedImage{
 
 export class ClippedVideo{
     constructor(src, direction, className) {
-        this.video = document.createElement('video');
-        this.video.src = src;
-        this.video.className = 'clippedVideoFilter';
+        this.video = Assets.getAsset(src, 'clippedVideoFilter');
 
         this.imageContainer = document.createElement('div');
         this.imageContainer.className = `clippingVideoContainer`;

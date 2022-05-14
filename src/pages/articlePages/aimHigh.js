@@ -1,4 +1,4 @@
-import { ClipedCharacter, ClippedParagraph, ClippedImage, ClippedVideo } from '../../components/cliped.js'
+import { ClipedCharacter, ClippedParagraph, ClippedVideo } from '../../components/cliped.js'
 import { getBreak } from '../../components/break.js';
 
 export class AimHighPage1 {
@@ -88,7 +88,7 @@ export class AimHighPage2 {
 
 export class AimHighPage3 {
     constructor() {
-        this.image1 = new ClippedVideo('/assets/aimhigh/recording.mp4', 'bottom', '');
+        this.image1 = new ClippedVideo('aimhighRec', 'bottom', '');
 
         this.page = document.createElement('div');
         this.page.className = 'aboutPage'

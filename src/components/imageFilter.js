@@ -666,6 +666,8 @@ export class AnimationFigure {
     constructor(scene, video, wrapper, container) {
         this.wrapper = wrapper;
         this.video = video;
+        
+        this.video.play();
         this.video.muted = true;
         this.video.loop = true;
 
