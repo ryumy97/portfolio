@@ -316,6 +316,7 @@ export class Pointer {
 
         this.updateClickable(elapsed);
 
+        console.log(this.state);
         if (this.state === 'init') {
             this.updateInit(elapsed);
         }
