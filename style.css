@@ -590,6 +590,10 @@ body {
     .titleContainer h1 { 
         font-size: 7rem;
     }
+
+    .hide_mobile {
+        display: none;
+    }
 }
 
 @media screen and (max-width: 600px) {
@@ -600,5 +604,9 @@ body {
     .container {
         grid-template-columns: 5vw 2rem 5vw 1fr 5vw 2rem 5vw;
         grid-template-rows: 3vh 1rem 1fr 1rem 3vh;
+    }
+    
+    .hide_mobile {
+        display: none;
     }
 }

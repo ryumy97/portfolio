@@ -82,9 +82,9 @@ export class KiwiPage3 {
     constructor() {
         this.paragraph1 = new ClippedParagraph('p', 'This project is the first personal interaction project that I tried to implement.');
         this.paragraph2 = new ClippedParagraph('p', 'It displays a kiwi that expressed in a single form of a circle which user can grab and move around in a physical environment.');
-        this.paragraph3 = new ClippedParagraph('p', "The pattern drawn the kiwi is generated randomly each and every time it is been loaded.");
+        this.paragraph3 = new ClippedParagraph('p', "The pattern drawn on the kiwi is generated randomly each and every time it is been loaded.");
         this.paragraph4 = new ClippedParagraph('p', "I wanted to experiment the capablity of HTML5 Canvas and thought it would be good to build a web-app from scratch");
-        this.paragraph5 = new ClippedParagraph('p', ' - from setting up the DNS and deploying, to implementing canvas interactions.');
+        this.paragraph5 = new ClippedParagraph('p', '- from setting up the DNS and deploying, to implementing canvas interactions.');
 
         this.page = document.createElement('div');
         this.page.className = 'aboutPage'

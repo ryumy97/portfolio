@@ -151,6 +151,10 @@ export class TypographyPage3 {
 
 export class TypographyPage4 {
     constructor() {
+
+        this.paragraph1 = new ClippedParagraph('p', 'Each interaction expressed as a poster design that users can select and navigate to initiate the interactions.');
+        this.paragraph2 = new ClippedParagraph('p', 'As of those typograohy interactions are unique, each poster uses unique color pallette that suits their inspirations');
+
         this.image1 = new ClippedImage('typography01', 'bottom', 'image-block');
         this.image2 = new ClippedImage('typography02', 'bottom', 'image-block');
         this.image3 = new ClippedImage('typography03', 'bottom', 'image-block');
@@ -163,12 +167,31 @@ export class TypographyPage4 {
         this.content = document.createElement('div');
         this.content.className = 'aboutPageContent images';
 
-        this.content.append(
+        this.imageContainer = document.createElement('div');
+        this.imageContainer.className = 'aboutPageContent images';
+        this.imageContainer.style.width = '70%';
+        
+        this.paragraphContainer = document.createElement('div');
+        this.paragraphContainer.className = 'aboutPageContent hide_mobile'
+        this.paragraphContainer.style.width = 'calc(30% - 1rem)';
+        this.paragraphContainer.style.margin = 'auto 0 auto 1rem';
+
+        this.paragraphContainer.append(
+            ...this.paragraph1.getElementList(),
+            ...this.paragraph2.getElementList()
+        )
+
+        this.imageContainer.append(
             this.image1.getElement(),
             this.image2.getElement(),
             this.image3.getElement(),
             this.image4.getElement(),
             this.image5.getElement()
+        )
+
+        this.content.append(
+            this.paragraphContainer,
+            this.imageContainer
         )
 
         this.page.append(
@@ -182,6 +205,9 @@ export class TypographyPage4 {
         this.image3.add(0);
         this.image4.add(0);
         this.image5.add(0);
+
+        this.paragraph1.add(0, 0);
+        this.paragraph2.add(0, 0);
     }
 
     remove(delay) {
@@ -190,6 +216,9 @@ export class TypographyPage4 {
         this.image3.remove(0.2);
         this.image4.remove(0.3);
         this.image5.remove(0.4);
+
+        this.paragraph1.remove(0, 0.01);
+        this.paragraph2.remove(0.25, 0.01);
     }
 
     getElement() {

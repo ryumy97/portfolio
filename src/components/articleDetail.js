@@ -71,7 +71,7 @@ export class ArticleDetail {
                     new TypographyPage1(),
                     new TypographyPage2(),
                     new TypographyPage3(),
-                    new TypographyPage4()
+                    new TypographyPage4(),
                 ]
                 this.link = 'http://typography.ryumy.com'
                 break;
