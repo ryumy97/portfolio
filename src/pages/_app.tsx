@@ -1,9 +1,12 @@
-import type { AppProps } from 'next/app';
-
 import 'styles/tailwind.scss';
+import type { AppProps } from 'next/app';
+import Gtag from 'components/metadata/Gtag';
 
-function MyApp({ Component, pageProps }: AppProps) {
-    return <Component {...pageProps} />;
+export default function App({ Component, pageProps }: AppProps) {
+    return (
+        <>
+            <Gtag />
+            <Component {...pageProps} />
+        </>
+    );
 }
-
-export default MyApp;
