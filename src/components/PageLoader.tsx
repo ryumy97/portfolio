@@ -1,6 +1,7 @@
 import React from 'react';
 import Metadata from './metadata';
 import { Page } from 'data/gql/graphql';
+import { DeepPartial } from 'types';
 
 const PageLoader: React.FC<React.PropsWithChildren<DeepPartial<Page>>> = (
     props

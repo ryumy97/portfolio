@@ -1,4 +1,5 @@
 import { Page } from 'data/gql/graphql';
+import { DeepPartial } from 'types';
 
 export const pageData: DeepPartial<Page> = {
     __typename: 'Page',

@@ -1,6 +1,7 @@
 import { Metadata } from 'data/gql/graphql';
 import Head from 'next/head';
 import React from 'react';
+import { DeepPartial } from 'types';
 
 const Metadata: React.FC<DeepPartial<Metadata>> = (props) => {
     const { title, description } = props;
