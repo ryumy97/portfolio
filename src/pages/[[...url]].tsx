@@ -1,17 +1,19 @@
 import PageLoader from 'components/PageLoader';
 import { getAllPages } from 'data/contentful/getAllPages';
 import { getPageDetails } from 'data/contentful/getPageDetails';
+import { Page } from 'data/gql/graphql';
 import {
     GetStaticPaths,
     GetStaticProps,
     InferGetStaticPropsType,
     NextPage,
 } from 'next';
-import { PageDetail } from 'types/contentful';
 
 const Page: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (
     props
 ) => {
+    console.log(props);
+
     return (
         <>
             <PageLoader {...props}>
@@ -45,7 +47,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     };
 };
 
-export const getStaticProps: GetStaticProps<PageDetail> = async ({
+export const getStaticProps: GetStaticProps<Partial<Page>> = async ({
     params,
 }) => {
     const url = params?.url ? `/${(params?.url as string[]).join('/')}` : '/';

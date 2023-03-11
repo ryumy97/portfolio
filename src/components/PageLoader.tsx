@@ -1,8 +1,10 @@
 import React from 'react';
-import Metadata from './Metadata';
-import { PageDetail } from 'types/contentful';
+import Metadata from './metadata';
+import { Page } from 'data/gql/graphql';
 
-const PageLoader: React.FC<React.PropsWithChildren<PageDetail>> = (props) => {
+const PageLoader: React.FC<React.PropsWithChildren<DeepPartial<Page>>> = (
+    props
+) => {
     const { metadata, children } = props;
 
     return (

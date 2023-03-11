@@ -1,7 +1,24 @@
 import { gql } from '@apollo/client';
 
+export const page = gql`
+    fragment Page on Page {
+        __typename
+        url
+        metadata {
+            ...Metadata
+        }
+
+        blocksCollection {
+            items {
+                ...RichTextBlock
+            }
+        }
+    }
+`;
+
 export const metadata = gql`
     fragment Metadata on Metadata {
+        __typename
         title
         description
     }
@@ -9,14 +26,16 @@ export const metadata = gql`
 
 export const richTextBlock = gql`
     fragment RichTextBlock on RichTextBlock {
+        __typename
         text {
-            ...RichText
+            ...RichTextBlockText
         }
     }
 `;
 
 export const RichTextBlockText = gql`
-    fragment RichText on RichTextBlockText {
+    fragment RichTextBlockText on RichTextBlockText {
+        __typename
         json
     }
 `;

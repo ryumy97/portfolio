@@ -11,16 +11,7 @@ export const getPageDetailsQuery = gql`
     query GetPageDetails($url: String!, $preview: Boolean) {
         pageCollection(where: { url: $url }, preview: $preview) {
             items {
-                __typename
-                url
-                metadata {
-                    ...Metadata
-                }
-                blocksCollection {
-                    items {
-                        ...RichTextBlock
-                    }
-                }
+                ...Page
             }
         }
     }
