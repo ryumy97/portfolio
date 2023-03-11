@@ -33,13 +33,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
         };
     }
 
-    const filteredUrls = urls
-        .filter<string>((url: string | null | undefined): url is string => {
-            return url !== null && url !== undefined;
-        })
-        .map((url) => ({
-            params: { url: [...url.split('/')] },
-        }));
+    const filteredUrls = urls.map((url) => ({
+        params: { url: [...(url?.split('/').filter(Boolean) || [])] },
+    }));
 
     return {
         paths: filteredUrls,
