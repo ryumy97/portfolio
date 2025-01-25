@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
-import { motion, useSpring } from 'motion/react';
-import { Point } from '../utils/math';
+import { motion, useSpring, useTransform, useVelocity } from 'motion/react';
+import { clamp, lerp, Point } from '../utils/math';
 import { create } from 'zustand';
+import { safelyGetWindowWidth } from '../utils/media';
 
 const useCursorStore = create<{
   isHovered: boolean;
@@ -25,7 +26,18 @@ export const useCursor = (ref: React.RefObject<HTMLElement | null>) => {
 
     if (!el) return;
 
-    const onClick = () => {
+    const onClick = (event: MouseEvent) => {
+      useCursorStore.setState({
+        isHovered: false,
+        x: event.clientX,
+        y: event.clientY,
+        width: 8,
+        height: 8,
+      });
+
+      window.removeEventListener('mousemove', mouseMove);
+      window.removeEventListener('click', onClick);
+
       el.click();
     };
 
@@ -34,21 +46,15 @@ export const useCursor = (ref: React.RefObject<HTMLElement | null>) => {
 
       const point = new Point(event.clientX, event.clientY);
 
-      // const distance = point.getDistance(
-      //   new Point(, rect.y + rect.height / 2)
-      // );
+      // const diffX = rect.x + rect.width / 2 - point.x;
+      // const diffY = rect.y + rect.height / 2 - point.y;
 
-      // const normalized = point.normalize(new Point(rect.x, rect.y));
-
-      const diffX = rect.x + rect.width / 2 - point.x;
-      const diffY = rect.y + rect.height / 2 - point.y;
-
-      useCursorStore.setState({
-        x: rect.x - 4 - diffX / 3,
-        y: rect.y - 4 - diffY / 3,
-        width: rect.width + 8,
-        height: rect.height + 8,
-      });
+      // useCursorStore.setState({
+      //   x: rect.x - 4 - diffX / 3,
+      //   y: rect.y - 4 - diffY / 3,
+      //   width: rect.width + 8,
+      //   height: rect.height + 8,
+      // });
 
       if (
         !point.isInside({
@@ -99,6 +105,14 @@ const Cursor = () => {
   const height = useSpring(0, { stiffness: 2000, damping: 200 });
   const rotateZ = useSpring(0, { stiffness: 500, damping: 20, mass: 1 });
 
+  const vX = useVelocity(x);
+  const vY = useVelocity(y);
+  const scale = useTransform(() => {
+    const distance = new Point(vX.get(), vY.get()).getDistance(new Point(0, 0));
+
+    return lerp(1, 0.5, clamp(distance / (safelyGetWindowWidth() || 1), 0, 1));
+  });
+
   useEffect(() => {
     if (cursor.isHovered) {
       x.set(cursor.x + cursor.width / 2);
@@ -109,6 +123,12 @@ const Cursor = () => {
 
       return;
     }
+
+    x.set(cursor.x);
+    y.set(cursor.y);
+    width.set(8);
+    height.set(8);
+    rotateZ.set(45);
 
     const handleMouseMove = (e: MouseEvent) => {
       x.set(e.clientX);
@@ -128,7 +148,7 @@ const Cursor = () => {
   return (
     <motion.div
       className="&:hover:hidden pointer-events-none fixed top-0 left-0 mix-blend-exclusion"
-      style={{ x, y, rotateZ }}
+      style={{ x, y, rotateZ, scale }}
     >
       <motion.div
         className="bg-foreground absolute top-1/2 left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-lg"

@@ -3,6 +3,7 @@
 import NextLink, { LinkProps } from 'next/link';
 import { useRef } from 'react';
 import { useCursor } from './cursor';
+import { LinkLabel } from './typography';
 
 type Props = LinkProps & React.PropsWithChildren & React.HTMLAttributes<HTMLAnchorElement>;
 
@@ -13,7 +14,7 @@ const Link = ({ children, className, ...props }: Props) => {
 
   return (
     <NextLink className={className} {...props} ref={ref}>
-      {children}
+      <LinkLabel>{children}</LinkLabel>
     </NextLink>
   );
 };
