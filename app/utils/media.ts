@@ -23,6 +23,10 @@ export const isXXL = () => window.matchMedia(MIN_XXL);
 export const isTouch = () => window.matchMedia(TOUCH);
 export const isDarkMode = () => window.matchMedia(DARK_MODE);
 
+export const checkWindow = () => typeof window !== 'undefined';
+export const safelyGetWindowWidth = () => (checkWindow() ? window.innerWidth : 0);
+export const safelyGetWindowHeight = () => (checkWindow() ? window.innerHeight : 0);
+
 export const useMedia = (mediaQuery: string, key: string) => {
   const [match, setMatch] = useState(false);
 
