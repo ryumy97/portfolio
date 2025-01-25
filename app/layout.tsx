@@ -1,14 +1,24 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Playfair_Display, Roboto, Roboto_Mono } from 'next/font/google';
 import './globals.css';
+import { Theme } from './components/theme';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const playfairDisplay = Playfair_Display({
+  variable: '--font-display',
+  weight: '700',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const roboto = Roboto({
+  variable: '--font-body',
+  weight: '300',
+  style: ['italic', 'normal'],
+  subsets: ['latin'],
+});
+
+const robotoMono = Roboto_Mono({
+  variable: '--font-mono',
+  weight: '400',
   subsets: ['latin'],
 });
 
@@ -24,7 +34,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+      <Theme />
+      <body
+        className={`${playfairDisplay.variable} ${roboto.variable} ${robotoMono.variable} min-h-screen overflow-hidden antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
