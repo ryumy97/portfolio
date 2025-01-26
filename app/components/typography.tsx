@@ -17,7 +17,7 @@ export const HugeTitle = ({ children, asChild, className }: Props) => {
   );
 };
 
-export const Subtitle = ({ children, asChild, className }: Props) => {
+export const Description = ({ children, asChild, className }: Props) => {
   const Comp = asChild ? Slot : 'p';
 
   return <Comp className={cn('text-foreground font-body text-4xl', className)}>{children}</Comp>;

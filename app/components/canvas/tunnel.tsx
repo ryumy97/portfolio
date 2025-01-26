@@ -1,11 +1,7 @@
 'use client';
 
-import { AnimatePresence, motion } from 'motion/react';
-import { usePathname } from 'next/navigation';
 import React, { ReactNode } from 'react';
 import { create, StoreApi } from 'zustand';
-import { DEFAULT_EASING } from '../utils/animation';
-import Header from './header';
 
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' &&
@@ -61,36 +57,15 @@ function tunnel() {
 
     Out: () => {
       const current = useStore((state) => state.current);
-      return <AnimatePresence mode="popLayout">{current}</AnimatePresence>;
+      return <>{current}</>;
     },
   };
 }
 
-const Transition = tunnel();
+const CanvasTunnel = tunnel();
 
-const TransitionItem = ({ children }: Props) => {
-  return (
-    <motion.div
-      className="bg-background absolute inset-0 h-full w-full overflow-auto"
-      initial={{ y: '100%' }}
-      animate={{ y: 0 }}
-      exit={{ y: '-100%' }}
-      transition={{ duration: 0.8, ease: DEFAULT_EASING }}
-    >
-      <Header />
-      {children}
-    </motion.div>
-  );
+export const CanvasIn = ({ children }: Props) => {
+  return <CanvasTunnel.In>{children}</CanvasTunnel.In>;
 };
 
-export const TransitionIn = ({ children }: Props) => {
-  const pathname = usePathname();
-
-  return (
-    <Transition.In>
-      <TransitionItem key={pathname}>{children}</TransitionItem>
-    </Transition.In>
-  );
-};
-
-export const TransitionOut = Transition.Out;
+export const CanvasOut = CanvasTunnel.Out;

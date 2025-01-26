@@ -34,8 +34,6 @@ export const useMedia = (mediaQuery: string, key: string) => {
     const onChange = (event: MediaQueryListEvent) => {
       setMatch(event.matches);
 
-      console.log(event);
-
       sessionStorage.setItem(`${key}`, event.matches.toString());
     };
 
