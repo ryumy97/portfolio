@@ -11,7 +11,7 @@
   --font-body: var(--font-roboto);
   --font-mono: var(--font-roboto-mono);
 
-  --color-background: hsl(135 10% 80%);
+  --color-background: hsl(135 10% 95%);
   --color-foreground: hsl(135 10% 5%);
   --color-error: hsl(0 60% 65%);
   --color-error-foreground: hsl(135 10% 5%);
@@ -19,7 +19,7 @@
   --color-sucess-foreground: hsl(135 10% 5%);
   --color-warning: hsl(45 60% 65%);
   --color-warning-foreground: hsl(135 10% 5%);
-  --color-highlight: hsl(90 60% 65%);
+  --color-highlight: hsl(210 60% 45%);
   --color-highlight-foreground: hsl(135 10% 5%);
 
   --color-test: hsl(0 100% 65%);
@@ -28,12 +28,30 @@
 @layer base {
   .dark {
     --color-background: hsl(135 10% 5%);
-    --color-foreground: hsl(135 10% 80%);
+    --color-foreground: hsl(135 10% 90%);
+
+    --color-error: hsl(0 60% 65%);
+    --color-error-foreground: hsl(135 10% 5%);
+    --color-sucess: hsl(115 60% 65%);
+    --color-sucess-foreground: hsl(135 10% 5%);
+    --color-warning: hsl(45 60% 65%);
+    --color-warning-foreground: hsl(135 10% 5%);
+    --color-highlight: hsl(210 60% 65%);
+    --color-highlight-foreground: hsl(135 10% 5%);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --color-background: hsl(135 10% 5%);
-      --color-foreground: hsl(135 10% 80%);
+      --color-foreground: hsl(135 10% 90%);
+
+      --color-error: hsl(0 60% 65%);
+      --color-error-foreground: hsl(135 10% 5%);
+      --color-sucess: hsl(115 60% 65%);
+      --color-sucess-foreground: hsl(135 10% 5%);
+      --color-warning: hsl(45 60% 65%);
+      --color-warning-foreground: hsl(135 10% 5%);
+      --color-highlight: hsl(210 60% 65%);
+      --color-highlight-foreground: hsl(135 10% 5%);
     }
   }
 }

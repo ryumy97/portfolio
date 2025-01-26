@@ -13,8 +13,8 @@ const Link = ({ children, className, ...props }: Props) => {
   useCursor(ref);
 
   return (
-    <NextLink className={className} {...props} ref={ref}>
-      <LinkLabel>{children}</LinkLabel>
+    <NextLink {...props} ref={ref}>
+      <LinkLabel className={className}>{children}</LinkLabel>
     </NextLink>
   );
 };

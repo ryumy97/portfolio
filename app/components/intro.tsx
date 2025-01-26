@@ -147,7 +147,7 @@ const Intro = () => {
   return (
     <div
       className={cn(
-        'font-display absolute inset-0 flex h-full w-full flex-col items-end justify-center pr-8 text-9xl',
+        'font-display absolute inset-0 z-50 flex h-full w-full flex-col items-end justify-center pr-8 text-9xl',
         {
           'text-foreground bg-background': background === 'default',
           'bg-error text-error-foreground': background === 'error',

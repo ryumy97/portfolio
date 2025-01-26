@@ -40,8 +40,8 @@ export class Point {
     }
 
     return new Point(
-      (this.x - point.x) / point.getDistance(),
-      (this.y - point.y) / point.getDistance()
+      (this.x - point.x) / this.getDistance(point),
+      (this.y - point.y) / this.getDistance(point)
     );
   }
 

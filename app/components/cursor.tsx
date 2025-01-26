@@ -147,14 +147,14 @@ const Cursor = () => {
 
   return (
     <motion.div
-      className="&:hover:hidden pointer-events-none fixed top-0 left-0 mix-blend-exclusion"
+      className="&:hover:hidden pointer-events-none fixed top-0 left-0 z-40 mix-blend-difference"
       style={{ x, y, rotateZ, scale }}
     >
       <motion.div
-        className="bg-foreground absolute top-1/2 left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-lg"
+        className="absolute top-1/2 left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white"
         style={{ width, height }}
       >
-        <div className="bg-test absolute top-1/2 left-1/2 h-[1px] w-[1px] -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-1/2 left-1/2 h-[1px] w-[1px] -translate-x-1/2 -translate-y-1/2"></div>
       </motion.div>
     </motion.div>
   );
