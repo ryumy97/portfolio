@@ -2,23 +2,22 @@
 
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
-import { Canvas } from "@react-three/fiber";
-import { cubicBezier, motion } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 
-export default function Home() {
+export default function Page2() {
 	return (
 		<PageTunnelIn>
 			<motion.div
-				key="home"
+				key="page2"
 				className="relative bg-background min-h-screen"
-				initial={{ x: "-10%", y: "120%", rotate: 10 }}
-				animate={{ x: 0, y: 0, rotate: 0 }}
-				exit={{ x: "35%", y: "120%", rotate: -10 }}
-				transition={{ duration: 0.8, ease: cubicBezier(0.3, 0, 0, 1) }}
+				initial={{ opacity: 0, y: 100 }}
+				animate={{ opacity: 1, y: 0 }}
+				exit={{ opacity: 0, y: -100 }}
+				transition={{ duration: 0.5 }}
 			>
-				<SmoothScroll>
-					<main className="flex min-h-max w-full flex-col items-center gap-4 px-8">
+				<SmoothScroll horizontal>
+					<main className="flex min-h-screen w-max items-center gap-4 px-8">
 						<div className="h-96 w-lg shrink-0 bg-red-500"></div>
 						<div className="h-96 w-lg shrink-0 bg-red-500"></div>
 						<div className="h-96 w-lg shrink-0 bg-red-500"></div>
@@ -30,12 +29,9 @@ export default function Home() {
 						<div className="h-96 w-lg shrink-0 bg-red-500"></div>
 						<div className="h-96 w-lg shrink-0 bg-red-500"></div>
 						<div className="h-96 w-lg shrink-0 bg-red-500"></div>
-						<Link className="shrink-0" href="/about">
-							About
-						</Link>
+						<Link href="/">Home</Link>
 					</main>
 				</SmoothScroll>
-				<Canvas className="fixed inset-0"></Canvas>
 			</motion.div>
 		</PageTunnelIn>
 	);
