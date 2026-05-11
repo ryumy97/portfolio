@@ -12,7 +12,6 @@ import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { Grid, SubGrid } from "@/components/ui/grid";
 import { useIntroStore } from "@/stores/intro";
-import { Canvas } from "@react-three/fiber";
 import { cubicBezier, motion } from "motion/react";
 
 export default function Home() {
