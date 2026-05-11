@@ -1,6 +1,8 @@
 "use client";
 
-import { Lenis } from "lenis/react";
+import { useIntroStore } from "@/stores/intro";
+import { Lenis as LenisComponent, useLenis } from "lenis/react";
+import { useEffect } from "react";
 
 type Props = {
 	horizontal?: boolean;
@@ -8,8 +10,21 @@ type Props = {
 };
 
 const SmoothScroll = ({ horizontal = false, children }: Props) => {
+	// const scrollRef = useRef<Lenis | null>(null);
+	const state = useIntroStore((store) => store.state);
+
+	const lenis = useLenis();
+
+	useEffect(() => {
+		if (state === "end") {
+			lenis?.start();
+		} else {
+			lenis?.stop();
+		}
+	}, [state, lenis]);
+
 	return (
-		<Lenis
+		<LenisComponent
 			className="h-screen w-screen overflow-scroll"
 			options={
 				horizontal
@@ -25,7 +40,7 @@ const SmoothScroll = ({ horizontal = false, children }: Props) => {
 			}
 		>
 			{children}
-		</Lenis>
+		</LenisComponent>
 	);
 };
 
