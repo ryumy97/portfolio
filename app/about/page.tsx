@@ -1,7 +1,13 @@
 "use client";
 
+// About page
+// CV
+// In Ha Ryu.
+//
+
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
+import { Canvas } from "@react-three/fiber";
 import { motion } from "motion/react";
 import Link from "next/link";
 
@@ -31,6 +37,7 @@ export default function Page2() {
 						<div className="h-96 w-lg shrink-0 bg-red-500"></div>
 						<Link href="/">Home</Link>
 					</main>
+					<Canvas className="fixed inset-0"></Canvas>
 				</SmoothScroll>
 			</motion.div>
 		</PageTunnelIn>
