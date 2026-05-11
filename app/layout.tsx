@@ -28,7 +28,7 @@ export default function RootLayout({
 			lang="en"
 			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
 		>
-			<body className="min-h-screen bg-white">
+			<body className="min-h-screen bg-white overflow-hidden">
 				{children}
 				<PageTunnelOut />
 			</body>
