@@ -1,37 +1,59 @@
 "use client";
 
+import { WebGLGradientCanvas } from "@/components/webgl-gradient-canvas";
 import { useIntroStore } from "@/stores/intro";
+import { useProgress } from "@react-three/drei";
+import { animate } from "motion";
+import { cubicBezier, useMotionValue } from "motion/react";
 import { useEffect } from "react";
 
 const LoaderRender = () => {
-	const progress = useIntroStore((store) => store.progress);
+	const { progress } = useProgress();
 	const state = useIntroStore((store) => store.state);
+
+	const progressMotion = useMotionValue(0);
+
+	useEffect(() => {
+		console.log(progress);
+		useIntroStore.getState().setProgress(progress);
+		if (progress === 100) {
+			useIntroStore.getState().setState("transitioning");
+		}
+	}, [progress]);
 
 	useEffect(() => {
 		if (state === "transitioning") {
-			useIntroStore.getState().setState("end");
+			animate(progressMotion, 1, {
+				duration: 1.5,
+				ease: cubicBezier(0.3, 0, 0, 1),
+				onComplete() {
+					useIntroStore.getState().setState("end");
+				},
+			});
 
 			return;
 		}
-	}, [state]);
+	}, [state, progressMotion]);
+
+	if (state === "end") return null;
 
 	return (
-		<div className="fixed inset-0 bg-black z-50 flex items-center justify-center overflow-hidden">
-			{progress}%
-			<div className="absolute inset-0">
-				<canvas className="w-full h-full" />
-			</div>
+		<div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
+			<WebGLGradientCanvas
+				className="absolute inset-0 h-full w-full"
+				progress={progressMotion}
+			/>
+			{state === "transitioning" && (
+				<span className="relative z-10 text-sm font-medium text-white tabular-nums drop-shadow-md">
+					{progress}%
+				</span>
+			)}
 		</div>
 	);
 };
 
 const Loader = () => {
-	const state = useIntroStore((store) => store.state);
-
-	return (
-		// <AnimatePresence>{state !== "end" && <LoaderRender />}</AnimatePresence>
-		<LoaderRender />
-	);
+	return <LoaderRender />;
 };
 
 export default Loader;
