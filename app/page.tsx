@@ -1,7 +1,7 @@
 "use client";
 
+import About from "@/components/about";
 import Header from "@/components/header";
-import Intro from "@/components/intro";
 // Home page for navigation between pages
 // What is Blogs?
 // What is Projects?
@@ -11,6 +11,7 @@ import Intro from "@/components/intro";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { Grid, SubGrid } from "@/components/ui/grid";
+import { WebGLRippleCanvas } from "@/components/webgl/webgl-ripple-canvas";
 import { useIntroStore } from "@/stores/intro";
 import { cubicBezier, motion } from "motion/react";
 
@@ -31,12 +32,13 @@ export default function Home() {
 				exit={{ x: "35%", y: "120%", rotate: -10 }}
 				transition={{ duration: 0.8, ease: cubicBezier(0.3, 0, 0, 1) }}
 			>
+				<WebGLRippleCanvas className="fixed inset-0 h-full w-full" />
 				<SmoothScroll>
 					<Grid>
 						<Header />
 						<SubGrid asChild>
 							<main className="px-2">
-								<Intro />
+								<About />
 								<div className="col-span-full h-screen w-full bg-red-500"></div>
 								<div className="col-span-full h-screen w-full bg-red-500"></div>
 								<div className="col-span-full h-screen w-full bg-red-500"></div>

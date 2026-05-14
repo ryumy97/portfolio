@@ -25,7 +25,7 @@ const SmoothScroll = ({ horizontal = false, children }: Props) => {
 
 	return (
 		<LenisComponent
-			className="h-screen w-screen overflow-scroll"
+			className="h-screen w-screen overflow-scroll relative"
 			options={
 				horizontal
 					? {

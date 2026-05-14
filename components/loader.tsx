@@ -1,6 +1,6 @@
 "use client";
 
-import { WebGLGradientCanvas } from "@/components/webgl-gradient-canvas";
+import { WebGLGradientCanvas } from "@/components/webgl/webgl-gradient-canvas";
 import { useIntroStore } from "@/stores/intro";
 import { useProgress } from "@react-three/drei";
 import { animate } from "motion";
@@ -24,7 +24,7 @@ const LoaderRender = () => {
 	useEffect(() => {
 		if (state === "transitioning") {
 			animate(progressMotion, 1, {
-				duration: 1.5,
+				duration: 2,
 				ease: cubicBezier(0.3, 0, 0, 1),
 				onComplete() {
 					useIntroStore.getState().setState("end");
@@ -43,8 +43,8 @@ const LoaderRender = () => {
 				className="absolute inset-0 h-full w-full"
 				progress={progressMotion}
 			/>
-			{state === "transitioning" && (
-				<span className="relative z-10 text-sm font-medium text-white tabular-nums drop-shadow-md">
+			{state !== "transitioning" && (
+				<span className="relative z-10 text-sm font-medium text-background tabular-nums drop-shadow-md">
 					{progress}%
 				</span>
 			)}
