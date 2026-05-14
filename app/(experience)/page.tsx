@@ -25,12 +25,34 @@ export default function Home() {
 				className="absolute inset-0 bg-background h-screen w-full overflow-hidden"
 				initial={
 					state === "end"
-						? { x: "-10%", y: "120%", rotate: 10 }
-						: { x: 0, y: 0, rotate: 0 }
+						? {
+								y: "100%",
+								borderTopLeftRadius: "5vw",
+								borderTopRightRadius: "5vw",
+							}
+						: { y: 0, borderTopLeftRadius: "0vw", borderTopRightRadius: "0vw" }
 				}
-				animate={{ x: 0, y: 0, rotate: 0 }}
-				exit={{ x: "35%", y: "120%", rotate: -10 }}
-				transition={{ duration: 0.8, ease: cubicBezier(0.3, 0, 0, 1) }}
+				animate={{
+					y: 0,
+					borderTopLeftRadius: "0vw",
+					borderTopRightRadius: "0vw",
+					transition: {
+						delay: 0.2,
+						duration: 0.8,
+						ease: cubicBezier(0.3, 0, 0, 1),
+					},
+				}}
+				exit={{
+					y: "0%",
+					borderTopLeftRadius: "5vw",
+					borderTopRightRadius: "5vw",
+					scale: 0.9,
+					opacity: 0.9,
+					transition: {
+						duration: 0.8,
+						ease: cubicBezier(0.3, 0, 0, 1),
+					},
+				}}
 			>
 				<WebGLRippleCanvas className="fixed inset-0 h-full w-full" />
 				<SmoothScroll>

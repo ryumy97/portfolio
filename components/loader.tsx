@@ -6,6 +6,7 @@ import { useProgress } from "@react-three/drei";
 import { animate } from "motion";
 import { cubicBezier, useMotionValue } from "motion/react";
 import { useEffect } from "react";
+import Rodin from "./three/rodin";
 
 const LoaderRender = () => {
 	const { progress } = useProgress();
@@ -14,7 +15,6 @@ const LoaderRender = () => {
 	const progressMotion = useMotionValue(0);
 
 	useEffect(() => {
-		console.log(progress);
 		useIntroStore.getState().setProgress(progress);
 		if (progress === 100) {
 			useIntroStore.getState().setState("transitioning");

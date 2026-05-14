@@ -9,5 +9,5 @@ export const PageTunnelIn = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const PageTunnelOut = () => {
-	return <PageTunnel.OutAnimatePresence mode="wait" />;
+	return <PageTunnel.OutAnimatePresence mode="popLayout" />;
 };
