@@ -46,16 +46,19 @@ void main() {
 	float thickness = 0.3;
 	float xProgress = mix(0.0, 1.0 / thickness, uv.x - mix(1.0, -thickness, u_progress));
 	float yProgress = mix(0.0, 1.0 / thickness, uv.y - mix(1.0, -thickness, u_progress));
-	float color = 1.0 - clampGradient((xProgress + yProgress) * 0.5);
+	float gradient = 1.0 - clampGradient((xProgress + yProgress) * 0.5);
 
 	// cell	
 	vec2 cellUv = fract(uv / normalizedPixelSize);
 	float dist = length(cellUv - 0.5);
 
 	// shape - gradient effecting cell 
-	float circle = 1.0 - smoothstep((u_radius - 0.01) * color, (u_radius + 0.01) * color, dist);
+	float circle = 1.0 - smoothstep((u_radius - 0.01) * gradient, (u_radius + 0.01) * gradient, dist);
 
-	gl_FragColor = vec4(0.0, 0.0, 0.0, circle);
+	// color
+	vec3 color = mix(vec3(0.0), vec3(0.969, 0.365, 0.365), clampGradient(u_progress * 2.0));
+
+	gl_FragColor = vec4(color, circle);
 }
 `;
 

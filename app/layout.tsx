@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Loader from "@/components/loader";
+import { WebGLRippleCanvas } from "@/components/webgl/webgl-ripple-canvas";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -29,7 +30,7 @@ export default function RootLayout({
 			lang="en"
 			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
 		>
-			<body className="min-h-screen bg-white overflow-hidden">
+			<body className="min-h-screen bg-white overflow-hidden pointer-events-auto">
 				{children}
 				<PageTunnelOut />
 				<Loader />
