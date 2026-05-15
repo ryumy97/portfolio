@@ -52,6 +52,12 @@ const LoaderRender = () => {
 	);
 };
 
+export const ForceLoad = () => {
+	useIntroStore.getState().setState("end");
+
+	return null;
+};
+
 const Loader = () => {
 	return <LoaderRender />;
 };

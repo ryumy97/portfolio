@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
 import "../globals.css";
+import { ForceLoad } from "@/components/loader";
 
 // Heading
 const playfairDisplay = Playfair_Display({
@@ -32,6 +33,7 @@ export default function RootLayout({
 		>
 			<body className="min-h-screen bg-white overflow-hidden pointer-events-auto">
 				{children}
+				<ForceLoad />
 			</body>
 		</html>
 	);

@@ -1,19 +1,22 @@
 "use client";
 
 import { useIntroStore } from "@/stores/intro";
+import type { ScrollCallback } from "lenis";
 import { Lenis as LenisComponent, useLenis } from "lenis/react";
 import { useEffect } from "react";
 
 type Props = {
 	horizontal?: boolean;
+	onScroll?: ScrollCallback;
 	children: React.ReactNode;
 };
 
-const SmoothScroll = ({ horizontal = false, children }: Props) => {
-	// const scrollRef = useRef<Lenis | null>(null);
+function SmoothScrollController({
+	onScroll,
+	children,
+}: Pick<Props, "onScroll" | "children">) {
 	const state = useIntroStore((store) => store.state);
-
-	const lenis = useLenis();
+	const lenis = useLenis(onScroll, onScroll ? [onScroll] : []);
 
 	useEffect(() => {
 		if (state === "end") {
@@ -23,6 +26,10 @@ const SmoothScroll = ({ horizontal = false, children }: Props) => {
 		}
 	}, [state, lenis]);
 
+	return children;
+}
+
+const SmoothScroll = ({ horizontal = false, onScroll, children }: Props) => {
 	return (
 		<LenisComponent
 			className="h-screen w-screen overflow-scroll relative"
@@ -39,7 +46,9 @@ const SmoothScroll = ({ horizontal = false, children }: Props) => {
 						}
 			}
 		>
-			{children}
+			<SmoothScrollController onScroll={onScroll}>
+				{children}
+			</SmoothScrollController>
 		</LenisComponent>
 	);
 };
