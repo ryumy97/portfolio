@@ -199,8 +199,6 @@ export function WebGLGradientCanvas({
 	}, [halftonePixelSize, halftoneRadius]);
 
 	useMotionValueEvent(progress, "change", (value) => {
-		console.log(value);
-
 		progressRef.current = value;
 		drawRef.current?.();
 	});

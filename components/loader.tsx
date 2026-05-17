@@ -8,7 +8,13 @@ import { animate } from "motion";
 import { cubicBezier, useMotionValue } from "motion/react";
 import { useEffect } from "react";
 
-const LoaderRender = () => {
+export const ForceLoad = () => {
+	useIntroStore.getState().setState("end");
+
+	return null;
+};
+
+const Loader = () => {
 	const { progress } = useProgress();
 	const state = useIntroStore((store) => store.state);
 
@@ -50,16 +56,6 @@ const LoaderRender = () => {
 			)}
 		</div>
 	);
-};
-
-export const ForceLoad = () => {
-	useIntroStore.getState().setState("end");
-
-	return null;
-};
-
-const Loader = () => {
-	return <LoaderRender />;
 };
 
 export default Loader;

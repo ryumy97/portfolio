@@ -19,7 +19,7 @@ export default function Home() {
 
 	return (
 		<PageTunnelIn>
-			<WebGLRippleCanvas className="fixed inset-0 h-full w-full" />
+			{/* <WebGLRippleCanvas className="fixed inset-0 h-full w-full" /> */}
 			<SmoothScroll>
 				<Grid>
 					<Header />
