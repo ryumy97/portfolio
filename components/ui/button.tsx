@@ -35,7 +35,7 @@ const buttonVariants = cva(
 				"icon-sm":
 					"size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
 				"icon-lg": "size-9",
-				nav: "text-[max(min(1.1vw,12px),18px)]",
+				nav: "text-[max(min(1.1vw,10px),14px)]",
 			},
 		},
 		defaultVariants: {
