@@ -8,12 +8,20 @@ import { Slot } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
 
 export const usePointerEvent = ({
+	type = "bg",
 	offsetX = 0,
 	offsetY = 0,
 	borderRadius = 9999,
-	offsetWidth = 8,
-	offsetHeight = 4,
-} = {}) => {
+	offsetWidth = 16,
+	offsetHeight = 0,
+}: {
+	type?: "bg" | "underline";
+	offsetX?: number;
+	offsetY?: number;
+	borderRadius?: number;
+	offsetWidth?: number;
+	offsetHeight?: number;
+}) => {
 	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
 		const rect = event.currentTarget.getBoundingClientRect();
 
@@ -47,7 +55,9 @@ export const PointerEventHandler = ({
 	children?: React.ReactNode;
 	asChild?: boolean;
 }) => {
-	const { onPointerEnter, onPointerLeave } = usePointerEvent();
+	const { onPointerEnter, onPointerLeave } = usePointerEvent({
+		type: "bg",
+	});
 
 	const Comp = asChild ? Slot.Root : "div";
 
@@ -62,11 +72,11 @@ const Pointer = () => {
 	const state = useIntroStore((state) => state.state);
 	const hover = usePointerStore((state) => state.hover);
 
-	const x = useSpring(0, {
+	const x = useSpring(-12, {
 		stiffness: 350,
 		damping: 50,
 	});
-	const y = useSpring(0, {
+	const y = useSpring(-12, {
 		stiffness: 350,
 		damping: 50,
 	});
