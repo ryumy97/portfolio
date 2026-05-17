@@ -31,7 +31,7 @@ export default function RootLayout({
 	return (
 		<html
 			lang="en"
-			className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased cursor-none`}
+			className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased`}
 		>
 			<body className="min-h-screen bg-black overflow-hidden pointer-events-auto">
 				{children}

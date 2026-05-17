@@ -1,9 +1,44 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import { useIntroStore } from "@/stores/intro";
 import usePointerStore from "@/stores/pointer";
 import { motion, useSpring } from "motion/react";
 import { Slot } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
+
+export const usePointerEvent = ({
+	offsetX = 0,
+	offsetY = 0,
+	borderRadius = 9999,
+	offsetWidth = 8,
+	offsetHeight = 4,
+} = {}) => {
+	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
+		const rect = event.currentTarget.getBoundingClientRect();
+
+		const width = rect.width + offsetWidth;
+		const height = rect.height + offsetHeight;
+		const x = rect.x + offsetX + rect.width / 2;
+		const y = rect.y + offsetY + rect.height / 2;
+
+		usePointerStore.getState().setHover({
+			x,
+			y,
+			width,
+			height,
+			borderRadius,
+		});
+	};
+	const onPointerLeave = (_event: React.PointerEvent<HTMLElement>) => {
+		usePointerStore.getState().hoverOut();
+	};
+
+	return {
+		onPointerEnter,
+		onPointerLeave,
+	};
+};
 
 export const PointerEventHandler = ({
 	asChild,
@@ -12,25 +47,7 @@ export const PointerEventHandler = ({
 	children?: React.ReactNode;
 	asChild?: boolean;
 }) => {
-	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
-		const rect = event.currentTarget.getBoundingClientRect();
-
-		const width = rect.width + 8;
-		const height = rect.height + 4;
-		const x = rect.x + rect.width / 2;
-		const y = rect.y + rect.height / 2;
-
-		usePointerStore.getState().setHover({
-			x,
-			y,
-			width,
-			height,
-			borderRadius: 9999,
-		});
-	};
-	const onPointerLeave = (_event: React.PointerEvent<HTMLElement>) => {
-		usePointerStore.getState().hoverOut();
-	};
+	const { onPointerEnter, onPointerLeave } = usePointerEvent();
 
 	const Comp = asChild ? Slot.Root : "div";
 
@@ -42,6 +59,7 @@ export const PointerEventHandler = ({
 };
 
 const Pointer = () => {
+	const state = useIntroStore((state) => state.state);
 	const hover = usePointerStore((state) => state.hover);
 
 	const x = useSpring(0, {
@@ -113,6 +131,14 @@ const Pointer = () => {
 		};
 	}, [hover, x, y, width, height, borderRadius]);
 
+	useEffect(() => {
+		if (state !== "start") {
+			document.body.style.cursor = "none";
+		} else {
+			document.body.style.cursor = "auto";
+		}
+	}, [state]);
+
 	if (isTouch) return;
 
 	return (
@@ -124,7 +150,9 @@ const Pointer = () => {
 				height,
 				borderRadius,
 			}}
-			className="pointer-events-none fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-full w-3 h-3 z-0"
+			className={cn(
+				"pointer-events-none fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-full w-3 h-3 z-0",
+			)}
 		></motion.div>
 	);
 };
