@@ -3,6 +3,7 @@ import { PageTunnelOut } from "@/components/page-tunnel";
 import type { Metadata } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
 import "../globals.css";
+import Pointer from "@/components/pointer";
 
 // Heading
 const playfairDisplay = Playfair_Display({
@@ -30,11 +31,12 @@ export default function RootLayout({
 	return (
 		<html
 			lang="en"
-			className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased`}
+			className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased cursor-none`}
 		>
 			<body className="min-h-screen bg-black overflow-hidden pointer-events-auto">
 				{children}
 				<PageTunnelOut />
+				<Pointer />
 				<Loader />
 			</body>
 		</html>

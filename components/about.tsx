@@ -10,6 +10,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import Rodin from "./three/rodin";
 import { SubGrid } from "./ui/grid";
+import { PointerEventHandler } from "./pointer";
 
 const START = {
 	position: [-0.57, 1.8, 1],
@@ -133,9 +134,11 @@ const About = () => {
 	return (
 		<SubGrid className="relative h-[calc(100vh-33px)]">
 			<div className="col-start-3 items-center col-end-7 flex">
-				<Link href="/about">
-					<h1 className="text-[10vw] font-bold">About</h1>
-				</Link>
+				<PointerEventHandler asChild>
+					<Link href="/about">
+						<h1 className="text-[10vw] font-bold">About</h1>
+					</Link>
+				</PointerEventHandler>
 			</div>
 			<div className="absolute top-[-33px] left-0 w-full h-screen z-10 pointer-events-none">
 				<Canvas frameloop="demand" style={{ pointerEvents: "none" }}>
