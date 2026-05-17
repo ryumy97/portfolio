@@ -4,9 +4,18 @@ import { useIntroStore } from "@/stores/intro";
 import { PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useLenis } from "lenis/react";
-import { useMotionValueEvent, useSpring } from "motion/react";
+import {
+	delay,
+	motion,
+	useAnimate,
+	useAnimationFrame,
+	useMotionValue,
+	useMotionValueEvent,
+	useScroll,
+	useSpring,
+} from "motion/react";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Rodin from "./three/rodin";
 import { SubGrid } from "./ui/grid";
@@ -130,17 +139,102 @@ const RodinScene = () => {
 	);
 };
 
+const ScrollingPhrase = () => {
+	const state = useIntroStore((store) => store.state);
+	const scroll = useLenis();
+
+	const containerRef = useRef<HTMLDivElement>(null);
+	const lineRef = useRef<HTMLParagraphElement>(null);
+
+	const [linesPerBlock, setLinesPerBlock] = useState(6);
+	const [animationComplete, setAnimationComplete] = useState(false);
+
+	const lineCount = linesPerBlock + 1;
+	const lineKeys = useMemo(
+		() => Array.from({ length: lineCount }, () => crypto.randomUUID()),
+		[lineCount],
+	);
+
+	console.log("lineCount", lineCount, lineRef.current?.clientHeight);
+
+	const y = useMotionValue(0);
+	const offsetY = useMotionValue(0);
+
+	useAnimationFrame(() => {
+		if (animationComplete) {
+			// const scroll = -((scroll?.animatedScroll ?? 0) / window.innerHeight) * 10
+
+			offsetY.set(offsetY.get() - window.innerHeight * 0.001);
+			y.set(
+				(offsetY.get() - (scroll?.animatedScroll ?? 0)) %
+					(lineRef.current?.clientHeight ?? 0),
+			);
+		}
+	});
+
+	useLayoutEffect(() => {
+		const container = containerRef.current;
+		const line = lineRef.current;
+		if (!container || !line) return;
+
+		const measure = () => {
+			const containerHeight = container.getBoundingClientRect().height;
+			const lineHeight = line.getBoundingClientRect().height;
+			if (lineHeight <= 0) return;
+			setLinesPerBlock(
+				Math.max(2, Math.ceil(containerHeight / lineHeight) + 1),
+			);
+		};
+
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(container);
+		return () => observer.disconnect();
+	}, []);
+
+	useEffect(() => {
+		if (state === "start") {
+			delay(() => {
+				setAnimationComplete(true);
+			}, 1500);
+		}
+	}, [state]);
+
+	return (
+		<motion.div
+			ref={containerRef}
+			className="col-start-2 col-end-8 h-full overflow-hidden"
+			initial={{ y: "100%" }}
+			animate={{ y: state !== "start" ? 0 : "100%" }}
+			transition={{
+				delay: 0.5,
+				duration: 1,
+				ease: "circOut",
+			}}
+		>
+			<motion.div
+				className="flex flex-col text-[7vw] font-heading font-bold leading-[0.8em] tracking-[-0.03em]"
+				style={{ y }}
+			>
+				{lineKeys.map((key, index) => (
+					<p
+						key={key}
+						ref={index === 0 ? lineRef : undefined}
+						className="pb-[0.15em]"
+					>
+						Cogito, ergo sum.
+					</p>
+				))}
+			</motion.div>
+		</motion.div>
+	);
+};
+
 const About = () => {
 	return (
-		<SubGrid className="relative h-[calc(100vh-33px)]">
-			<div className="col-start-3 items-center col-end-7 flex">
-				<PointerEventHandler asChild>
-					<Link href="/about">
-						<h1 className="text-[10vw] font-bold">About</h1>
-					</Link>
-				</PointerEventHandler>
-			</div>
-			<div className="absolute top-[-33px] left-0 w-full h-screen z-10 pointer-events-none">
+		<SubGrid className="relative aspect-video overflow-hidden">
+			<ScrollingPhrase />
+			<div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">
 				<Canvas frameloop="demand" style={{ pointerEvents: "none" }}>
 					<RodinScene />
 				</Canvas>

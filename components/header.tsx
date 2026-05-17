@@ -64,61 +64,58 @@ const Header = () => {
 	const pathname = usePathname();
 
 	return (
-		<>
-			<Grid asChild>
-				<header className="fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10">
-					<Logo />
-					<div className="col-start-7 justify-start items-center">
-						<PointerEventHandler asChild>
-							<Button
-								variant={pathname === "/about" ? "navActive" : "nav"}
-								size={"nav"}
-								asChild
-							>
-								<Link href="/about">About</Link>
-							</Button>
-						</PointerEventHandler>
-					</div>
+		<Grid asChild>
+			<header className="fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10">
+				<Logo />
+				<div className="col-start-7 justify-start items-center">
+					<PointerEventHandler asChild>
+						<Button
+							variant={pathname === "/about" ? "navActive" : "nav"}
+							size={"nav"}
+							asChild
+						>
+							<Link href="/about">About</Link>
+						</Button>
+					</PointerEventHandler>
+				</div>
 
-					<div className="col-start-8 justify-start items-center">
-						<PointerEventHandler asChild>
-							<Button
-								variant={pathname === "/projects" ? "navActive" : "nav"}
-								size={"nav"}
-								asChild
-							>
-								<Link href="/projects">Projects</Link>
-							</Button>
-						</PointerEventHandler>
-					</div>
+				<div className="col-start-8 justify-start items-center">
+					<PointerEventHandler asChild>
+						<Button
+							variant={pathname === "/projects" ? "navActive" : "nav"}
+							size={"nav"}
+							asChild
+						>
+							<Link href="/projects">Projects</Link>
+						</Button>
+					</PointerEventHandler>
+				</div>
 
-					<div className="col-start-9 justify-start items-center">
-						<PointerEventHandler asChild>
-							<Button
-								variant={pathname === "/gallery" ? "navActive" : "nav"}
-								size={"nav"}
-								asChild
-							>
-								<Link href="/gallery">Gallery</Link>
-							</Button>
-						</PointerEventHandler>
-					</div>
+				<div className="col-start-9 justify-start items-center">
+					<PointerEventHandler asChild>
+						<Button
+							variant={pathname === "/gallery" ? "navActive" : "nav"}
+							size={"nav"}
+							asChild
+						>
+							<Link href="/gallery">Gallery</Link>
+						</Button>
+					</PointerEventHandler>
+				</div>
 
-					<div className="col-start-10 justify-start items-center">
-						<PointerEventHandler asChild>
-							<Button
-								variant={pathname === "/blogs" ? "navActive" : "nav"}
-								size={"nav"}
-								asChild
-							>
-								<Link href="/blogs">Blogs</Link>
-							</Button>
-						</PointerEventHandler>
-					</div>
-				</header>
-			</Grid>
-			<SubGrid className="h-[33px]" />
-		</>
+				<div className="col-start-10 justify-start items-center">
+					<PointerEventHandler asChild>
+						<Button
+							variant={pathname === "/blogs" ? "navActive" : "nav"}
+							size={"nav"}
+							asChild
+						>
+							<Link href="/blogs">Blogs</Link>
+						</Button>
+					</PointerEventHandler>
+				</div>
+			</header>
+		</Grid>
 	);
 };
 
