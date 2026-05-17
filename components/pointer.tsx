@@ -27,8 +27,8 @@ export const usePointerEvent = ({
 
 		const width = rect.width + offsetWidth;
 		const height = rect.height + offsetHeight;
-		const x = rect.x + offsetX + rect.width / 2;
-		const y = rect.y + offsetY + rect.height / 2;
+		const x = rect.x + offsetX + rect.width / 2 + 16;
+		const y = rect.y + offsetY + rect.height / 2 + 16;
 
 		usePointerStore.getState().setHover({
 			x,
@@ -141,14 +141,6 @@ const Pointer = () => {
 		};
 	}, [hover, x, y, width, height, borderRadius]);
 
-	useEffect(() => {
-		if (state !== "start") {
-			document.body.style.cursor = "none";
-		} else {
-			document.body.style.cursor = "auto";
-		}
-	}, [state]);
-
 	if (isTouch) return;
 
 	return (
@@ -161,7 +153,7 @@ const Pointer = () => {
 				borderRadius,
 			}}
 			className={cn(
-				"pointer-events-none fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-full w-3 h-3 z-0",
+				"pointer-events-none fixed -top-4 -left-4 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-full w-3 h-3 z-0",
 			)}
 		></motion.div>
 	);

@@ -2,8 +2,9 @@
 
 import { useIntroStore } from "@/stores/intro";
 import type { ScrollCallback } from "lenis";
-import { Lenis as LenisComponent, useLenis } from "lenis/react";
-import { useEffect } from "react";
+import { Lenis as LenisComponent, LenisRef, useLenis } from "lenis/react";
+import { cancelFrame, frame } from "motion";
+import { useEffect, useRef } from "react";
 
 type Props = {
 	horizontal?: boolean;
@@ -30,17 +31,33 @@ function SmoothScrollController({
 }
 
 const SmoothScroll = ({ horizontal = false, onScroll, children }: Props) => {
+	const lenisRef = useRef<LenisRef | null>(null);
+
+	useEffect(() => {
+		function update(data: { timestamp: number }) {
+			const time = data.timestamp;
+			lenisRef.current?.lenis?.raf(time);
+		}
+
+		frame.update(update, true);
+
+		return () => cancelFrame(update);
+	}, []);
+
 	return (
 		<LenisComponent
+			ref={lenisRef}
 			className="h-screen w-screen overflow-scroll relative"
 			options={
 				horizontal
 					? {
+							autoRaf: false,
 							orientation: "horizontal",
 							gestureOrientation: "both",
 							smoothWheel: true,
 						}
 					: {
+							autoRaf: false,
 							orientation: "vertical",
 							smoothWheel: true,
 						}

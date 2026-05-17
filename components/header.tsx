@@ -44,7 +44,7 @@ const Logo = () => {
 						src={favicon}
 						alt="Ryumy"
 						className={cn(
-							"absolute top-0 left-0 w-[28px] h-[28px] transition-all duration-300",
+							"absolute top-1/2 -translate-y-1/2 left-0 w-[28px] h-[28px] transition-all duration-300",
 							{
 								"translate-x-0 rotate-0": hover,
 							},
@@ -67,19 +67,8 @@ const Header = () => {
 		<Grid asChild>
 			<header className="fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10">
 				<Logo />
-				<div className="col-start-7 justify-start items-center">
-					<PointerEventHandler asChild>
-						<Button
-							variant={pathname === "/about" ? "navActive" : "nav"}
-							size={"nav"}
-							asChild
-						>
-							<Link href="/about">About</Link>
-						</Button>
-					</PointerEventHandler>
-				</div>
 
-				<div className="col-start-8 justify-start items-center">
+				<div className="col-start-8 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button
 							variant={pathname === "/projects" ? "navActive" : "nav"}
@@ -91,7 +80,7 @@ const Header = () => {
 					</PointerEventHandler>
 				</div>
 
-				<div className="col-start-9 justify-start items-center">
+				<div className="col-start-9 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button
 							variant={pathname === "/gallery" ? "navActive" : "nav"}
@@ -103,14 +92,14 @@ const Header = () => {
 					</PointerEventHandler>
 				</div>
 
-				<div className="col-start-10 justify-start items-center">
+				<div className="col-start-10 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button
 							variant={pathname === "/blogs" ? "navActive" : "nav"}
 							size={"nav"}
 							asChild
 						>
-							<Link href="/blogs">Blogs</Link>
+							<Link href="/contacts">Contact</Link>
 						</Button>
 					</PointerEventHandler>
 				</div>
