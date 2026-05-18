@@ -87,20 +87,22 @@ const RodinScene = () => {
 
 	const lenis = useLenis();
 
-	lenis?.on("scroll", (event) => {
-		if (!meshRef.current) return;
+	useEffect(() => {
+		lenis?.on("scroll", (event) => {
+			if (!meshRef.current) return;
 
-		let progress = event.actualScroll / window.innerHeight;
-		if (progress > 1) {
-			progress = 1;
-		}
-		if (progress < 0) {
-			progress = 0;
-		}
-		meshRef.current.position.y = progress;
-		meshRef.current.rotation.y = progress;
-		three.invalidate();
-	});
+			let progress = event.actualScroll / window.innerHeight;
+			if (progress > 1) {
+				progress = 1;
+			}
+			if (progress < 0) {
+				progress = 0;
+			}
+			meshRef.current.position.y = progress;
+			meshRef.current.rotation.y = progress;
+			three.invalidate();
+		});
+	}, [lenis, three.invalidate]);
 
 	useEffect(() => {
 		if (state === "start") {

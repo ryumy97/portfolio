@@ -17,15 +17,16 @@ import {
 } from "@/lib/webgl";
 import type { StaticImageData } from "next/image";
 import { useEffect, useRef } from "react";
+import { useMotionValueEvent, type MotionValue } from "motion/react";
 
 export type WebGLPixelationCanvasProps = {
 	className?: string;
 	/** Source image sampled into the pixel grid. */
 	image: StaticImageData;
 	/** Size of each pixel cell in screen pixels. Defaults to 20. */
-	pixelSize?: number;
+	pixelSize: MotionValue<number>;
 	/** Dot radius in cell UV space (0–1). Defaults to 0.5. */
-	radius?: number;
+	radius: MotionValue<number>;
 	/** Quality passed to the Next.js image optimizer. */
 	quality?: number;
 };
@@ -65,8 +66,8 @@ void main() {
 export function WebGLPixelationCanvas({
 	className,
 	image,
-	pixelSize = DEFAULT_PIXEL_SIZE,
-	radius = DEFAULT_RADIUS,
+	pixelSize,
+	radius,
 	quality = 80,
 }: WebGLPixelationCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -124,8 +125,8 @@ export function WebGLPixelationCanvas({
 			// biome-ignore lint/correctness/useHookAtTopLevel: not a hook
 			gl.useProgram(program);
 			setResolutionUniform(gl, uResolution);
-			if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, pixelSize);
-			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, radius);
+			if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, pixelSize.get());
+			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, radius.get());
 
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -137,14 +138,7 @@ export function WebGLPixelationCanvas({
 		drawRef.current = draw;
 
 		const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
-			const sizeChanged =
-				size.w !== loadedTextureSize.w || size.h !== loadedTextureSize.h;
-
-			if (sizeChanged) {
-				reloadTexture(size.w, size.h);
-			} else {
-				invalidate.current();
-			}
+			drawRef.current?.();
 		});
 
 		const { w, h } = getCanvasPixelSize(canvas);
@@ -159,6 +153,13 @@ export function WebGLPixelationCanvas({
 			if (program) gl.deleteProgram(program);
 		};
 	}, [image, pixelSize, radius, quality]);
+
+	useMotionValueEvent(pixelSize, "change", () => {
+		invalidate.current();
+	});
+	useMotionValueEvent(radius, "change", () => {
+		invalidate.current();
+	});
 
 	return <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />;
 }

@@ -25,18 +25,35 @@ export const usePointerEvent = ({
 	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
 		const rect = event.currentTarget.getBoundingClientRect();
 
-		const width = rect.width + offsetWidth;
-		const height = rect.height + offsetHeight;
-		const x = rect.x + offsetX + rect.width / 2 + 16;
-		const y = rect.y + offsetY + rect.height / 2 + 16;
+		if (type === "underline") {
+			const width = rect.width + offsetWidth;
+			const height = 1 + offsetHeight;
+			const x = rect.x + offsetX + rect.width / 2 + 16;
+			const y = rect.y + offsetY + rect.height + 16;
 
-		usePointerStore.getState().setHover({
-			x,
-			y,
-			width,
-			height,
-			borderRadius,
-		});
+			usePointerStore.getState().setHover({
+				x,
+				y,
+				width,
+				height,
+				borderRadius,
+			});
+
+			return;
+		} else {
+			const width = rect.width + offsetWidth;
+			const height = rect.height + offsetHeight;
+			const x = rect.x + offsetX + rect.width / 2 + 16;
+			const y = rect.y + offsetY + rect.height / 2 + 16;
+
+			usePointerStore.getState().setHover({
+				x,
+				y,
+				width,
+				height,
+				borderRadius,
+			});
+		}
 	};
 	const onPointerLeave = (_event: React.PointerEvent<HTMLElement>) => {
 		usePointerStore.getState().hoverOut();
@@ -51,12 +68,14 @@ export const usePointerEvent = ({
 export const PointerEventHandler = ({
 	asChild,
 	children,
+	type = "bg",
 }: {
 	children?: React.ReactNode;
 	asChild?: boolean;
+	type?: "bg" | "underline";
 }) => {
 	const { onPointerEnter, onPointerLeave } = usePointerEvent({
-		type: "bg",
+		type,
 	});
 
 	const Comp = asChild ? Slot.Root : "div";
