@@ -21,7 +21,7 @@ export default function Home() {
 				<header className="col-span-full p-2">
 					<Button
 						variant="nav"
-						size={"text"}
+						size={"nav"}
 						className="col-start-1 justify-start"
 						asChild
 					>
