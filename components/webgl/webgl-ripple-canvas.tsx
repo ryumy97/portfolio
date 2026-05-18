@@ -1,5 +1,15 @@
 "use client";
 
+import {
+	CANVAS_STYLE,
+	createFullscreenTriangleBuffer,
+	createProgram,
+	drawFullscreenTriangle,
+	FULLSCREEN_VS,
+	getWebGLContext,
+	observeCanvasPixelSize,
+	setResolutionUniform,
+} from "@/lib/webgl";
 import { useEffect, useRef } from "react";
 
 export type WebGLRippleCanvasProps = {
@@ -11,25 +21,16 @@ export type WebGLRippleCanvasProps = {
 const MAX_RIPPLES = 24;
 const POINTER_THROTTLE_MS = 10;
 
-const VS = `
-attribute vec2 a_pos;
-varying vec2 v_uv;
-void main() {
-  v_uv = 0.5 * (a_pos + 1.0);
-  gl_Position = vec4(a_pos, 0.0, 1.0);
-}
-`;
-
 const FS = `
 precision mediump float;
-varying vec2 v_uv;
+varying vec2 vUv;
 uniform vec2 u_resolution;
 uniform float u_time;
 uniform vec4 u_ripples[${MAX_RIPPLES}];
 uniform vec2 u_rippleVel[${MAX_RIPPLES}];
 
 void main() {
-  vec2 uv = v_uv;
+  vec2 uv = vUv;
   vec2 normalizedPixelSize = 50.0 / u_resolution;
   vec2 aspect = vec2(u_resolution.x / u_resolution.y, 1.0);
 
@@ -60,53 +61,16 @@ void main() {
   float alpha = clamp(abs(wave), 0.0, 1.0);
   float u_radius = 0.72;
 
-  // cell	
   vec2 cellUv = fract(uv / normalizedPixelSize);
   float dist = length(cellUv - 0.5);
 
-  // shape - gradient effecting cell 
   float circle = 1.0 - smoothstep((u_radius - 0.01) * alpha, (u_radius + 0.01) * alpha, dist);
 
-
-  // color
   vec3 color = vec3(0.969, 0.365, 0.365);
 
   gl_FragColor = vec4(color, circle);
 }
 `;
-
-function compile(
-	gl: WebGLRenderingContext,
-	type: number,
-	source: string,
-): WebGLShader | null {
-	const shader = gl.createShader(type);
-	if (!shader) return null;
-	gl.shaderSource(shader, source);
-	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		gl.deleteShader(shader);
-		return null;
-	}
-	return shader;
-}
-
-function linkProgram(
-	gl: WebGLRenderingContext,
-	vs: WebGLShader,
-	fs: WebGLShader,
-): WebGLProgram | null {
-	const program = gl.createProgram();
-	if (!program) return null;
-	gl.attachShader(program, vs);
-	gl.attachShader(program, fs);
-	gl.linkProgram(program);
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		gl.deleteProgram(program);
-		return null;
-	}
-	return program;
-}
 
 type Ripple = {
 	x: number;
@@ -130,23 +94,12 @@ export function WebGLRippleCanvas({
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 
-		const gl = canvas.getContext("webgl", {
-			alpha: true,
-			premultipliedAlpha: false,
-			antialias: false,
-		});
+		const gl = getWebGLContext(canvas);
 		if (!gl) return;
 
-		const vs = compile(gl, gl.VERTEX_SHADER, VS);
-		const fs = compile(gl, gl.FRAGMENT_SHADER, FS);
-		if (!vs || !fs) return;
-
-		const program = linkProgram(gl, vs, fs);
-		gl.deleteShader(vs);
-		gl.deleteShader(fs);
+		const program = createProgram(gl, FULLSCREEN_VS, FS);
 		if (!program) return;
 
-		const aPos = gl.getAttribLocation(program, "a_pos");
 		const uResolution = gl.getUniformLocation(program, "u_resolution");
 		const uTimeLoc = gl.getUniformLocation(program, "u_time");
 		const uRippleLocs: WebGLUniformLocation[] = [];
@@ -158,20 +111,12 @@ export function WebGLRippleCanvas({
 			if (velLoc) uRippleVelLocs.push(velLoc);
 		}
 
-		const buf = gl.createBuffer();
+		const buf = createFullscreenTriangleBuffer(gl);
 		if (!buf) {
 			gl.deleteProgram(program);
 			return;
 		}
 
-		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array([-1, -1, 3, -1, -1, 3]),
-			gl.STATIC_DRAW,
-		);
-
-		const applyProgram = gl.useProgram.bind(gl);
 		startTimeRef.current = performance.now() / 1000;
 
 		gl.enable(gl.BLEND);
@@ -182,15 +127,9 @@ export function WebGLRippleCanvas({
 			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 			gl.clearColor(0, 0, 0, 0);
 			gl.clear(gl.COLOR_BUFFER_BIT);
-			applyProgram(program);
-
-			if (uResolution) {
-				gl.uniform2f(
-					uResolution,
-					gl.drawingBufferWidth,
-					gl.drawingBufferHeight,
-				);
-			}
+			// biome-ignore lint/correctness/useHookAtTopLevel: not a hook
+			gl.useProgram(program);
+			setResolutionUniform(gl, uResolution);
 			if (uTimeLoc) gl.uniform1f(uTimeLoc, now);
 
 			const ripples = ripplesRef.current;
@@ -198,7 +137,7 @@ export function WebGLRippleCanvas({
 				const loc = uRippleLocs[i];
 				const velLoc = uRippleVelLocs[i];
 				if (i < ripples.length) {
-					if (loc)
+					if (loc) {
 						gl.uniform4f(
 							loc,
 							ripples[i].x,
@@ -206,6 +145,7 @@ export function WebGLRippleCanvas({
 							ripples[i].birth,
 							ripples[i].velocity,
 						);
+					}
 					if (velLoc) gl.uniform2f(velLoc, ripples[i].vx, ripples[i].vy);
 				} else {
 					if (loc) gl.uniform4f(loc, 0, 0, -1, 0);
@@ -213,25 +153,12 @@ export function WebGLRippleCanvas({
 				}
 			}
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-			gl.enableVertexAttribArray(aPos);
-			gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-			gl.drawArrays(gl.TRIANGLES, 0, 3);
+			drawFullscreenTriangle(gl, program, buf);
 		};
 
 		const loop = () => {
 			draw();
 			rafRef.current = requestAnimationFrame(loop);
-		};
-
-		const resize = () => {
-			const dpr = Math.min(window.devicePixelRatio ?? 1, 2);
-			const w = Math.floor(canvas.clientWidth * dpr);
-			const h = Math.floor(canvas.clientHeight * dpr);
-			if (w > 0 && h > 0) {
-				canvas.width = w;
-				canvas.height = h;
-			}
 		};
 
 		let lastPointerTime = 0;
@@ -269,13 +196,12 @@ export function WebGLRippleCanvas({
 		window.addEventListener("pointermove", handlePointer);
 		window.addEventListener("pointerdown", handlePointer);
 
-		const ro = new ResizeObserver(resize);
-		ro.observe(canvas);
-		resize();
+		const disconnectResize = observeCanvasPixelSize(canvas, () => {});
+
 		loop();
 
 		return () => {
-			ro.disconnect();
+			disconnectResize();
 			cancelAnimationFrame(rafRef.current);
 			window.removeEventListener("pointermove", handlePointer);
 			window.removeEventListener("pointerdown", handlePointer);
@@ -284,11 +210,5 @@ export function WebGLRippleCanvas({
 		};
 	}, [maxRipples]);
 
-	return (
-		<canvas
-			ref={canvasRef}
-			className={className}
-			style={{ display: "block", width: "100%", height: "100%" }}
-		/>
-	);
+	return <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />;
 }
