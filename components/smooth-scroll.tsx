@@ -2,7 +2,7 @@
 
 import { useIntroStore } from "@/stores/intro";
 import type { ScrollCallback } from "lenis";
-import { Lenis as LenisComponent, LenisRef, useLenis } from "lenis/react";
+import { Lenis as LenisComponent, type LenisRef, useLenis } from "lenis/react";
 import { cancelFrame, frame } from "motion";
 import { useEffect, useRef } from "react";
 
@@ -69,5 +69,17 @@ const SmoothScroll = ({ horizontal = false, onScroll, children }: Props) => {
 		</LenisComponent>
 	);
 };
+
+export function useScrollEvent(callback: ScrollCallback) {
+	const lenis = useLenis();
+
+	useEffect(() => {
+		lenis?.on("scroll", callback);
+
+		return () => {
+			lenis?.off("scroll", callback);
+		};
+	}, [lenis, callback]);
+}
 
 export default SmoothScroll;

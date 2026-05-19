@@ -1,14 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { SubGrid } from "./ui/grid";
 
-import { useLenis } from "lenis/react";
-import {
-	animate,
-	cubicBezier,
-	motion,
-	transform,
-	useMotionValue,
-} from "motion/react";
+import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
 
 import eye2Image from "@/public/about/eye2.png";
 import handImage from "@/public/about/hand.png";
@@ -16,10 +9,10 @@ import roomImage from "@/public/about/room.png";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import { PointerEventHandler } from "./pointer";
+import { useScrollEvent } from "./smooth-scroll";
 import { WebGLPixelationCanvas } from "./webgl/webgl-pixelation-canvas";
 
 const About = () => {
-	const lenis = useLenis();
 	const ref = useRef<HTMLDivElement>(null);
 
 	const y1 = useMotionValue("-10%");
@@ -34,75 +27,58 @@ const About = () => {
 	const pixelSize3 = useMotionValue(64);
 	const radius3 = useMotionValue(1);
 
-	useEffect(() => {
-		const handleScroll = () => {
-			const rect = ref.current?.getBoundingClientRect();
+	useScrollEvent(() => {
+		const rect = ref.current?.getBoundingClientRect();
 
-			if (!rect) return;
+		if (!rect) return;
 
-			const progressValue = Math.min(
-				1,
-				Math.max(
-					0,
-					(window.innerHeight - rect.top) / (window.innerHeight + rect.height),
-				),
-			);
+		const progressValue = Math.min(
+			1,
+			Math.max(
+				0,
+				(window.innerHeight - rect.top) / (window.innerHeight + rect.height),
+			),
+		);
 
-			const y1Value = transform(progressValue, [0, 1], [-10, 10], {
+		const y1Value = transform(progressValue, [0, 1], [-10, 10], {
+			clamp: true,
+			ease: cubicBezier(0.3, 0, 0, 1),
+		});
+		y1.set(`${y1Value}%`);
+
+		const y2Value = transform(progressValue, [0, 1], [-10, 10], {
+			clamp: true,
+			ease: cubicBezier(0.3, 0, 0, 1),
+		});
+		y2.set(`${y2Value}%`);
+
+		const y3Value = transform(progressValue, [0, 1], [-10, 10], {
+			clamp: true,
+			ease: cubicBezier(0.3, 0, 0, 1),
+		});
+		y3.set(`${y3Value}%`);
+
+		pixelSize1.set(
+			transform(progressValue, [0, 0.8], [64, 8], {
 				clamp: true,
 				ease: cubicBezier(0.3, 0, 0, 1),
-			});
-			y1.set(`${y1Value}%`);
+			}),
+		);
 
-			const y2Value = transform(progressValue, [0, 1], [-10, 10], {
+		pixelSize2.set(
+			transform(progressValue, [0.1, 0.9], [64, 8], {
 				clamp: true,
 				ease: cubicBezier(0.3, 0, 0, 1),
-			});
-			y2.set(`${y2Value}%`);
+			}),
+		);
 
-			const y3Value = transform(progressValue, [0, 1], [-10, 10], {
+		pixelSize3.set(
+			transform(progressValue, [0.2, 1], [64, 8], {
 				clamp: true,
 				ease: cubicBezier(0.3, 0, 0, 1),
-			});
-			y3.set(`${y3Value}%`);
-
-			pixelSize1.set(
-				transform(progressValue, [0, 0.8], [64, 8], {
-					clamp: true,
-					ease: cubicBezier(0.3, 0, 0, 1),
-				}),
-			);
-
-			pixelSize2.set(
-				transform(progressValue, [0.1, 0.9], [64, 8], {
-					clamp: true,
-					ease: cubicBezier(0.3, 0, 0, 1),
-				}),
-			);
-
-			pixelSize3.set(
-				transform(progressValue, [0.2, 1], [64, 8], {
-					clamp: true,
-					ease: cubicBezier(0.3, 0, 0, 1),
-				}),
-			);
-		};
-		handleScroll();
-
-		lenis?.on("scroll", handleScroll);
-
-		return () => {
-			lenis?.off("scroll", handleScroll);
-		};
-	}, [
-		lenis,
-		y1.set,
-		y2.set,
-		y3.set,
-		pixelSize1.set,
-		pixelSize2.set,
-		pixelSize3.set,
-	]);
+			}),
+		);
+	});
 
 	return (
 		<SubGrid className="border-t pt-[10vw] border-primary relative">
