@@ -33,7 +33,6 @@ export default function Home() {
 				<div className="col-start-4 col-end-8 flex flex-col items-center justify-center">
 					<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group bg-white">
 						Pixelation
-						<div className="absolute bottom-[8%] left-0 bg-foreground w-0 group-hover:w-full transition-all duration-300 h-1" />
 					</h1>
 					<div className="bg-white w-full h-20 flex flex-col items-center justify-center gap-4 p-4">
 						<Slider

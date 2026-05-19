@@ -25,4 +25,5 @@ export {
   loadOptimizedImages,
   uploadTextureFromImage,
 } from "./texture";
+export { snapPixelCellSize } from "./snap-pixel-cell";
 export { setResolutionUniform } from "./uniforms";

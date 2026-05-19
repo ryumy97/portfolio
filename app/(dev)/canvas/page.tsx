@@ -9,8 +9,8 @@ export default function Home() {
 	return (
 		<div className="relative w-full h-full">
 			<SmoothScroll horizontal>
-				<Grid>
-					<div className="col-span-full my-24">
+				<div className="flex items-center justify-start w-fit h-screen gap-20">
+					<div className="m-24">
 						<Link
 							href="/canvas/ripple"
 							className="col-start-4 col-end-8 flex items-center justify-center"
@@ -21,7 +21,7 @@ export default function Home() {
 							</h1>
 						</Link>
 					</div>
-					<div className="col-span-full my-24">
+					<div className="m-24">
 						<Link
 							href="/canvas/neighbor"
 							className="col-start-4 col-end-8 flex items-center justify-center"
@@ -32,7 +32,7 @@ export default function Home() {
 							</h1>
 						</Link>
 					</div>
-					<div className="col-span-full my-24">
+					<div className="m-24">
 						<Link
 							href="/canvas/pixelation"
 							className="col-start-4 col-end-8 flex items-center justify-center"
@@ -43,7 +43,18 @@ export default function Home() {
 							</h1>
 						</Link>
 					</div>
-				</Grid>
+					<div className="m-24">
+						<Link
+							href="/canvas/stagged"
+							className="col-start-4 col-end-8 flex items-center justify-center"
+						>
+							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
+								Stagged
+								<div className="absolute bottom-[8%] left-0 bg-foreground w-0 group-hover:w-full transition-all duration-300 h-1" />
+							</h1>
+						</Link>
+					</div>
+				</div>
 			</SmoothScroll>
 			<Grid className="absolute top-0 left-0" asChild>
 				<header className="col-span-full p-2">

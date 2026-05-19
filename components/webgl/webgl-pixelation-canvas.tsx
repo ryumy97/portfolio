@@ -8,16 +8,17 @@ import {
 	drawFullscreenTriangle,
 	FULLSCREEN_VS,
 	getCanvasPixelSize,
-	getWebGLContext,
 	getOptimizedImageSrc,
+	getWebGLContext,
 	loadImage,
 	observeCanvasPixelSize,
 	setResolutionUniform,
+	snapPixelCellSize,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
+import { useMotionValueEvent, type MotionValue } from "motion/react";
 import type { StaticImageData } from "next/image";
 import { useEffect, useRef } from "react";
-import { useMotionValueEvent, type MotionValue } from "motion/react";
 
 export type WebGLPixelationCanvasProps = {
 	className?: string;
@@ -31,25 +32,38 @@ export type WebGLPixelationCanvasProps = {
 	quality?: number;
 };
 
-const DEFAULT_PIXEL_SIZE = 20;
-const DEFAULT_RADIUS = 0.5;
-
 const FS = `
 precision mediump float;
 varying vec2 vUv;
 uniform vec2 uResolution;
-uniform float uPixelSize;
+uniform vec2 uPixelSize;
 uniform float uRadius;
 uniform sampler2D uTexture;
+
+vec2 hexCellCenter(vec2 cellIndex) {
+  return vec2(
+    cellIndex.x + 0.5,
+    cellIndex.y + 0.5 + 0.5 * mod(cellIndex.x, 2.0)
+  );
+}
 
 void main() {
   vec2 uv = vUv;
   vec2 normalizedPixelSize = uPixelSize / uResolution;
-  vec2 uvPixel = normalizedPixelSize * floor(uv / normalizedPixelSize);
+  float col = floor(uv.x / normalizedPixelSize.x);
+
+  // Odd columns use a grid shifted down by half a cell.
+  vec2 gridUv = uv;
+  if (mod(col, 2.0) >= 0.5) {
+    gridUv.y -= 0.5 * normalizedPixelSize.y;
+  }
+
+  vec2 cellIndex = floor(gridUv / normalizedPixelSize);
+  vec2 uvPixel = normalizedPixelSize * cellIndex;
 
   vec4 color = texture2D(uTexture, uvPixel);
 
-  vec2 cellUv = fract(uv / normalizedPixelSize);
+  vec2 cellUv = fract(gridUv / normalizedPixelSize);
   float dist = length(cellUv - 0.5);
 
   float circle = smoothstep(uRadius - 0.01, uRadius + 0.01, dist);
@@ -68,7 +82,7 @@ export function WebGLPixelationCanvas({
 	image,
 	pixelSize,
 	radius,
-	quality = 80,
+	quality = 75,
 }: WebGLPixelationCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const drawRef = useRef<(() => void) | null>(null);
@@ -125,7 +139,16 @@ export function WebGLPixelationCanvas({
 			// biome-ignore lint/correctness/useHookAtTopLevel: not a hook
 			gl.useProgram(program);
 			setResolutionUniform(gl, uResolution);
-			if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, pixelSize.get());
+			if (uPixelSizeLoc) {
+				const target = pixelSize.get();
+				const w = gl.drawingBufferWidth;
+				const h = gl.drawingBufferHeight;
+				gl.uniform2f(
+					uPixelSizeLoc,
+					snapPixelCellSize(w, target),
+					snapPixelCellSize(h, target),
+				);
+			}
 			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, radius.get());
 
 			gl.activeTexture(gl.TEXTURE0);
