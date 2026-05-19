@@ -32,27 +32,28 @@ const About = () => {
 
 		if (!rect) return;
 
-		const progressValue = Math.min(
-			1,
-			Math.max(
-				0,
-				(window.innerHeight - rect.top) / (window.innerHeight + rect.height),
-			),
+		const progressValue = transform(
+			window.innerHeight - rect.top,
+			[0, rect.height + window.innerHeight],
+			[0, 1],
+			{
+				clamp: true,
+			},
 		);
 
-		const y1Value = transform(progressValue, [0, 1], [-10, 10], {
+		const y1Value = transform(progressValue, [0, 1], [-20, 20], {
 			clamp: true,
 			ease: cubicBezier(0.3, 0, 0, 1),
 		});
 		y1.set(`${y1Value}%`);
 
-		const y2Value = transform(progressValue, [0, 1], [-10, 10], {
+		const y2Value = transform(progressValue, [0, 1], [-20, 20], {
 			clamp: true,
 			ease: cubicBezier(0.3, 0, 0, 1),
 		});
 		y2.set(`${y2Value}%`);
 
-		const y3Value = transform(progressValue, [0, 1], [-10, 10], {
+		const y3Value = transform(progressValue, [0, 1], [-20, 20], {
 			clamp: true,
 			ease: cubicBezier(0.3, 0, 0, 1),
 		});
@@ -82,13 +83,13 @@ const About = () => {
 
 	return (
 		<SubGrid className="border-t pt-[10vw] border-primary relative">
-			<h1 className="text-[min(max(10vw,18px),32px)] font-heading font-bold leading-[0.8em] tracking-[-0.03em]">
+			<h1 className="text-[min(max(10vw,18px),32px)] font-heading font-bold leading-[0.8em] tracking-[-0.03em] col-start-1">
 				In Ha Ryu
 			</h1>
 			<p className="text-[min(max(10vw,18px),32px)] row-start-2 col-start-2">
-				I am ...
+				I think, therefore I am.
 			</p>
-			<div className="col-start-9 row-start-1 flex items-center justify-start">
+			<div className="col-start-6 row-start-3 flex items-center justify-start">
 				<PointerEventHandler asChild type="underline">
 					<Link
 						href="/about"
@@ -102,7 +103,7 @@ const About = () => {
 					</Link>
 				</PointerEventHandler>
 			</div>
-			<SubGrid className="col-span-full bg-primary py-12 relative" ref={ref}>
+			<SubGrid className="col-span-full py-12 relative" ref={ref}>
 				<motion.div
 					className="overflow-hidden col-start-3 relative"
 					style={{

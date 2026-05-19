@@ -7,6 +7,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import Lenis from "lenis";
 import { useLenis } from "lenis/react";
 import {
+	animate,
 	delay,
 	motion,
 	useAnimationFrame,
@@ -19,6 +20,10 @@ import * as THREE from "three";
 import { useScrollEvent } from "./smooth-scroll";
 import Rodin from "./three/rodin";
 import { SubGrid } from "./ui/grid";
+import { Stagger } from "@/components/three/postprocessing/stagger";
+import { EffectComposer, Pixelation } from "@react-three/postprocessing";
+import { StaggerEffect } from "./three/postprocessing/stagger-effect";
+import { PixelationEffect } from "postprocessing";
 
 const START = {
 	position: [-0.57, 1.8, 1],
@@ -34,6 +39,9 @@ const RodinScene = () => {
 	const state = useIntroStore((store) => store.state);
 	const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
 	const meshRef = useRef<THREE.Mesh | null>(null);
+
+	const staggerRef = useRef<StaggerEffect | null>(null);
+	const pixelationRef = useRef<PixelationEffect | null>(null);
 
 	const three = useThree();
 
@@ -61,6 +69,11 @@ const RodinScene = () => {
 		stiffness: 100,
 		damping: 50,
 	});
+
+	const [isPixelation, setIsPixelation] = useState(true);
+	const pixelSize = useMotionValue(24);
+	const maskStagger = useMotionValue(0.1);
+	const granularity = useMotionValue(12);
 
 	useMotionValueEvent(positionX, "change", (value) => {
 		three.camera.position.x = value;
@@ -122,18 +135,52 @@ const RodinScene = () => {
 		}
 	}, [state, positionX, positionY, positionZ, rotationX, rotationY, rotationZ]);
 
+	useMotionValueEvent(pixelSize, "change", (value) => {
+		staggerRef.current?.setPixelSize(value);
+		three.invalidate();
+	});
+	useMotionValueEvent(maskStagger, "change", (value) => {
+		staggerRef.current?.setMaskStagger(value);
+		three.invalidate();
+	});
+	useMotionValueEvent(granularity, "change", (value) => {
+		pixelationRef.current?.setGranularity(value);
+		three.invalidate();
+	});
+
 	return (
 		<>
-			<Rodin ref={meshRef} />
+			<Rodin
+				ref={meshRef}
+				onClick={() => {
+					console.log("is clicked");
+
+					if (isPixelation) {
+						setIsPixelation(false);
+						animate(pixelSize, 24, { duration: 0.5, ease: "easeInOut" });
+						animate(maskStagger, 0, { duration: 0.5, ease: "easeInOut" });
+						animate(granularity, 6, { duration: 0.5, ease: "easeInOut" });
+					} else {
+						setIsPixelation(true);
+						animate(pixelSize, 24, { duration: 0.5, ease: "easeInOut" });
+						animate(maskStagger, 0.1, { duration: 0.5, ease: "easeInOut" });
+						animate(granularity, 24, { duration: 0.5, ease: "easeInOut" });
+					}
+				}}
+			/>
 			<ambientLight intensity={0.1} />
 			<directionalLight position={[1, 1, 1]} intensity={2} />
 			<PerspectiveCamera
 				ref={cameraRef}
 				fov={28.5}
-				position={TRANSITIONING.position as [number, number, number]}
-				rotation={TRANSITIONING.rotation as [number, number, number]}
+				position={START.position as [number, number, number]}
+				rotation={START.rotation as [number, number, number]}
 				makeDefault
 			/>
+			<EffectComposer>
+				<Stagger pixelSize={24} maskStagger={0.1} ref={staggerRef} />
+				<Pixelation granularity={12} ref={pixelationRef} />
+			</EffectComposer>
 		</>
 	);
 };
@@ -198,7 +245,7 @@ const ScrollingPhrase = () => {
 	return (
 		<motion.div
 			ref={containerRef}
-			className="col-start-2 col-end-8 h-full overflow-hidden"
+			className="col-start-2 col-end-8 h-full overflow-hidden pointer-events-none"
 			initial={{ y: "100%" }}
 			animate={{ y: state !== "start" ? 0 : "100%" }}
 			transition={{
@@ -237,11 +284,17 @@ const ScrollingPhrase = () => {
 };
 
 const Hero = () => {
+	const ref = useRef<HTMLDivElement>(null);
+
 	return (
-		<SubGrid className="relative aspect-video overflow-hidden">
+		<SubGrid className="relative aspect-video overflow-hidden" ref={ref}>
 			<ScrollingPhrase />
 			<div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">
-				<Canvas frameloop="demand" style={{ pointerEvents: "none" }}>
+				<Canvas
+					eventSource={ref.current ?? undefined}
+					frameloop="demand"
+					style={{ pointerEvents: "none" }}
+				>
 					<RodinScene />
 				</Canvas>
 			</div>

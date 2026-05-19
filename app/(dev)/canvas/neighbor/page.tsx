@@ -33,7 +33,6 @@ export default function Home() {
 					<div className="bg-white p-4 flex flex-col items-center justify-center relative">
 						<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
 							Neighbor
-							<div className="absolute bottom-[8%] left-0 bg-foreground w-0 group-hover:w-full transition-all duration-300 h-1" />
 						</h1>
 						<WebGLNeighborCanvas
 							className="relative w-full aspect-video border-8 border-white"
