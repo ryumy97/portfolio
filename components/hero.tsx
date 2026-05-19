@@ -1,8 +1,10 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
 import { PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
+import Lenis from "lenis";
 import { useLenis } from "lenis/react";
 import {
 	delay,
@@ -14,9 +16,9 @@ import {
 } from "motion/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useScrollEvent } from "./smooth-scroll";
 import Rodin from "./three/rodin";
 import { SubGrid } from "./ui/grid";
-import { cn } from "@/lib/utils";
 
 const START = {
 	position: [-0.57, 1.8, 1],
@@ -85,24 +87,22 @@ const RodinScene = () => {
 		three.invalidate();
 	});
 
-	const lenis = useLenis();
+	useScrollEvent((event: Lenis) => {
+		if (!meshRef.current) return;
+		let progress = event.actualScroll / window.innerHeight;
 
-	useEffect(() => {
-		lenis?.on("scroll", (event) => {
-			if (!meshRef.current) return;
+		if (progress > 1) {
+			progress = 1;
+		}
 
-			let progress = event.actualScroll / window.innerHeight;
-			if (progress > 1) {
-				progress = 1;
-			}
-			if (progress < 0) {
-				progress = 0;
-			}
-			meshRef.current.position.y = progress;
-			meshRef.current.rotation.y = progress;
-			three.invalidate();
-		});
-	}, [lenis, three.invalidate]);
+		if (progress < 0) {
+			progress = 0;
+		}
+
+		meshRef.current.position.y = progress;
+		meshRef.current.rotation.y = progress;
+		three.invalidate();
+	});
 
 	useEffect(() => {
 		if (state === "start") {

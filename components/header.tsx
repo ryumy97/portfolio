@@ -68,6 +68,18 @@ const Header = () => {
 			<header className="fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10">
 				<Logo />
 
+				<div className="col-start-6 flex justify-end items-center">
+					<PointerEventHandler asChild>
+						<Button
+							variant={pathname === "/about" ? "navActive" : "nav"}
+							size={"nav"}
+							asChild
+						>
+							<Link href="/about">About</Link>
+						</Button>
+					</PointerEventHandler>
+				</div>
+
 				<div className="col-start-7 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button

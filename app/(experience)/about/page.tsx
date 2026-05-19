@@ -1,5 +1,6 @@
 "use client";
 
+import Header from "@/components/header";
 // About page
 // CV
 // In Ha Ryu.
@@ -19,6 +20,7 @@ export default function Page2() {
 		<PageTunnelIn>
 			<WebGLRippleCanvas className="fixed inset-0 h-full w-full" />
 			<SmoothScroll horizontal>
+				<Header />
 				<main className="flex min-h-screen w-max items-center gap-4 px-8">
 					<div className="h-96 w-lg shrink-0 bg-red-500"></div>
 					<div className="h-96 w-lg shrink-0 bg-red-500"></div>
