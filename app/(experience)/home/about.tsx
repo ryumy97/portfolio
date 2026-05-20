@@ -1,16 +1,16 @@
-import { useRef } from "react";
-import { SubGrid } from "./ui/grid";
-
-import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
+"use client";
 
 import eye2Image from "@/public/about/eye2.png";
 import handImage from "@/public/about/hand.png";
 import roomImage from "@/public/about/room.png";
 import { ArrowRightIcon } from "lucide-react";
+import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
 import Link from "next/link";
-import { PointerEventHandler } from "./pointer";
-import { useScrollEvent } from "./smooth-scroll";
-import { WebGLPixelationCanvas } from "./webgl/webgl-pixelation-canvas";
+import { useRef } from "react";
+import { PointerEventHandler } from "../../../components/pointer";
+import { useScrollEvent } from "../../../components/smooth-scroll";
+import { SubGrid } from "../../../components/ui/grid";
+import { WebGLPixelationCanvas } from "../../../components/webgl/webgl-pixelation-canvas";
 
 const About = () => {
 	const ref = useRef<HTMLDivElement>(null);
@@ -103,7 +103,7 @@ const About = () => {
 					</Link>
 				</PointerEventHandler>
 			</div>
-			<SubGrid className="col-span-full py-12 relative" ref={ref}>
+			<SubGrid className="col-span-full py-[5vw] relative" ref={ref}>
 				<motion.div
 					className="overflow-hidden col-start-3 relative"
 					style={{

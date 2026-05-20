@@ -18,7 +18,7 @@ export default function Page2() {
 
 	return (
 		<PageTunnelIn>
-			<WebGLRippleCanvas className="fixed inset-0 h-full w-full" />
+			{/* <WebGLRippleCanvas className="fixed inset-0 h-full w-full" /> */}
 			<SmoothScroll horizontal>
 				<Header />
 				<main className="flex min-h-screen w-max items-center gap-4 px-8">
@@ -35,7 +35,6 @@ export default function Page2() {
 					<div className="h-96 w-lg shrink-0 bg-red-500"></div>
 					<Link href="/">Home</Link>
 				</main>
-				<Canvas className="fixed inset-0"></Canvas>
 			</SmoothScroll>
 		</PageTunnelIn>
 	);

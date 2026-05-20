@@ -68,7 +68,7 @@ const Header = () => {
 			<header className="fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10">
 				<Logo />
 
-				<div className="col-start-6 flex justify-end items-center">
+				<div className="col-start-7 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button
 							variant={pathname === "/about" ? "navActive" : "nav"}
@@ -80,7 +80,7 @@ const Header = () => {
 					</PointerEventHandler>
 				</div>
 
-				<div className="col-start-7 flex justify-end items-center">
+				<div className="col-start-8 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button
 							variant={pathname === "/projects" ? "navActive" : "nav"}
@@ -92,7 +92,7 @@ const Header = () => {
 					</PointerEventHandler>
 				</div>
 
-				<div className="col-start-8 flex justify-end items-center">
+				<div className="col-start-9 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button
 							variant={pathname === "/gallery" ? "navActive" : "nav"}
@@ -103,7 +103,7 @@ const Header = () => {
 						</Button>
 					</PointerEventHandler>
 				</div>
-				<div className="col-start-9 flex justify-end items-center">
+				<div className="col-start-10 flex justify-end items-center">
 					<PointerEventHandler asChild>
 						<Button
 							variant={pathname === "/gallery" ? "navActive" : "nav"}
@@ -111,18 +111,6 @@ const Header = () => {
 							asChild
 						>
 							<Link href="/lab">Lab</Link>
-						</Button>
-					</PointerEventHandler>
-				</div>
-
-				<div className="col-start-10 flex justify-end items-center">
-					<PointerEventHandler asChild>
-						<Button
-							variant={pathname === "/blogs" ? "navActive" : "nav"}
-							size={"nav"}
-							asChild
-						>
-							<Link href="/contacts">Contact</Link>
 						</Button>
 					</PointerEventHandler>
 				</div>
