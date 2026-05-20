@@ -1,13 +1,16 @@
 "use client";
 
+import { Stagger } from "@/components/three/postprocessing/stagger";
 import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
 import { PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
+import { EffectComposer, Pixelation } from "@react-three/postprocessing";
 import Lenis from "lenis";
 import { useLenis } from "lenis/react";
 import {
 	animate,
+	clamp,
 	delay,
 	motion,
 	useAnimationFrame,
@@ -15,15 +18,13 @@ import {
 	useMotionValueEvent,
 	useSpring,
 } from "motion/react";
+import { PixelationEffect } from "postprocessing";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useScrollEvent } from "./smooth-scroll";
-import Rodin from "./three/rodin";
-import { SubGrid } from "./ui/grid";
-import { Stagger } from "@/components/three/postprocessing/stagger";
-import { EffectComposer, Pixelation } from "@react-three/postprocessing";
-import { StaggerEffect } from "./three/postprocessing/stagger-effect";
-import { PixelationEffect } from "postprocessing";
+import { useScrollEvent } from "../../../components/smooth-scroll";
+import { StaggerEffect } from "../../../components/three/postprocessing/stagger-effect";
+import Rodin from "../../../components/three/rodin";
+import { SubGrid } from "../../../components/ui/grid";
 
 const START = {
 	position: [-0.57, 1.8, 1],
@@ -70,10 +71,10 @@ const RodinScene = () => {
 		damping: 50,
 	});
 
-	const [isPixelation, setIsPixelation] = useState(true);
 	const pixelSize = useMotionValue(24);
 	const maskStagger = useMotionValue(0.1);
 	const granularity = useMotionValue(12);
+	const prefScroll = useMotionValue(0);
 
 	useMotionValueEvent(positionX, "change", (value) => {
 		three.camera.position.x = value;
@@ -102,15 +103,13 @@ const RodinScene = () => {
 
 	useScrollEvent((event: Lenis) => {
 		if (!meshRef.current) return;
-		let progress = event.actualScroll / window.innerHeight;
+		const progress = clamp(0, 1, event.actualScroll / window.innerHeight);
 
-		if (progress > 1) {
-			progress = 1;
+		if (prefScroll.get() === progress) {
+			return;
 		}
 
-		if (progress < 0) {
-			progress = 0;
-		}
+		prefScroll.set(progress);
 
 		meshRef.current.position.y = progress;
 		meshRef.current.rotation.y = progress;
@@ -152,20 +151,33 @@ const RodinScene = () => {
 		<>
 			<Rodin
 				ref={meshRef}
-				onClick={() => {
-					console.log("is clicked");
-
-					if (isPixelation) {
-						setIsPixelation(false);
-						animate(pixelSize, 24, { duration: 0.5, ease: "easeInOut" });
-						animate(maskStagger, 0, { duration: 0.5, ease: "easeInOut" });
-						animate(granularity, 6, { duration: 0.5, ease: "easeInOut" });
-					} else {
-						setIsPixelation(true);
-						animate(pixelSize, 24, { duration: 0.5, ease: "easeInOut" });
-						animate(maskStagger, 0.1, { duration: 0.5, ease: "easeInOut" });
-						animate(granularity, 24, { duration: 0.5, ease: "easeInOut" });
-					}
+				onPointerEnter={() => {
+					animate(pixelSize, 24, {
+						duration: 0.5,
+						ease: "linear",
+					});
+					animate(maskStagger, 0, {
+						duration: 0.5,
+						ease: "linear",
+					});
+					animate(granularity, 6, {
+						duration: 0.5,
+						ease: "linear",
+					});
+				}}
+				onPointerLeave={() => {
+					animate(pixelSize, 24, {
+						duration: 0.5,
+						ease: "linear",
+					});
+					animate(maskStagger, 0.1, {
+						duration: 0.5,
+						ease: "linear",
+					});
+					animate(granularity, 12, {
+						duration: 0.5,
+						ease: "linear",
+					});
 				}}
 			/>
 			<ambientLight intensity={0.1} />
@@ -173,8 +185,8 @@ const RodinScene = () => {
 			<PerspectiveCamera
 				ref={cameraRef}
 				fov={28.5}
-				position={START.position as [number, number, number]}
-				rotation={START.rotation as [number, number, number]}
+				position={TRANSITIONING.position as [number, number, number]}
+				rotation={TRANSITIONING.rotation as [number, number, number]}
 				makeDefault
 			/>
 			<EffectComposer>
@@ -290,11 +302,7 @@ const Hero = () => {
 		<SubGrid className="relative aspect-video overflow-hidden" ref={ref}>
 			<ScrollingPhrase />
 			<div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">
-				<Canvas
-					eventSource={ref.current ?? undefined}
-					frameloop="demand"
-					style={{ pointerEvents: "none" }}
-				>
+				<Canvas eventSource={ref.current ?? undefined} frameloop="demand">
 					<RodinScene />
 				</Canvas>
 			</div>
