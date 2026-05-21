@@ -143,7 +143,9 @@ const RodinScene = () => {
 		three.invalidate();
 	});
 	useMotionValueEvent(granularity, "change", (value) => {
-		pixelationRef.current?.setGranularity(value);
+		if (!pixelationRef.current) return;
+
+		pixelationRef.current.granularity = value;
 		three.invalidate();
 	});
 

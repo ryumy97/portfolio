@@ -1,28 +1,89 @@
 "use client";
 
-import { MotionImage } from "@/components/motion-image";
-import { PointerEventHandler } from "@/components/pointer";
+import type Lenis from "lenis";
 import { ArrowRightIcon } from "lucide-react";
-import { motion, transform, useMotionValue } from "motion/react";
+import {
+	motion,
+	transform,
+	useMotionValue,
+	useMotionValueEvent,
+} from "motion/react";
+import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
+import { PointerEventHandler } from "@/components/pointer";
+import { WebGLGridRedshiftCanvas } from "@/components/webgl/webgl-grid-redshift-canvas";
 import { useScrollEvent } from "../../../components/smooth-scroll";
 import { Grid, SubGrid } from "../../../components/ui/grid";
-import Kiwi from "./assets/kiwi.png";
-import Typography from "./assets/typography.png";
-import Image from "next/image";
 import AimHigh from "./assets/aimhigh.png";
-import Reflct from "./assets/reflct.png";
-import LiveOcean from "./assets/liveocean.png";
 import Fola from "./assets/fola.png";
+import Kiwi from "./assets/kiwi.png";
+import LiveOcean from "./assets/liveocean.png";
+import Reflct from "./assets/reflct.png";
+import Typography from "./assets/typography.png";
+
+const MAX_SHIFT_PX = 48;
+const VELOCITY_SCALE = 0.1;
+
+type ProjectImage = {
+	src: StaticImageData;
+	alt: string;
+	className: string;
+};
+
+const PROJECT_IMAGES: ProjectImage[] = [
+	{ src: Kiwi, alt: "Kiwi", className: "col-start-2 row-start-3" },
+	{
+		src: Typography,
+		alt: "Typography",
+		className: "col-start-4 row-start-1",
+	},
+	{
+		src: AimHigh,
+		alt: "AimHigh",
+		className: "col-start-6 col-span-2 row-start-2",
+	},
+	{
+		src: Reflct,
+		alt: "Reflect",
+		className: "col-start-8 col-span-2 row-start-4",
+	},
+	{
+		src: LiveOcean,
+		alt: "LiveOcean",
+		className: "col-start-4 col-span-2 row-start-3",
+	},
+	{
+		src: Fola,
+		alt: "Fola",
+		className: "col-start-7 col-span-2 row-start-1",
+	},
+];
+
+function scrollShiftPx(lenis: Lenis) {
+	if (lenis.direction === 0) return 0;
+	return (
+		Math.min(Math.abs(lenis.velocity) * VELOCITY_SCALE, MAX_SHIFT_PX) *
+		lenis.direction
+	);
+}
 
 const About = () => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const gridRef = useRef<HTMLDivElement>(null);
+	const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
+	const invalidateCanvas = useRef<(() => void) | null>(null);
 
 	const x = useMotionValue("0%");
+	const shift = useMotionValue(24);
 
-	useScrollEvent(() => {
+	useMotionValueEvent(x, "change", () => {
+		invalidateCanvas.current?.();
+	});
+
+	useScrollEvent((lenis) => {
+		shift.set(scrollShiftPx(lenis));
+
 		const rect = containerRef.current?.getBoundingClientRect();
 
 		if (!rect) return;
@@ -72,7 +133,7 @@ const About = () => {
 				</PointerEventHandler>
 			</div>
 			<div
-				className="w-full col-span-full relative overflow-hidden -mx-2"
+				className="w-full col-span-full relative overflow-visible -mx-2"
 				ref={containerRef}
 			>
 				<Grid
@@ -81,35 +142,31 @@ const About = () => {
 				>
 					<motion.div
 						ref={gridRef}
+						className="relative"
 						style={{
 							x,
 						}}
 					>
-						<Image className="col-start-2 row-start-3" src={Kiwi} alt="Kiwi" />
-						<Image
-							className="col-start-4 row-start-1"
-							src={Typography}
-							alt="Typography"
-						/>
-						<Image
-							className="col-start-6 col-span-2 row-start-2"
-							src={AimHigh}
-							alt="AimHigh"
-						/>
-						<Image
-							className="col-start-8 col-span-2 row-start-4"
-							src={Reflct}
-							alt="Reflect"
-						/>
-						<Image
-							className="col-start-4 col-span-2 row-start-3"
-							src={LiveOcean}
-							alt="LiveOcean"
-						/>
-						<Image
-							className="col-start-7 col-span-2 row-start-1"
-							src={Fola}
-							alt="Fola"
+						{PROJECT_IMAGES.map(({ src, alt, className }, index) => (
+							<div
+								key={alt}
+								ref={(element) => {
+									cellRefs.current[index] = element;
+								}}
+								className={`relative w-full ${className}`}
+								style={{
+									aspectRatio: `${src.width} / ${src.height}`,
+								}}
+								// aria-hidden
+							/>
+						))}
+						<WebGLGridRedshiftCanvas
+							className="absolute inset-0 pointer-events-none"
+							images={PROJECT_IMAGES.map(({ src }) => src)}
+							cellRefs={cellRefs}
+							layoutRootRef={gridRef}
+							shift={shift}
+							invalidateRef={invalidateCanvas}
 						/>
 					</motion.div>
 				</Grid>
