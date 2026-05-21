@@ -1,8 +1,8 @@
 "use client";
 
-import eye2Image from "@/public/about/eye2.png";
-import handImage from "@/public/about/hand.png";
-import roomImage from "@/public/about/room.png";
+import eye2Image from "./assets/eye2.png";
+import handImage from "./assets/hand.png";
+import roomImage from "./assets/room.png";
 import { ArrowRightIcon } from "lucide-react";
 import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
 import Link from "next/link";
