@@ -5,6 +5,7 @@ import { ArrowRightIcon } from "lucide-react";
 import {
 	motion,
 	transform,
+	useAnimationFrame,
 	useMotionValue,
 	useMotionValueEvent,
 } from "motion/react";
@@ -12,18 +13,21 @@ import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
-import { WebGLGridRedshiftCanvas } from "@/components/webgl/webgl-grid-redshift-canvas";
+import { WebGLPixelShiftCanvas } from "@/components/webgl/webgl-pixel-shift-canvas";
 import { useScrollEvent } from "../../../components/smooth-scroll";
 import { Grid, SubGrid } from "../../../components/ui/grid";
-import AimHigh from "./assets/aimhigh.png";
-import Fola from "./assets/fola.png";
-import Kiwi from "./assets/kiwi.png";
-import LiveOcean from "./assets/liveocean.png";
-import Reflct from "./assets/reflct.png";
-import Typography from "./assets/typography.png";
+import AimHigh from "./assets/projects/aimhigh.png";
+import Fola from "./assets/projects/fola.png";
+import Kiwi from "./assets/projects/kiwi.png";
+import LiveOcean from "./assets/projects/liveocean.png";
+import Reflct from "./assets/projects/reflct.png";
+import Typography from "./assets/projects/typography.png";
+import Cinco from "./assets/projects/cinco.png";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
+import { SectionDescription } from "@/components/ui/typography";
 
 const MAX_SHIFT_PX = 48;
-const VELOCITY_SCALE = 0.1;
+const VELOCITY_SCALE = 0.03;
 
 type ProjectImage = {
 	src: StaticImageData;
@@ -32,31 +36,47 @@ type ProjectImage = {
 };
 
 const PROJECT_IMAGES: ProjectImage[] = [
-	{ src: Kiwi, alt: "Kiwi", className: "col-start-2 row-start-3" },
+	{
+		src: Kiwi,
+		alt: "Kiwi",
+		className:
+			"col-start-3 col-span-2 row-start-2 md:col-start-2 md:col-span-1 md:row-start-3",
+	},
 	{
 		src: Typography,
 		alt: "Typography",
-		className: "col-start-4 row-start-1",
+		className:
+			"col-start-2 col-span-2 row-start-1 md:col-start-5 md:col-span-1 md:row-start-1",
 	},
 	{
 		src: AimHigh,
 		alt: "AimHigh",
-		className: "col-start-6 col-span-2 row-start-2",
+		className:
+			"col-start-4 col-span-4 row-start-4 md:col-start-6 md:col-span-2 md:row-start-2",
 	},
 	{
 		src: Reflct,
 		alt: "Reflect",
-		className: "col-start-8 col-span-2 row-start-4",
+		className:
+			"col-start-6 col-span-4 row-start-3 md:col-start-8 md:col-span-2 md:row-start-4",
 	},
 	{
 		src: LiveOcean,
 		alt: "LiveOcean",
-		className: "col-start-4 col-span-2 row-start-3",
+		className:
+			"col-start-5 col-span-4 row-start-5 md:col-start-4 md:col-span-2 md:row-start-3",
 	},
 	{
 		src: Fola,
 		alt: "Fola",
-		className: "col-start-7 col-span-2 row-start-1",
+		className:
+			"col-start-5 col-span-4 row-start-2 md:col-start-7 md:col-span-2 md:row-start-1",
+	},
+	{
+		src: Cinco,
+		alt: "Cinco",
+		className:
+			"col-start-5 col-span-2 row-start-1 md:col-start-3 md:col-span-1 md:row-start-1",
 	},
 ];
 
@@ -77,12 +97,18 @@ const About = () => {
 	const x = useMotionValue("0%");
 	const shift = useMotionValue(24);
 
+	const isMD = useMediaQuery(SCREEN.md);
+
 	useMotionValueEvent(x, "change", () => {
 		invalidateCanvas.current?.();
 	});
 
 	useScrollEvent((lenis) => {
-		shift.set(scrollShiftPx(lenis));
+		if (isMD) {
+			shift.set(scrollShiftPx(lenis));
+		} else {
+			shift.set(0);
+		}
 
 		const rect = containerRef.current?.getBoundingClientRect();
 
@@ -115,29 +141,29 @@ const About = () => {
 
 	return (
 		<SubGrid className="pt-[5vw] border-primary relative">
-			<p className="row-start-1 col-start-7 text-[min(max(10vw,18px),32px)]">
+			<SectionDescription className="row-start-1 col-start-6 col-span-2 md:col-span-1 md:col-start-7">
 				I develop websites
-			</p>
+			</SectionDescription>
 			<div className="col-start-4 row-start-2 flex items-center justify-start mt-6">
 				<PointerEventHandler asChild type="underline">
 					<Link
 						href="/projects"
-						className="text-[min(max(8vw,16px),24px)] flex items-center justify-start gap-2"
+						className="text-[min(max(5vw,16px),24px)] flex items-center justify-start gap-2 max-md:underline"
 					>
 						Projects
 						<ArrowRightIcon
-							className="w-[min(max(8vw,16px),24px)]"
+							className="w-[min(max(5vw,16px),24px)]"
 							strokeWidth={1.5}
 						/>
 					</Link>
 				</PointerEventHandler>
 			</div>
 			<div
-				className="w-full col-span-full relative overflow-visible -mx-2"
+				className="w-full col-span-full relative overflow-hidden -mx-2"
 				ref={containerRef}
 			>
 				<Grid
-					className="relative h-full py-[5vw] w-[120%] max-w-none px-2"
+					className="relative h-full py-[5vw] w-[200%] md:w-[120%] max-w-none px-2"
 					asChild
 				>
 					<motion.div
@@ -160,7 +186,7 @@ const About = () => {
 								// aria-hidden
 							/>
 						))}
-						<WebGLGridRedshiftCanvas
+						<WebGLPixelShiftCanvas
 							className="absolute inset-0 pointer-events-none"
 							images={PROJECT_IMAGES.map(({ src }) => src)}
 							cellRefs={cellRefs}

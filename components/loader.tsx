@@ -2,6 +2,7 @@
 
 import "@/components/three/rodin";
 import { WebGLGradientCanvas } from "@/components/webgl/webgl-gradient-canvas";
+import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
 import { useProgress } from "@react-three/drei";
 import { animate } from "motion";
@@ -44,7 +45,14 @@ const Loader = () => {
 	if (state === "end") return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
+		<div
+			className={cn(
+				"fixed inset-0 z-50 flex items-center justify-center overflow-hidden",
+				{
+					"pointer-events-none": state !== "start",
+				},
+			)}
+		>
 			<WebGLGradientCanvas
 				className="absolute inset-0 h-full w-full"
 				progress={progressMotion}

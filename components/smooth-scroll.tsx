@@ -20,7 +20,7 @@ function SmoothScrollController({
 	const lenis = useLenis(onScroll, onScroll ? [onScroll] : []);
 
 	useEffect(() => {
-		if (state === "end") {
+		if (state !== "start") {
 			lenis?.start();
 		} else {
 			lenis?.stop();
