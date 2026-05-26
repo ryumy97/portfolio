@@ -7,15 +7,17 @@ import { motion, useSpring } from "motion/react";
 import { Slot } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
 
+type PointerEventType = "bg" | "underline" | "bullet";
+
 export const usePointerEvent = ({
 	type = "bg",
 	offsetX = 0,
 	offsetY = 0,
 	borderRadius = 9999,
-	offsetWidth = 16,
+	offsetWidth = 0,
 	offsetHeight = 0,
 }: {
-	type?: "bg" | "underline";
+	type?: PointerEventType;
 	offsetX?: number;
 	offsetY?: number;
 	borderRadius?: number;
@@ -40,8 +42,22 @@ export const usePointerEvent = ({
 			});
 
 			return;
+		} else if (type === "bullet") {
+			const width = 12 + offsetWidth;
+			const height = 12 + offsetHeight;
+
+			const x = rect.x + offsetX + 16;
+			const y = rect.y + offsetY + rect.height / 2 + 16;
+
+			usePointerStore.getState().setHover({
+				x,
+				y,
+				width,
+				height,
+				borderRadius,
+			});
 		} else {
-			const width = rect.width + offsetWidth;
+			const width = rect.width + offsetWidth + 16;
 			const height = rect.height + offsetHeight;
 			const x = rect.x + offsetX + rect.width / 2 + 16;
 			const y = rect.y + offsetY + rect.height / 2 + 16;
@@ -69,10 +85,11 @@ export const PointerEventHandler = ({
 	asChild,
 	children,
 	type = "bg",
+	...props
 }: {
 	children?: React.ReactNode;
 	asChild?: boolean;
-	type?: "bg" | "underline";
+	type?: PointerEventType;
 }) => {
 	const { onPointerEnter, onPointerLeave } = usePointerEvent({
 		type,
@@ -81,7 +98,11 @@ export const PointerEventHandler = ({
 	const Comp = asChild ? Slot.Root : "div";
 
 	return (
-		<Comp onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave}>
+		<Comp
+			onPointerEnter={onPointerEnter}
+			onPointerLeave={onPointerLeave}
+			{...props}
+		>
 			{children}
 		</Comp>
 	);
@@ -172,7 +193,7 @@ const Pointer = () => {
 				borderRadius,
 			}}
 			className={cn(
-				"pointer-events-none fixed -top-4 -left-4 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-full w-3 h-3 z-0",
+				"pointer-events-none fixed -top-4 -left-4 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-full w-3 h-3 z-0 max-md:hidden",
 			)}
 		></motion.div>
 	);

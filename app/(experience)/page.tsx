@@ -5,6 +5,9 @@ import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { Grid, SubGrid } from "@/components/ui/grid";
 import Projects from "./home/projects";
+import Gallery from "./home/gallery";
+import Lab from "./home/lab";
+import Footer from "./home/footer";
 
 export default function Home() {
 	return (
@@ -17,9 +20,11 @@ export default function Home() {
 							<Hero />
 							<About />
 							<Projects />
-							<div className="col-span-full h-screen w-full bg-red-500" />
+							<Gallery />
+							<Lab />
 						</main>
 					</SubGrid>
+					<Footer />
 				</Grid>
 			</SmoothScroll>
 		</PageTunnelIn>

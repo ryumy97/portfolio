@@ -7,8 +7,8 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "eslint",
-		"resize-public-pngs": "node scripts/resize-public-pngs.mjs",
-		"resize-public-pngs:dry-run": "node scripts/resize-public-pngs.mjs --dry-run",
+		"resize-pngs": "node scripts/resize-public-pngs.mjs",
+		"resize-pngs:dry-run": "node scripts/resize-public-pngs.mjs --dry-run",
 		"svg-to-png": "node scripts/svg-to-png.mjs"
 	},
 	"dependencies": {

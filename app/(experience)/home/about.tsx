@@ -1,8 +1,8 @@
 "use client";
 
-import eye2Image from "./assets/eye2.png";
-import handImage from "./assets/hand.png";
-import roomImage from "./assets/room.png";
+import eye2Image from "./assets/about/eye2.png";
+import handImage from "./assets/about/hand.png";
+import roomImage from "./assets/about/room.png";
 import { ArrowRightIcon } from "lucide-react";
 import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
 import Link from "next/link";
@@ -11,6 +11,7 @@ import { PointerEventHandler } from "../../../components/pointer";
 import { useScrollEvent } from "../../../components/smooth-scroll";
 import { SubGrid } from "../../../components/ui/grid";
 import { WebGLPixelationCanvas } from "../../../components/webgl/webgl-pixelation-canvas";
+import { SectionDescription, Title } from "@/components/ui/typography";
 
 const About = () => {
 	const ref = useRef<HTMLDivElement>(null);
@@ -83,21 +84,19 @@ const About = () => {
 
 	return (
 		<SubGrid className="border-t pt-[10vw] border-primary relative">
-			<h1 className="text-[min(max(10vw,18px),32px)] font-heading font-bold leading-[0.8em] tracking-[-0.03em] col-start-1">
-				In Ha Ryu
-			</h1>
-			<p className="text-[min(max(10vw,18px),32px)] row-start-2 col-start-2">
+			<Title className="col-start-1 col-span-4 md:col-span-2">In Ha Ryu</Title>
+			<SectionDescription className="row-start-2 col-start-2 mt-4 col-span-3 md:col-start-2 md:col-span-2">
 				I think, therefore I am.
-			</p>
+			</SectionDescription>
 			<div className="col-start-6 row-start-3 flex items-center justify-start">
 				<PointerEventHandler asChild type="underline">
 					<Link
 						href="/about"
-						className="text-[min(max(8vw,16px),24px)] flex items-center justify-start gap-2"
+						className="text-[min(max(5vw,16px),24px)] flex items-center justify-start gap-2 max-md:underline"
 					>
 						About
 						<ArrowRightIcon
-							className="w-[min(max(8vw,16px),24px)]"
+							className="w-[min(max(5vw,16px),24px)]"
 							strokeWidth={1.5}
 						/>
 					</Link>
@@ -105,13 +104,12 @@ const About = () => {
 			</div>
 			<SubGrid className="col-span-full py-[5vw] relative" ref={ref}>
 				<motion.div
-					className="overflow-hidden col-start-3 relative"
+					className="overflow-hidden col-start-2 col-span-4 md:col-span-1 md:col-start-3 relative"
 					style={{
 						aspectRatio: eye2Image.width / eye2Image.height,
 						y: y1,
 					}}
 				>
-					{/* <MotionImage src={eye2Image} alt="eye2" /> */}
 					<WebGLPixelationCanvas
 						className="absolute inset-0"
 						radius={radius1}
@@ -121,13 +119,12 @@ const About = () => {
 				</motion.div>
 
 				<motion.div
-					className="overflow-hidden col-start-4 col-span-2 row-start-3 relative"
+					className="overflow-hidden col-start-2 col-span-4 md:col-start-4 md:col-span-2 row-start-3 relative"
 					style={{
 						aspectRatio: handImage.width / handImage.height,
 						y: y2,
 					}}
 				>
-					{/* <MotionImage src={handImage} alt="hand" /> */}
 					<WebGLPixelationCanvas
 						className="absolute inset-0"
 						radius={radius2}
@@ -137,13 +134,12 @@ const About = () => {
 				</motion.div>
 
 				<motion.div
-					className="overflow-hidden col-start-8 col-span-2 row-start-2 relative"
+					className="overflow-hidden col-start-6 col-span-5 md:col-start-8 md:col-span-2 row-start-2 relative"
 					style={{
 						aspectRatio: roomImage.width / roomImage.height,
 						y: y3,
 					}}
 				>
-					{/* <MotionImage src={roomImage} alt="room" /> */}
 					<WebGLPixelationCanvas
 						className="absolute inset-0"
 						radius={radius3}

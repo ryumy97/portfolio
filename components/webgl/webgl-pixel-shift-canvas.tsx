@@ -21,13 +21,13 @@ import {
 	uploadTextureFromImage,
 } from "@/lib/webgl";
 
-export type WebGLGridRedshiftCanvasProps = {
+export type WebGLPixelShiftCanvasProps = {
 	className?: string;
 	images: StaticImageData[];
 	cellRefs: RefObject<(HTMLElement | null)[]>;
 	/** Observed for resize / parallax layout updates. */
 	layoutRootRef?: RefObject<HTMLElement | null>;
-	/** Scroll-driven shift in screen pixels (signed): horizontal shear by y + red fringe. */
+	/** Scroll-driven horizontal displacement in screen pixels (signed). */
 	shift: MotionValue<number>;
 	/** Call to remeasure cell layout (e.g. after parallax offset changes). */
 	invalidateRef?: RefObject<(() => void) | null>;
@@ -42,8 +42,6 @@ type TextureSlot = {
 	texture: WebGLTexture | null;
 };
 
-const CHROMA_PAD_PX = 8;
-
 const FS = `
 precision mediump float;
 varying vec2 vCellUv;
@@ -56,32 +54,20 @@ bool inBounds(vec2 uv) {
   return uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
 }
 
-vec4 sampleBase(vec2 uv) {
-  return inBounds(uv) ? texture2D(uTexture, uv) : vec4(0.0);
-}
-
-vec4 sampleRed(vec2 uv) {
-  return inBounds(uv) ? texture2D(uTexture, uv) : vec4(0.0);
-}
-
 void main() {
   vec2 normCell = uPixelSize / uCellSize;
   vec2 cellIndex = floor(vCellUv / normCell);
   vec2 cellCenterUv = (cellIndex + 0.5) * normCell;
 
-  float dispFactor = cos(3.14159265359 * (cellCenterUv.y - 0.5)) * 5.0;
+  float dispFactor = cos(3.14159265359 * (cellCenterUv.y - 0.5)) * 10.0;
   vec2 sampleUv = vCellUv - vec2(-uShift * dispFactor / uCellSize.x, 0.0);
-  vec2 redUv = sampleUv + vec2(-uShift / uCellSize.x, 0.0);
 
-  vec4 base = sampleBase(sampleUv);
-  vec4 red = sampleRed(redUv);
-
-  gl_FragColor = vec4(red.r, base.g, base.b, max(base.a, red.a));
+  gl_FragColor = inBounds(sampleUv) ? texture2D(uTexture, sampleUv) : vec4(0.0);
 }
 `;
 
 function quadPaddingPx(shift: number) {
-	return Math.ceil(Math.abs(shift)) + CHROMA_PAD_PX;
+	return Math.ceil(Math.abs(shift)) + window.innerWidth * 0.1;
 }
 
 function measureCellRects(
@@ -112,9 +98,9 @@ function measureCellRects(
 
 /**
  * Single WebGL canvas: each grid cell is a quad (6 vertices) in clip space
- * with per-corner cell UVs so shift/bleed extend past the layout box without viewports.
+ * with per-corner cell UVs so displacement extends past the layout box without viewports.
  */
-export function WebGLGridRedshiftCanvas({
+export function WebGLPixelShiftCanvas({
 	className,
 	images,
 	cellRefs,
@@ -123,7 +109,7 @@ export function WebGLGridRedshiftCanvas({
 	invalidateRef,
 	pixelSize = 48,
 	quality = 75,
-}: WebGLGridRedshiftCanvasProps) {
+}: WebGLPixelShiftCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const drawRef = useRef<(() => void) | null>(null);
 	const shiftRef = useRef(shift.get());

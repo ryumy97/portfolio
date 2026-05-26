@@ -25,14 +25,20 @@ import { useScrollEvent } from "../../../components/smooth-scroll";
 import { StaggerEffect } from "../../../components/three/postprocessing/stagger-effect";
 import Rodin from "../../../components/three/rodin";
 import { SubGrid } from "../../../components/ui/grid";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 
 const START = {
 	position: [-0.57, 1.8, 1],
 	rotation: [-0.11, -0.1, -0],
 };
 
-const TRANSITIONING = {
+const TRANSITIONING_DEKSTOP = {
 	position: [-3.1, 0.7843018140005457, 3.711369133013187],
+	rotation: [0.033795526933088786, -0.4861118293834242, 0.01579368944690987],
+};
+
+const TRANSITIONING_MOBILE = {
+	position: [-3, 1, 4.6],
 	rotation: [0.033795526933088786, -0.4861118293834242, 0.01579368944690987],
 };
 
@@ -43,6 +49,8 @@ const RodinScene = () => {
 
 	const staggerRef = useRef<StaggerEffect | null>(null);
 	const pixelationRef = useRef<PixelationEffect | null>(null);
+
+	const [pixelated, setPixelated] = useState(false);
 
 	const three = useThree();
 
@@ -116,6 +124,12 @@ const RodinScene = () => {
 		three.invalidate();
 	});
 
+	const isDesktop = useMediaQuery(SCREEN.md);
+
+	const transitioning = useMemo(() => {
+		return isDesktop ? TRANSITIONING_DEKSTOP : TRANSITIONING_MOBILE;
+	}, [isDesktop]);
+
 	useEffect(() => {
 		if (state === "start") {
 			positionX.jump(START.position[0]);
@@ -124,15 +138,24 @@ const RodinScene = () => {
 			rotationX.jump(START.rotation[0]);
 			rotationY.jump(START.rotation[1]);
 			rotationZ.jump(START.rotation[2]);
-		} else if (state === "transitioning") {
-			positionX.set(TRANSITIONING.position[0]);
-			positionY.set(TRANSITIONING.position[1]);
-			positionZ.set(TRANSITIONING.position[2]);
-			rotationX.set(TRANSITIONING.rotation[0]);
-			rotationY.set(TRANSITIONING.rotation[1]);
-			rotationZ.set(TRANSITIONING.rotation[2]);
+		} else {
+			positionX.set(transitioning.position[0]);
+			positionY.set(transitioning.position[1]);
+			positionZ.set(transitioning.position[2]);
+			rotationX.set(transitioning.rotation[0]);
+			rotationY.set(transitioning.rotation[1]);
+			rotationZ.set(transitioning.rotation[2]);
 		}
-	}, [state, positionX, positionY, positionZ, rotationX, rotationY, rotationZ]);
+	}, [
+		state,
+		positionX,
+		positionY,
+		positionZ,
+		rotationX,
+		rotationY,
+		rotationZ,
+		transitioning,
+	]);
 
 	useMotionValueEvent(pixelSize, "change", (value) => {
 		staggerRef.current?.setPixelSize(value);
@@ -149,37 +172,48 @@ const RodinScene = () => {
 		three.invalidate();
 	});
 
+	useEffect(() => {
+		if (pixelated) {
+			animate(pixelSize, 24, {
+				duration: 0.5,
+				ease: "linear",
+			});
+			animate(maskStagger, 0, {
+				duration: 0.5,
+				ease: "linear",
+			});
+			animate(granularity, 6, {
+				duration: 0.5,
+				ease: "linear",
+			});
+		} else {
+			animate(pixelSize, 24, {
+				duration: 0.5,
+				ease: "linear",
+			});
+			animate(maskStagger, 0.1, {
+				duration: 0.5,
+				ease: "linear",
+			});
+			animate(granularity, 12, {
+				duration: 0.5,
+				ease: "linear",
+			});
+		}
+	}, [pixelated, granularity, maskStagger, pixelSize]);
+
 	return (
 		<>
 			<Rodin
 				ref={meshRef}
+				onClick={() => {
+					setPixelated((prev) => !prev);
+				}}
 				onPointerEnter={() => {
-					animate(pixelSize, 24, {
-						duration: 0.5,
-						ease: "linear",
-					});
-					animate(maskStagger, 0, {
-						duration: 0.5,
-						ease: "linear",
-					});
-					animate(granularity, 6, {
-						duration: 0.5,
-						ease: "linear",
-					});
+					setPixelated(true);
 				}}
 				onPointerLeave={() => {
-					animate(pixelSize, 24, {
-						duration: 0.5,
-						ease: "linear",
-					});
-					animate(maskStagger, 0.1, {
-						duration: 0.5,
-						ease: "linear",
-					});
-					animate(granularity, 12, {
-						duration: 0.5,
-						ease: "linear",
-					});
+					setPixelated(false);
 				}}
 			/>
 			<ambientLight intensity={0.1} />
@@ -187,8 +221,8 @@ const RodinScene = () => {
 			<PerspectiveCamera
 				ref={cameraRef}
 				fov={28.5}
-				position={TRANSITIONING.position as [number, number, number]}
-				rotation={TRANSITIONING.rotation as [number, number, number]}
+				position={transitioning.position as [number, number, number]}
+				rotation={transitioning.rotation as [number, number, number]}
 				makeDefault
 			/>
 			<EffectComposer>
@@ -207,7 +241,7 @@ const ScrollingPhrase = () => {
 	const lineRef = useRef<HTMLParagraphElement>(null);
 
 	const [linesPerBlock, setLinesPerBlock] = useState(6);
-	const [animationComplete, setAnimationComplete] = useState(false);
+	const [animationComplete, setAnimationComplete] = useState(state === "end");
 
 	const lineCount = linesPerBlock * 2;
 	const lineKeys = useMemo(
@@ -259,7 +293,7 @@ const ScrollingPhrase = () => {
 	return (
 		<motion.div
 			ref={containerRef}
-			className="col-start-2 col-end-8 h-full overflow-hidden pointer-events-none"
+			className="col-start-3 col-end-10 md:col-start-2 md:col-end-8 h-full overflow-hidden pointer-events-none"
 			initial={{ y: "100%" }}
 			animate={{ y: state !== "start" ? 0 : "100%" }}
 			transition={{
@@ -269,26 +303,35 @@ const ScrollingPhrase = () => {
 			}}
 		>
 			<motion.div
-				className="flex flex-col text-[7vw] font-heading font-bold leading-[0.8em] tracking-[-0.03em]"
+				className="flex flex-col text-[15vw] md:text-[7vw] font-heading font-bold leading-[0.8em] tracking-[-0.03em]"
 				style={{ y }}
 			>
 				{lineKeys.map((key, index, arr) => (
 					<p
 						key={key}
 						ref={index === 0 ? lineRef : undefined}
-						className="pb-[0.15em]"
+						className="pb-[0.15em] flex flex-col gap-1 md:block"
+						lang="en"
 					>
-						Cogito
-						<span
-							className={cn(index === linesPerBlock - 1 ? "text-primary" : "")}
-						>
-							,
-						</span>{" "}
-						ergo sum
-						<span
-							className={cn(index === linesPerBlock - 2 ? "text-primary" : "")}
-						>
-							.
+						<span>
+							Cogito
+							<span
+								className={cn(
+									index === linesPerBlock - 1 ? "text-primary" : "",
+								)}
+							>
+								,
+							</span>{" "}
+						</span>
+						<span>
+							ergo sum
+							<span
+								className={cn(
+									index === linesPerBlock - 2 ? "text-primary" : "",
+								)}
+							>
+								.
+							</span>
 						</span>
 					</p>
 				))}
@@ -301,9 +344,12 @@ const Hero = () => {
 	const ref = useRef<HTMLDivElement>(null);
 
 	return (
-		<SubGrid className="relative aspect-video overflow-hidden" ref={ref}>
+		<SubGrid
+			className="relative h-[calc(100svh-24px)] md:aspect-video overflow-hidden"
+			ref={ref}
+		>
 			<ScrollingPhrase />
-			<div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">
+			<div className="absolute top-0 left-0 right-0 h-full z-10 pointer-events-none">
 				<Canvas eventSource={ref.current ?? undefined} frameloop="demand">
 					<RodinScene />
 				</Canvas>

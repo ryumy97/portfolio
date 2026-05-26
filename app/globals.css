@@ -46,6 +46,8 @@
 	--radius-2xl: calc(var(--radius) * 1.8);
 	--radius-3xl: calc(var(--radius) * 2.2);
 	--radius-4xl: calc(var(--radius) * 2.6);
+	--aspect-landscape: 6048 / 4032;
+	--aspect-portrait: 4032 / 6048;
 }
 
 :root {
@@ -126,5 +128,8 @@
 	}
 	html {
 		@apply font-sans;
+	}
+	a {
+		@apply max-md:underline;
 	}
 }
