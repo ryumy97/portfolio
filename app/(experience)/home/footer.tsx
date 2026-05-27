@@ -2,7 +2,7 @@
 
 import { SubGrid } from "@/components/ui/grid";
 import Image from "next/image";
-import kiwi from "./assets/footer/kiwi.png";
+import kiwi from "@/app/(experience)/projects/kiwi/assets/circle.png";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useScrollEvent } from "@/components/smooth-scroll";
