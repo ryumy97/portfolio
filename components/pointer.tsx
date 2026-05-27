@@ -8,6 +8,14 @@ import { Slot } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
 
 type PointerEventType = "bg" | "underline" | "bullet";
+type PointerEventProps = {
+	type?: PointerEventType;
+	offsetX?: number;
+	offsetY?: number;
+	borderRadius?: number;
+	offsetWidth?: number;
+	offsetHeight?: number;
+};
 
 export const usePointerEvent = ({
 	type = "bg",
@@ -16,14 +24,7 @@ export const usePointerEvent = ({
 	borderRadius = 9999,
 	offsetWidth = 0,
 	offsetHeight = 0,
-}: {
-	type?: PointerEventType;
-	offsetX?: number;
-	offsetY?: number;
-	borderRadius?: number;
-	offsetWidth?: number;
-	offsetHeight?: number;
-}) => {
+}: PointerEventProps) => {
 	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
 		const rect = event.currentTarget.getBoundingClientRect();
 
@@ -85,14 +86,24 @@ export const PointerEventHandler = ({
 	asChild,
 	children,
 	type = "bg",
+	offsetX,
+	offsetY,
+	borderRadius,
+	offsetWidth,
+	offsetHeight,
 	...props
 }: {
 	children?: React.ReactNode;
 	asChild?: boolean;
 	type?: PointerEventType;
-}) => {
+} & PointerEventProps) => {
 	const { onPointerEnter, onPointerLeave } = usePointerEvent({
 		type,
+		offsetX,
+		offsetY,
+		borderRadius,
+		offsetWidth,
+		offsetHeight,
 	});
 
 	const Comp = asChild ? Slot.Root : "div";

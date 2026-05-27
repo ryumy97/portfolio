@@ -188,3 +188,22 @@ export const CVSubSubList: React.FC<Props> = ({
 		</Comp>
 	);
 };
+
+export const ProjectTitle: React.FC<Props> = ({
+	children,
+	className,
+	asChild,
+}) => {
+	const Comp = asChild ? Slot.Root : "h2";
+
+	return (
+		<Comp
+			className={cn(
+				"text-[min(max(4vw,32px),80px)] leading-[1.25em] font-heading font-bold tracking-[-0.03em]",
+				className,
+			)}
+		>
+			{children}
+		</Comp>
+	);
+};

@@ -1,6 +1,7 @@
 "use client";
 
 import { Stagger } from "@/components/three/postprocessing/stagger";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
 import { PerspectiveCamera } from "@react-three/drei";
@@ -25,7 +26,6 @@ import { useScrollEvent } from "../../../components/smooth-scroll";
 import { StaggerEffect } from "../../../components/three/postprocessing/stagger-effect";
 import Rodin from "../../../components/three/rodin";
 import { SubGrid } from "../../../components/ui/grid";
-import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 
 const START = {
 	position: [-0.57, 1.8, 1],

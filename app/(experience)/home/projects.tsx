@@ -1,30 +1,31 @@
 "use client";
 
+import AimHigh from "@/app/(experience)/projects/aimhigh/assets/aimhigh.png";
+import Fola from "@/app/(experience)/projects/fola/assets/main.png";
+import Greenprint from "@/app/(experience)/projects/greenprint/assets/canvas.png";
+import Kiwi from "@/app/(experience)/projects/kiwi/assets/mobile.png";
+import Reflct from "@/app/(experience)/projects/reflct/assets/home-1.png";
+import Typography from "@/app/(experience)/projects/typography/assets/06.png";
+import { PointerEventHandler } from "@/components/pointer";
+import { SectionDescription } from "@/components/ui/typography";
+import { WebGLPixelShiftCanvas } from "@/components/webgl/webgl-pixel-shift-canvas";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import type Lenis from "lenis";
 import { ArrowRightIcon } from "lucide-react";
 import {
 	motion,
 	transform,
-	useAnimationFrame,
 	useMotionValue,
 	useMotionValueEvent,
 } from "motion/react";
 import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
-import { PointerEventHandler } from "@/components/pointer";
-import { WebGLPixelShiftCanvas } from "@/components/webgl/webgl-pixel-shift-canvas";
 import { useScrollEvent } from "../../../components/smooth-scroll";
 import { Grid, SubGrid } from "../../../components/ui/grid";
-import AimHigh from "./assets/projects/aimhigh.png";
-import Fola from "./assets/projects/fola.png";
-import Kiwi from "./assets/projects/kiwi.png";
-import LiveOcean from "./assets/projects/liveocean.png";
-import Reflct from "./assets/projects/reflct.png";
-import Typography from "./assets/projects/typography.png";
-import Cinco from "./assets/projects/cinco.png";
-import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
-import { SectionDescription } from "@/components/ui/typography";
+import FeastMode from "@/app/(experience)/projects/feast-mode/assets/mobile.png";
+import LiveOcean from "@/app/(experience)/projects/liveocean/assets/main.png";
+import HeritageNewZealand from "@/app/(experience)/projects/heritage-new-zealand/assets/hero.png";
 
 const MAX_SHIFT_PX = 48;
 const VELOCITY_SCALE = 0.03;
@@ -73,10 +74,22 @@ const PROJECT_IMAGES: ProjectImage[] = [
 			"col-start-5 col-span-4 row-start-2 md:col-start-7 md:col-span-2 md:row-start-1",
 	},
 	{
-		src: Cinco,
-		alt: "Cinco",
+		src: FeastMode,
+		alt: "Feast Mode",
 		className:
 			"col-start-5 col-span-2 row-start-1 md:col-start-3 md:col-span-1 md:row-start-1",
+	},
+	{
+		src: Greenprint,
+		alt: "Greenprint",
+		className:
+			"col-start-2 col-span-4 row-start-3 md:col-start-5 md:col-span-2 md:row-start-4",
+	},
+	{
+		src: HeritageNewZealand,
+		alt: "Heritage New Zealand",
+		className:
+			"col-start-1 col-span-4 row-start-5 md:col-start-7 md:col-span-2 md:row-start-3",
 	},
 ];
 

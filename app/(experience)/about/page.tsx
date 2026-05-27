@@ -1,11 +1,8 @@
-"use client";
-
 import Header from "@/components/header";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import {
-	CVHeading,
 	CVLink,
 	CVList,
 	CVListItem,
@@ -16,8 +13,8 @@ import {
 } from "@/components/ui/typography";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
-import SectionHeader from "./section-header";
 import Section, { SubSection } from "./section";
+import SectionHeader from "./section-header";
 
 export default function Page() {
 	return (
@@ -155,7 +152,7 @@ export default function Page() {
 								<i>- Intermediate/Senior Frontend Developer</i>
 							</>
 						}
-						link="https://vault.ryumy.com/"
+						link=""
 					>
 						<CVList className="mt-2">
 							<CVListItem>
