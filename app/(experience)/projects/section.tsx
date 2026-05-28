@@ -25,7 +25,7 @@ type Props = {
 	className?: string;
 };
 
-const Section: React.FC<Props> = ({ link, title, image, className }) => {
+const useRevealMotionValues = () => {
 	const state = useIntroStore((store) => store.state);
 	const ref = useRef<HTMLDivElement>(null);
 
@@ -78,9 +78,6 @@ const Section: React.FC<Props> = ({ link, title, image, className }) => {
 		if (!rect) return;
 
 		const left = (rect.left - window.innerWidth) / window.innerWidth;
-		const progress = transform(left, [0, -0.8], [0, 1], {
-			clamp: true,
-		});
 
 		dataRef.current.target.x = transform(
 			transform(left, [0, -1], [0, 1], {
@@ -126,6 +123,21 @@ const Section: React.FC<Props> = ({ link, title, image, className }) => {
 		height.set(`${dataRef.current.current.height}%`);
 	});
 
+	return {
+		height,
+		x,
+		ref,
+	};
+};
+
+export const ListItemSection: React.FC<Props> = ({
+	link,
+	title,
+	image,
+	className,
+}) => {
+	const { height, x, ref } = useRevealMotionValues();
+
 	return (
 		<div
 			className={cn(
@@ -170,5 +182,3 @@ const Section: React.FC<Props> = ({ link, title, image, className }) => {
 		</div>
 	);
 };
-
-export default Section;
