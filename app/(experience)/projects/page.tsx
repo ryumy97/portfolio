@@ -3,17 +3,16 @@ import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
 import { ArrowRightIcon } from "lucide-react";
-import Section from "./section";
-
-import reflct from "./reflct/assets/main.png";
-import typography from "./typography/assets/main.png";
-import kiwi from "./kiwi/assets/main.png";
 import aimhigh from "./aimhigh/assets/main.png";
+import feastMode from "./feast-mode/assets/mobile.png";
 import fola from "./fola/assets/cards.png";
 import greenprint from "./greenprint/assets/vw.png";
-import liveocean from "./liveocean/assets/ocean.png";
-import feastMode from "./feast-mode/assets/mobile.png";
 import heritageNewZealand from "./heritage-new-zealand/assets/main.png";
+import kiwi from "./kiwi/assets/main.png";
+import liveocean from "./liveocean/assets/ocean.png";
+import reflct from "./reflct/assets/main.png";
+import { ListItemSection } from "./section";
+import typography from "./typography/assets/main.png";
 
 export default function Page2() {
 	return (
@@ -32,38 +31,42 @@ export default function Page2() {
 						</Title>
 					</div>
 					{/* Reflct */}
-					<Section title="Reflct" image={reflct} link="/projects/reflct" />
+					<ListItemSection
+						title="Reflct"
+						image={reflct}
+						link="/projects/reflct"
+					/>
 					{/* Typography */}
-					<Section
+					<ListItemSection
 						title="Typography"
 						image={typography}
 						link="/projects/typography"
 					/>
 					{/* Kiwi */}
-					<Section title="Kiwi" image={kiwi} link="/projects/kiwi" />
+					<ListItemSection title="Kiwi" image={kiwi} link="/projects/kiwi" />
 					{/* Vault? */}
 					{/* Fola */}
-					<Section title="Fola" image={fola} link="/projects/fola" />
+					<ListItemSection title="Fola" image={fola} link="/projects/fola" />
 					{/* Greenprint */}
-					<Section
+					<ListItemSection
 						title="Greenprint"
 						image={greenprint}
 						link="/projects/greenprint"
 					/>
 					{/* LiveOcean */}
-					<Section
+					<ListItemSection
 						title="LiveOcean"
 						image={liveocean}
 						link="/projects/liveocean"
 					/>
 					{/* Feast mode */}
-					<Section
+					<ListItemSection
 						title="Feast Mode"
 						image={feastMode}
 						link="/projects/feast-mode"
 					/>
 					{/* Heritage New Zealand */}
-					<Section
+					<ListItemSection
 						title={
 							<>
 								Heritage
@@ -76,7 +79,11 @@ export default function Page2() {
 					/>
 
 					{/* AimHigh */}
-					<Section title="AimHigh" image={aimhigh} link="/projects/aimhigh" />
+					<ListItemSection
+						title="AimHigh"
+						image={aimhigh}
+						link="/projects/aimhigh"
+					/>
 				</main>
 			</SmoothScroll>
 		</PageTunnelIn>
