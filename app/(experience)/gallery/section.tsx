@@ -21,10 +21,10 @@ const useRevealMotionValues = () => {
 
 	const dataRef = useRef({
 		target: {
-			y: 5,
+			y: 100,
 		},
 		current: {
-			y: 5,
+			y: 100,
 		},
 	});
 
@@ -35,11 +35,16 @@ const useRevealMotionValues = () => {
 		if (!rect) return;
 
 		dataRef.current.target.y = transform(
-			transform(rect.left, [window.innerWidth / 2, window.innerWidth], [1, 0], {
-				clamp: true,
-			}),
+			transform(
+				rect.left,
+				[window.innerWidth * 0.75, window.innerWidth],
+				[1, 0],
+				{
+					clamp: true,
+				},
+			),
 			[0, 1],
-			[5, 0],
+			[100, 0],
 			{
 				clamp: true,
 				ease: cubicBezier(0.3, 0, 0.3, 1),
@@ -52,11 +57,16 @@ const useRevealMotionValues = () => {
 		if (!rect) return;
 
 		dataRef.current.target.y = transform(
-			transform(rect.left, [window.innerWidth / 2, window.innerWidth], [1, 0], {
-				clamp: true,
-			}),
+			transform(
+				rect.left,
+				[window.innerWidth * 0.75, window.innerWidth],
+				[1, 0],
+				{
+					clamp: true,
+				},
+			),
 			[0, 1],
-			[5, 0],
+			[100, 0],
 			{
 				clamp: true,
 				ease: cubicBezier(0.3, 0, 0.3, 1),
@@ -75,7 +85,7 @@ const useRevealMotionValues = () => {
 			t,
 		);
 
-		y.set(`${dataRef.current.current.y}%`);
+		y.set(`${dataRef.current.current.y}vh`);
 	});
 
 	return {
@@ -117,5 +127,31 @@ export const ListItemSection: React.FC<{
 				</PointerEventHandler>
 			</ProjectTitle>
 		</div>
+	);
+};
+
+export const ImageSection: React.FC<{
+	image: string;
+	alt: string;
+	layout: "landscape" | "portrait";
+	className?: string;
+}> = ({ image, alt, layout, className }) => {
+	const { y, ref } = useRevealMotionValues();
+
+	return (
+		<motion.div
+			className={cn(
+				"text-center relative mr-[10vw] md:mr-[10vw] border-white overflow-hidden border-[0.5vw] shadow-2xl",
+				{
+					"w-[90vw] md:w-[30vw] aspect-landscape": layout === "landscape",
+					"w-[60vw] md:w-[20vw] aspect-portrait": layout === "portrait",
+				},
+				className,
+			)}
+			style={{ y }}
+			ref={ref}
+		>
+			<Image src={image} alt={alt} fill />
+		</motion.div>
 	);
 };
