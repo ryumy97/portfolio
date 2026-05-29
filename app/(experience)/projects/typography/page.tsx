@@ -33,7 +33,7 @@ export default function Page() {
 					<div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
 						<Title className="">
 							<div className="">Typography</div>
-							<div className="text-primary mt-[0.3em]">- Personal</div>
+							<div className="text-primary mt-[0.3em]">- Personal · 2022</div>
 						</Title>
 						<PageLink className="w-full mt-[1em]">
 							<PointerEventHandler asChild type="underline">
@@ -48,11 +48,13 @@ export default function Page() {
 						</PageLink>
 					</div>
 
-					<TextSection text="Mini project holding a collection of interactive kinetic typography experiences." />
+					<TextSection text="A mini project — a collection of interactive kinetic typography experiences. Built with Pixi.js and other web APIs." />
 
-					<ImageSection image={init} />
+					<ImageSection image={init} type="default" />
 
-					<TextSection text="Each experience explores a different technique — from metaball filters and typewriter animations to gravity simulations and particle systems." />
+					<TextSection text="An index of experiments to browse — each one keyboard-driven and self-contained." />
+
+					<TextSection text="Seven studies, each exploring a different technique — metaball filters, typewriter animation, gravity, 2-bit particles, wave masks, spiral type, and glowing particles." />
 
 					<ImageSection image={metaball} />
 					<ImageSection image={typewriter} />
@@ -69,6 +71,17 @@ export default function Page() {
 						</Title>
 
 						<PageLink className="w-full mt-[2em]">
+							<PointerEventHandler asChild type="underline">
+								<Link
+									href="https://typography.ryumy.com/"
+									target="_blank"
+									className="text-secondary italic"
+								>
+									https://typography.ryumy.com/
+								</Link>
+							</PointerEventHandler>
+						</PageLink>
+						<PageLink className="w-full mt-[0.5em]">
 							<PointerEventHandler asChild type="underline">
 								<Link
 									href="https://github.com/ryumy97/typography"

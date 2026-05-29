@@ -27,7 +27,7 @@ export default function Page() {
 					<div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
 						<Title className="">
 							<div className="">Kiwi</div>
-							<div className="text-primary mt-[0.3em]">- Personal</div>
+							<div className="text-primary mt-[0.3em]">- Personal · 2021</div>
 						</Title>
 						<PageLink className="w-full mt-[1em]">
 							<PointerEventHandler asChild type="underline">
@@ -42,14 +42,18 @@ export default function Page() {
 						</PageLink>
 					</div>
 
-					<TextSection text="A simple interactive environment without any external libraries." />
+					<TextSection text="A simple interactive environment built without any external libraries — vanilla JS, CSS, and a bit of physics." />
+
 					<ImageSection image={main} />
 
-					<TextSection text="The kiwi is expressed as a circle the user can grab and move around. Switch themes to see it as a bird or a fruit." />
+					<TextSection text="The kiwi is a circle you can grab and throw around. Colour palettes and patterns re-skin the same shape — as a bird, a fruit, or something more abstract." />
 
 					<ImageSection image={kiwiHome} />
 					<ImageSection image={kiwiCorner} />
 					<ImageSection image={themeFruit} />
+
+					<TextSection text="Kiwi is an interesting word — a bird or a fruit. The project holds that ambiguity in one playful container you can move through a simple physical space." />
+
 					<ImageSection image={about} />
 
 					<div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
@@ -58,6 +62,17 @@ export default function Page() {
 						</Title>
 
 						<PageLink className="w-full mt-[2em]">
+							<PointerEventHandler asChild type="underline">
+								<Link
+									href="https://kiwi.ryumy.com/"
+									target="_blank"
+									className="text-secondary italic"
+								>
+									https://kiwi.ryumy.com/
+								</Link>
+							</PointerEventHandler>
+						</PageLink>
+						<PageLink className="w-full mt-[0.5em]">
 							<PointerEventHandler asChild type="underline">
 								<Link
 									href="https://github.com/ryumy97/kiwi"
