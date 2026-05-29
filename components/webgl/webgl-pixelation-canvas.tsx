@@ -82,7 +82,7 @@ export function WebGLPixelationCanvas({
 	image,
 	pixelSize,
 	radius,
-	quality = 80,
+	quality = 75,
 }: WebGLPixelationCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const drawRef = useRef<(() => void) | null>(null);

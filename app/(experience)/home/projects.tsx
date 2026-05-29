@@ -5,7 +5,7 @@ import Fola from "@/app/(experience)/projects/fola/assets/main.png";
 import Greenprint from "@/app/(experience)/projects/greenprint/assets/canvas.png";
 import Kiwi from "@/app/(experience)/projects/kiwi/assets/mobile.png";
 import Reflct from "@/app/(experience)/projects/reflct/assets/home-1.png";
-import Typography from "@/app/(experience)/projects/typography/assets/06.png";
+import Typography from "@/app/(experience)/projects/typography/assets/home.png";
 import { PointerEventHandler } from "@/components/pointer";
 import { SectionDescription } from "@/components/ui/typography";
 import { WebGLPixelShiftCanvas } from "@/components/webgl/webgl-pixel-shift-canvas";
