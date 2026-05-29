@@ -33,7 +33,7 @@ export default function Page() {
 							<div className="">Reflct</div>
 							<div className="text-primary mt-[0.3em]">- Personal</div>
 						</Title>
-						<PageLink className="w-full mt-1">
+						<PageLink className="w-full mt-[1em]">
 							<PointerEventHandler asChild type="underline">
 								<Link
 									href="https://www.reflct.app/"
