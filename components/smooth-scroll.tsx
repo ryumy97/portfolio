@@ -49,8 +49,8 @@ const SmoothScroll = ({ horizontal = false, onScroll, children }: Props) => {
 		<LenisComponent
 			ref={lenisRef}
 			className={cn("h-screen w-screen relative", {
-				"overflow-x-auto": horizontal,
-				"overflow-y-auto": !horizontal,
+				"overflow-x-auto overflow-y-hidden": horizontal,
+				"overflow-y-auto overflow-x-hidden": !horizontal,
 			})}
 			options={
 				horizontal
