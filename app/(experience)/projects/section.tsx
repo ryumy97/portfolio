@@ -183,7 +183,7 @@ export const TextSection: React.FC<{
 	className?: string;
 }> = ({ text, link, linkText, className }) => {
 	return (
-		<div className={cn("md:max-w-[30vw] max-w-[100vw] w-screen", className)}>
+		<div className={cn("md:max-w-[30vw] max-w-[100vw] w-[80vw]", className)}>
 			<PageDescription className="w-full mt-[2.5vw] md:mt-[1vw]">
 				{text}
 			</PageDescription>
@@ -212,7 +212,7 @@ export const ImageSection: React.FC<{
 				aspectRatio: image.width / image.height,
 			}}
 			ref={ref}
-			className={cn("w-[50vw] md:w-[30vw] text-center relative", className)}
+			className={cn("w-[80vw] md:w-[30vw] text-center relative", className)}
 		>
 			<motion.div
 				style={{
