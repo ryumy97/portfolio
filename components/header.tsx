@@ -16,8 +16,9 @@ const Logo = () => {
 	const [hover, setHover] = useState(false);
 
 	const { onPointerEnter, onPointerLeave } = usePointerEvent({
-		offsetX: 18,
-		offsetWidth: 36,
+		offsetX: 26,
+		offsetY: 2,
+		offsetWidth: 8,
 	});
 
 	return (

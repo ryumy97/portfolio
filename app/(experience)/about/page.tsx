@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/typography";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
-import Section, { SubSection } from "./section";
+import Section, { ProjectLink, SubSection } from "./section";
 import SectionHeader from "./section-header";
+import GithubIcon from "./assets/github.svg";
+import LinkedinIcon from "./assets/linkedin.svg";
 
 export default function Page() {
 	return (
@@ -41,6 +43,42 @@ export default function Page() {
 								<span className={"text-primary"}>.</span>
 							</span>
 						</PageDescription>
+						<div className="flex flex-col mt-2">
+							<div className="flex items-center gap-2">
+								<PointerEventHandler asChild type="underline">
+									<Link href="https://github.com/ryumy" target="_blank">
+										<GithubIcon className="w-[24px] h-[24px]" />
+									</Link>
+								</PointerEventHandler>
+								<PointerEventHandler asChild type="underline">
+									<Link
+										href="https://www.linkedin.com/in/in-ha-ryu-775398147/"
+										target="_blank"
+									>
+										<LinkedinIcon className="w-[24px] h-[24px] mt-[2px]" />
+									</Link>
+								</PointerEventHandler>
+							</div>
+							<div className="mt-1">
+								<CVLink asChild>
+									<PointerEventHandler asChild type="underline">
+										<Link href={"tel:+642102831932"} target="_blank">
+											(+64) 21 028 31932
+										</Link>
+									</PointerEventHandler>
+								</CVLink>
+							</div>
+
+							<div>
+								<CVLink asChild>
+									<PointerEventHandler asChild type="underline">
+										<Link href={"mailto:INHA.RYU.97@GMAIL.COM"} target="_blank">
+											INHA.RYU.97@GMAIL.COM
+										</Link>
+									</PointerEventHandler>
+								</CVLink>
+							</div>
+						</div>
 					</div>
 
 					<SectionHeader text="Personal" />
@@ -50,7 +88,10 @@ export default function Page() {
 						subtitle="AUG 2024 - PRESENT"
 						title={
 							<>
-								<b>Reflct</b> <i>- Co founder & Developer</i>
+								<ProjectLink link="/projects/reflct">
+									<b>Reflct</b>
+								</ProjectLink>
+								<i>- Co founder & Developer</i>
 							</>
 						}
 						link="https://www.reflct.app/"
@@ -62,7 +103,7 @@ export default function Page() {
 							</CVListItem>
 
 							<CVListItem>
-								@reflct/react npm package
+								@reflct/react npm package -
 								<CVSubList>
 									<CVListItem>
 										<CVLink asChild>
@@ -72,6 +113,37 @@ export default function Page() {
 													target="_blank"
 												>
 													https://www.npmjs.com/package/@reflct/react
+												</Link>
+											</PointerEventHandler>
+										</CVLink>
+									</CVListItem>
+								</CVSubList>
+							</CVListItem>
+							<CVListItem>
+								Github -
+								<CVSubList>
+									<CVListItem>
+										<CVLink asChild>
+											<PointerEventHandler asChild type="underline">
+												<Link href="https://github.com/Reflct" target="_blank">
+													https://github.com/Reflct
+												</Link>
+											</PointerEventHandler>
+										</CVLink>
+									</CVListItem>
+								</CVSubList>
+							</CVListItem>
+							<CVListItem>
+								Youtube -
+								<CVSubList>
+									<CVListItem>
+										<CVLink asChild>
+											<PointerEventHandler asChild type="underline">
+												<Link
+													href="https://www.youtube.com/channel/UCVVFVZrukfeW6yQ_Scx1Eeg"
+													target="_blank"
+												>
+													https://www.youtube.com/channel/UCVVFVZrukfeW6yQ_Scx1Eeg
 												</Link>
 											</PointerEventHandler>
 										</CVLink>
@@ -312,24 +384,6 @@ export default function Page() {
 							</CVListItem>
 						</CVList>
 					</Section>
-
-					{/* Education */}
-					<SectionHeader text="Contact" />
-
-					<SubSection>
-						<CVList className="w-full mt-[1vw]">
-							<PointerEventHandler asChild type="bullet">
-								<a href="tel:+642102831932">
-									<CVListItem>(+64) 21 028 31932</CVListItem>
-								</a>
-							</PointerEventHandler>
-							<PointerEventHandler asChild type="bullet">
-								<a href="mailto:INHA.RYU.97@GMAIL.COM">
-									<CVListItem>INHA.RYU.97@GMAIL.COM</CVListItem>
-								</a>
-							</PointerEventHandler>
-						</CVList>
-					</SubSection>
 				</main>
 			</SmoothScroll>
 		</PageTunnelIn>
