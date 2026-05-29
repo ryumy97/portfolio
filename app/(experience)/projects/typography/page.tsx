@@ -59,7 +59,7 @@ export default function Page() {
 					<ImageSection image={gravity} />
 					<ImageSection image={twobit} />
 					<ImageSection image={wave} />
-					<ImageSection image={waveDetail} className="md:w-[15vw]" />
+					<ImageSection image={waveDetail} type="default" />
 					<ImageSection image={koru} />
 					<ImageSection image={fireflies} />
 

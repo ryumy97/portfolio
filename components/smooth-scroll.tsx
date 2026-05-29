@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
 import type { ScrollCallback } from "lenis";
 import { Lenis as LenisComponent, type LenisRef, useLenis } from "lenis/react";
@@ -47,7 +48,10 @@ const SmoothScroll = ({ horizontal = false, onScroll, children }: Props) => {
 	return (
 		<LenisComponent
 			ref={lenisRef}
-			className="h-screen w-screen overflow-scroll relative"
+			className={cn("h-screen w-screen relative", {
+				"overflow-x-auto": horizontal,
+				"overflow-y-auto": !horizontal,
+			})}
 			options={
 				horizontal
 					? {
