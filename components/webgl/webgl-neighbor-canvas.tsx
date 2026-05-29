@@ -104,7 +104,7 @@ export function WebGLNeighborCanvas({
 	progress,
 	pixelSize = DEFAULT_PIXEL_SIZE,
 	radius = DEFAULT_RADIUS,
-	quality = 75,
+	quality = 80,
 }: WebGLNeighborCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const drawRef = useRef<(() => void) | null>(null);

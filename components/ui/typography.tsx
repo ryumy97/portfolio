@@ -59,6 +59,21 @@ export const PageDescription: React.FC<Props> = ({
 	);
 };
 
+export const PageLink: React.FC<Props> = ({ children, className, asChild }) => {
+	const Comp = asChild ? Slot.Root : "div";
+
+	return (
+		<Comp
+			className={cn(
+				"text-[min(max(1vw,12px),13px)] leading-[1.25em] italic text-secondary",
+				className,
+			)}
+		>
+			{children}
+		</Comp>
+	);
+};
+
 export const PageParagraphHeading: React.FC<Props> = ({
 	children,
 	className,

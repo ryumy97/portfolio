@@ -3,7 +3,11 @@
 import { MotionImage } from "@/components/motion-image";
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
-import { ProjectTitle } from "@/components/ui/typography";
+import {
+	PageDescription,
+	PageLink,
+	ProjectTitle,
+} from "@/components/ui/typography";
 import { lerp } from "@/lib/math";
 import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
@@ -17,13 +21,6 @@ import {
 import { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-
-type Props = {
-	link: string;
-	title: React.ReactNode;
-	image: StaticImageData;
-	className?: string;
-};
 
 const useRevealMotionValues = () => {
 	const state = useIntroStore((store) => store.state);
@@ -47,21 +44,19 @@ const useRevealMotionValues = () => {
 		const rect = ref.current?.getBoundingClientRect();
 		if (!rect) return;
 
-		const left = (rect.left - window.innerWidth) / window.innerWidth;
-
 		dataRef.current.target.x = transform(
-			transform(left, [0, -1], [0, 1], {
+			transform(rect.left, [-rect.width, window.innerWidth], [1, 0], {
 				clamp: true,
 			}),
 			[0, 1],
-			[5, -5],
+			[20, -20],
 			{
 				clamp: true,
 			},
 		);
 
 		dataRef.current.target.height = transform(
-			transform(left, [0, -0.7], [0, 1], {
+			transform(rect.left, [window.innerWidth / 2, window.innerWidth], [1, 0], {
 				clamp: true,
 			}),
 			[0, 1],
@@ -77,21 +72,19 @@ const useRevealMotionValues = () => {
 		const rect = ref.current?.getBoundingClientRect();
 		if (!rect) return;
 
-		const left = (rect.left - window.innerWidth) / window.innerWidth;
-
 		dataRef.current.target.x = transform(
-			transform(left, [0, -1], [0, 1], {
+			transform(rect.left, [-rect.width, window.innerWidth], [1, 0], {
 				clamp: true,
 			}),
 			[0, 1],
-			[5, -5],
+			[20, -20],
 			{
 				clamp: true,
 			},
 		);
 
 		dataRef.current.target.height = transform(
-			transform(left, [0, -0.7], [0, 1], {
+			transform(rect.left, [window.innerWidth / 2, window.innerWidth], [1, 0], {
 				clamp: true,
 			}),
 			[0, 1],
@@ -130,12 +123,12 @@ const useRevealMotionValues = () => {
 	};
 };
 
-export const ListItemSection: React.FC<Props> = ({
-	link,
-	title,
-	image,
-	className,
-}) => {
+export const ListItemSection: React.FC<{
+	link: string;
+	title: React.ReactNode;
+	image: StaticImageData;
+	className?: string;
+}> = ({ link, title, image, className }) => {
 	const { height, x, ref } = useRevealMotionValues();
 
 	return (
@@ -163,7 +156,7 @@ export const ListItemSection: React.FC<Props> = ({
 						alt={typeof title === "string" ? title : "Project"}
 						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100"
 						style={{
-							scale: 1.1,
+							scale: 1,
 							x,
 						}}
 					/>
@@ -180,5 +173,63 @@ export const ListItemSection: React.FC<Props> = ({
 				</PointerEventHandler>
 			</ProjectTitle>
 		</div>
+	);
+};
+
+export const TextSection: React.FC<{
+	text: string;
+	link?: string;
+	linkText?: string;
+	className?: string;
+}> = ({ text, link, linkText, className }) => {
+	return (
+		<div className={cn("md:max-w-[30vw] max-w-[100vw] w-screen", className)}>
+			<PageDescription className="w-full mt-[2.5vw] md:mt-[1vw]">
+				{text}
+			</PageDescription>
+			{link && (
+				<PageLink className="mt-[0.5em]">
+					<PointerEventHandler asChild type="underline">
+						<Link href={link} target="_blank" className="text-secondary italic">
+							{linkText || link}
+						</Link>
+					</PointerEventHandler>
+				</PageLink>
+			)}
+		</div>
+	);
+};
+
+export const ImageSection: React.FC<{
+	image: StaticImageData;
+	className?: string;
+}> = ({ image, className }) => {
+	const { height, x, ref } = useRevealMotionValues();
+
+	return (
+		<motion.div
+			style={{
+				aspectRatio: image.width / image.height,
+			}}
+			ref={ref}
+			className={cn("w-[50vw] md:w-[30vw] text-center relative", className)}
+		>
+			<motion.div
+				style={{
+					height: height,
+				}}
+				className="w-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
+			>
+				<MotionImage
+					src={image}
+					alt="Project"
+					className="w-full h-full object-cover"
+					style={{
+						scale: 1,
+						x,
+					}}
+				/>
+			</motion.div>
+		</motion.div>
 	);
 };
