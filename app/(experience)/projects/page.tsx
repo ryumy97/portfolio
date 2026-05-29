@@ -18,8 +18,6 @@ export default function Page2() {
 	return (
 		<PageTunnelIn>
 			<SmoothScroll horizontal>
-				<Header />
-
 				<PageDescription className="absolute bottom-4 right-4 flex items-center gap-[1vw] justify-center">
 					Scroll this way{" "}
 					<ArrowRightIcon className="w-[min(max(2vw,16px),24px)]" />
@@ -64,25 +62,6 @@ export default function Page2() {
 						title="Feast Mode"
 						image={feastMode}
 						link="/projects/feast-mode"
-					/>
-					{/* Heritage New Zealand */}
-					<ListItemSection
-						title={
-							<>
-								Heritage
-								<br />
-								New Zealand
-							</>
-						}
-						image={heritageNewZealand}
-						link="/projects/heritage-new-zealand"
-					/>
-
-					{/* AimHigh */}
-					<ListItemSection
-						title="AimHigh"
-						image={aimhigh}
-						link="/projects/aimhigh"
 					/>
 				</main>
 			</SmoothScroll>

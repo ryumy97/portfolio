@@ -20,23 +20,21 @@ export const PageTunnelIn = ({ children }: { children: React.ReactNode }) => {
 				initial={
 					state === "end"
 						? {
-								y: "100%",
+								opacity: 0,
 							}
-						: { y: 0 }
+						: { opacity: 1 }
 				}
 				animate={{
-					y: 0,
+					opacity: 1,
 					transition: {
-						delay: 0.2,
 						duration: 0.8,
 						ease: cubicBezier(0.3, 0, 0, 1),
 					},
 				}}
 				exit={{
-					y: "10%",
-					opacity: 0.9,
+					opacity: 0,
 					transition: {
-						duration: 0.8,
+						duration: 0.3,
 						ease: cubicBezier(0.3, 0, 0, 1),
 					},
 				}}
@@ -48,5 +46,5 @@ export const PageTunnelIn = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const PageTunnelOut = () => {
-	return <PageTunnel.OutAnimatePresence mode="popLayout" />;
+	return <PageTunnel.OutAnimatePresence mode="wait" />;
 };

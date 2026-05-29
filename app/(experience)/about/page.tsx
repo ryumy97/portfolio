@@ -22,7 +22,6 @@ export default function Page() {
 	return (
 		<PageTunnelIn>
 			<SmoothScroll horizontal>
-				<Header />
 				<PageDescription className="absolute bottom-4 right-4 flex items-center gap-[1vw] justify-center">
 					Scroll this way{" "}
 					<ArrowRightIcon className="w-[min(max(2vw,16px),24px)]" />

@@ -1,4 +1,3 @@
-import Header from "@/components/header";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
@@ -13,17 +12,13 @@ import twobit from "./assets/04.png";
 import wave from "./assets/05.png";
 import koru from "./assets/06.png";
 import fireflies from "./assets/07.png";
-import home from "./assets/home.png";
 import init from "./assets/init.png";
-import main from "./assets/main.png";
 import waveDetail from "./assets/wave.png";
 
 export default function Page() {
 	return (
 		<PageTunnelIn>
 			<SmoothScroll horizontal>
-				<Header />
-
 				<PageDescription className="absolute bottom-4 right-4 flex items-center gap-[1vw] justify-center">
 					Scroll this way{" "}
 					<ArrowRightIcon className="w-[min(max(2vw,16px),24px)]" />
