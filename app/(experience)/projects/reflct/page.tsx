@@ -46,8 +46,8 @@ export default function Page() {
 						</PageLink>
 					</div>
 					<TextSection text="Platform to easily manage and deploy 3D Gaussian Splatting (3DGS) scenes into the website." />
-					<ImageSection image={reflct} />
-					<ImageSection image={logo} />
+					<ImageSection image={reflct} type="default" />
+					<ImageSection image={logo} type="default" />
 
 					<ImageSection image={home1} />
 					<ImageSection image={dashboard1} />
@@ -60,7 +60,7 @@ export default function Page() {
 					/>
 
 					<ImageSection image={share} />
-					<ImageSection image={shareMobile} className="md:w-[15vw]" />
+					<ImageSection image={shareMobile} className="w-[60vw] md:w-[20vw]" />
 
 					<TextSection
 						text="Docs"

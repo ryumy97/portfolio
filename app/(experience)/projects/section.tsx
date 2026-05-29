@@ -200,11 +200,26 @@ export const TextSection: React.FC<{
 	);
 };
 
+function getImageType(image: StaticImageData) {
+	const ratio = image.width / image.height;
+	if (ratio > 1.5) {
+		return "desktop";
+	} else if (ratio <= 0.75) {
+		return "mobile";
+	} else {
+		return "default";
+	}
+}
+
 export const ImageSection: React.FC<{
 	image: StaticImageData;
+	type?: "desktop" | "mobile" | "default";
 	className?: string;
-}> = ({ image, className }) => {
+}> = ({ image, type: typeProp, className }) => {
 	const { height, x, ref } = useRevealMotionValues();
+
+	const type: "desktop" | "mobile" | "default" =
+		typeProp || getImageType(image);
 
 	return (
 		<motion.div
@@ -212,7 +227,15 @@ export const ImageSection: React.FC<{
 				aspectRatio: image.width / image.height,
 			}}
 			ref={ref}
-			className={cn("w-[80vw] md:w-[30vw] text-center relative", className)}
+			className={cn(
+				"w-[80vw] md:w-[30vw] text-center relative",
+				{
+					"w-[120vw] md:w-[60vw]": type === "desktop",
+					"w-[60vw] md:w-[20vw]": type === "mobile",
+					"w-[80vw] md:w-[40vw]": type === "default",
+				},
+				className,
+			)}
 		>
 			<motion.div
 				style={{
