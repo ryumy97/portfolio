@@ -1,12 +1,12 @@
 "use client";
 
-import Header from "@/components/header";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
 import { createImageUrl } from "@/lib/image";
 import { ArrowRightIcon } from "lucide-react";
-import { ListItemSection } from "../section";
+import { ImageSection } from "../section";
+import IMAGES_2025 from "./data";
 
 export default function Page() {
 	return (
@@ -24,13 +24,14 @@ export default function Page() {
 						</Title>
 					</div>
 
-					<ListItemSection
-						title="2025"
-						image={createImageUrl(
-							"upload/b502d3d8-3fff-43c7-9935-cef2ff95a4a6/SAM_0091.png",
-						)}
-						link="/gallery/2025"
-					/>
+					{IMAGES_2025.map((image) => (
+						<ImageSection
+							key={image.src}
+							image={createImageUrl(image.src)}
+							alt={image.alt}
+							layout={image.layout}
+						/>
+					))}
 				</main>
 			</SmoothScroll>
 		</PageTunnelIn>
