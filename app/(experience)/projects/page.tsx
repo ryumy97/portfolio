@@ -9,7 +9,7 @@ import fola from "./fola/assets/cards.png";
 import greenprint from "./greenprint/assets/vw.png";
 import heritageNewZealand from "./heritage-new-zealand/assets/main.png";
 import kiwi from "./kiwi/assets/main.png";
-import liveocean from "./liveocean/assets/ocean.png";
+import realWatergate from "./real-watergate/assets/ocean.png";
 import reflct from "./reflct/assets/main.png";
 import { ListItemSection } from "./section";
 import typography from "./typography/assets/main.png";
@@ -53,11 +53,11 @@ export default function Page2() {
 						image={greenprint}
 						link="/projects/greenprint"
 					/>
-					{/* LiveOcean */}
+					{/* Real Watergate */}
 					<ListItemSection
-						title="LiveOcean"
-						image={liveocean}
-						link="/projects/liveocean"
+						title="Real Watergate"
+						image={realWatergate}
+						link="/projects/real-watergate"
 					/>
 					{/* Feast mode */}
 					<ListItemSection

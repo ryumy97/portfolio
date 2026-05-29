@@ -24,7 +24,7 @@ import { useRef } from "react";
 import { useScrollEvent } from "../../../components/smooth-scroll";
 import { Grid, SubGrid } from "../../../components/ui/grid";
 import FeastMode from "@/app/(experience)/projects/feast-mode/assets/mobile.png";
-import LiveOcean from "@/app/(experience)/projects/liveocean/assets/main.png";
+import RealWatergate from "@/app/(experience)/projects/real-watergate/assets/main.png";
 import HeritageNewZealand from "@/app/(experience)/projects/heritage-new-zealand/assets/hero.png";
 
 const MAX_SHIFT_PX = 48;
@@ -62,8 +62,8 @@ const PROJECT_IMAGES: ProjectImage[] = [
 			"col-start-6 col-span-4 row-start-3 md:col-start-8 md:col-span-2 md:row-start-4",
 	},
 	{
-		src: LiveOcean,
-		alt: "LiveOcean",
+		src: RealWatergate,
+		alt: "real watergate",
 		className:
 			"col-start-5 col-span-4 row-start-5 md:col-start-4 md:col-span-2 md:row-start-3",
 	},
