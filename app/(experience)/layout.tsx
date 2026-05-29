@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
 import "../globals.css";
 import Pointer from "@/components/pointer";
+import Header from "@/components/header";
 
 // Heading
 const playfairDisplay = Playfair_Display({
@@ -33,8 +34,9 @@ export default function RootLayout({
 			lang="en"
 			className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased`}
 		>
-			<body className="min-h-screen bg-black overflow-hidden pointer-events-auto">
+			<body className="min-h-screen bg-background overflow-hidden pointer-events-auto">
 				{children}
+				<Header />
 				<PageTunnelOut />
 				<Pointer />
 				<Loader />

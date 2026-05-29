@@ -40,7 +40,7 @@ const Gallery = () => {
 	return (
 		<SubGrid className="col-span-full relative aspect-video" ref={containerRef}>
 			<motion.div
-				className="relative border-white border-[0.5vw] col-start-2 col-span-6 md:col-start-4 md:col-span-3 row-start-3 mt-4 aspect-landscape"
+				className="relative border-white border-[0.5vw] col-start-2 col-span-6 md:col-start-4 md:col-span-3 row-start-3 mt-4 aspect-landscape shadow-2xl"
 				style={{ y }}
 			>
 				<Image
@@ -54,7 +54,7 @@ const Gallery = () => {
 			</motion.div>
 
 			<motion.div
-				className="relative border-white border-[0.5vw] col-start-4 col-span-6 md:col-start-2 md:col-span-3 row-start-4 mt-4 aspect-landscape"
+				className="relative border-white border-[0.5vw] col-start-4 col-span-6 md:col-start-2 md:col-span-3 row-start-4 mt-4 aspect-landscape shadow-2xl"
 				style={{ y }}
 			>
 				<Image
@@ -67,7 +67,7 @@ const Gallery = () => {
 				/>
 			</motion.div>
 			<motion.div
-				className="relative border-white border-[0.5vw] col-start-3 col-span-5 md:col-start-7 md:col-span-2 row-start-5 mt-4 aspect-portrait"
+				className="relative border-white border-[0.5vw] col-start-3 col-span-5 md:col-start-7 md:col-span-2 row-start-5 mt-4 aspect-portrait shadow-2xl"
 				style={{ y }}
 			>
 				<Image

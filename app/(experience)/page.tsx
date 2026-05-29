@@ -14,7 +14,6 @@ export default function Home() {
 		<PageTunnelIn>
 			<SmoothScroll>
 				<Grid>
-					<Header />
 					<SubGrid asChild>
 						<main className="px-2">
 							<Hero />
