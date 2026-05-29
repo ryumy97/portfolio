@@ -87,7 +87,7 @@ const Header = () => {
 					<div className="col-start-7 flex justify-end items-center max-md:hidden">
 						<PointerEventHandler asChild>
 							<Button
-								variant={pathname === "/about" ? "navActive" : "nav"}
+								variant={pathname.startsWith("/about") ? "navActive" : "nav"}
 								size={"nav"}
 								asChild
 							>
@@ -99,7 +99,7 @@ const Header = () => {
 					<div className="col-start-8 flex justify-end items-center max-md:hidden">
 						<PointerEventHandler asChild>
 							<Button
-								variant={pathname === "/projects" ? "navActive" : "nav"}
+								variant={pathname.startsWith("/projects") ? "navActive" : "nav"}
 								size={"nav"}
 								asChild
 							>
@@ -111,7 +111,7 @@ const Header = () => {
 					<div className="col-start-9 flex justify-end items-center max-md:hidden">
 						<PointerEventHandler asChild>
 							<Button
-								variant={pathname === "/gallery" ? "navActive" : "nav"}
+								variant={pathname.startsWith("/gallery") ? "navActive" : "nav"}
 								size={"nav"}
 								asChild
 							>
@@ -122,7 +122,7 @@ const Header = () => {
 					<div className="col-start-10 flex justify-end items-center max-md:hidden">
 						<PointerEventHandler asChild>
 							<Button
-								variant={pathname === "/gallery" ? "navActive" : "nav"}
+								variant={pathname.startsWith("/lab") ? "navActive" : "nav"}
 								size={"nav"}
 								asChild
 							>
@@ -190,7 +190,7 @@ const Header = () => {
 							<Link
 								href="/about"
 								className={cn("w-full font-heading text-[8vw] no-underline", {
-									"text-primary": pathname === "/about",
+									"text-primary": pathname.startsWith("/about"),
 								})}
 							>
 								About
@@ -215,7 +215,7 @@ const Header = () => {
 							<Link
 								href="/projects"
 								className={cn("w-full font-heading text-[8vw] no-underline", {
-									"text-primary": pathname === "/projects",
+									"text-primary": pathname.startsWith("/projects"),
 								})}
 							>
 								Projects
@@ -240,7 +240,7 @@ const Header = () => {
 							<Link
 								href="/gallery"
 								className={cn("w-full font-heading text-[8vw] no-underline", {
-									"text-primary": pathname === "/gallery",
+									"text-primary": pathname.startsWith("/gallery"),
 								})}
 							>
 								Gallery
@@ -265,7 +265,7 @@ const Header = () => {
 							<Link
 								href="/lab"
 								className={cn("w-full font-heading text-[8vw] no-underline", {
-									"text-primary": pathname === "/lab",
+									"text-primary": pathname.startsWith("/lab"),
 								})}
 							>
 								Lab

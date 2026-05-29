@@ -1,14 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useIntroStore } from "@/stores/intro";
-import usePointerStore from "@/stores/pointer";
-import { motion, useSpring } from "motion/react";
+import { lerp } from "@/lib/math";
+import { pointer } from "@/stores/pointer";
+import { useAnimationFrame } from "motion/react";
 import { Slot } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
+import { useScrollEvent } from "./smooth-scroll";
 
 type PointerEventType = "bg" | "underline" | "bullet";
 type PointerEventProps = {
+	ref?: React.RefObject<HTMLElement | null>;
 	type?: PointerEventType;
 	offsetX?: number;
 	offsetY?: number;
@@ -17,7 +19,23 @@ type PointerEventProps = {
 	offsetHeight?: number;
 };
 
+const setHoverTarget = (values: {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	borderRadius: number;
+}) => {
+	pointer.hover = true;
+	pointer.target.x = values.x;
+	pointer.target.y = values.y;
+	pointer.target.width = values.width;
+	pointer.target.height = values.height;
+	pointer.target.borderRadius = values.borderRadius;
+};
+
 export const usePointerEvent = ({
+	ref,
 	type = "bg",
 	offsetX = 0,
 	offsetY = 0,
@@ -25,55 +43,60 @@ export const usePointerEvent = ({
 	offsetWidth = 0,
 	offsetHeight = 0,
 }: PointerEventProps) => {
-	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
-		const rect = event.currentTarget.getBoundingClientRect();
+	const isHoveringRef = useRef(false);
 
+	const updateHoverTarget = (rect: DOMRect) => {
 		if (type === "underline") {
-			const width = rect.width + offsetWidth;
-			const height = 1 + offsetHeight;
-			const x = rect.x + offsetX + rect.width / 2 + 16;
-			const y = rect.y + offsetY + rect.height + 16;
-
-			usePointerStore.getState().setHover({
-				x,
-				y,
-				width,
-				height,
+			setHoverTarget({
+				width: rect.width + offsetWidth,
+				height: 1 + offsetHeight,
+				x: rect.x + offsetX + rect.width / 2 + 16,
+				y: rect.y + offsetY + rect.height + 16,
 				borderRadius,
 			});
-
 			return;
-		} else if (type === "bullet") {
-			const width = 12 + offsetWidth;
-			const height = 12 + offsetHeight;
-
-			const x = rect.x + offsetX + 16;
-			const y = rect.y + offsetY + rect.height / 2 + 16;
-
-			usePointerStore.getState().setHover({
-				x,
-				y,
-				width,
-				height,
-				borderRadius,
-			});
-		} else {
-			const width = rect.width + offsetWidth + 16;
-			const height = rect.height + offsetHeight;
-			const x = rect.x + offsetX + rect.width / 2 + 16;
-			const y = rect.y + offsetY + rect.height / 2 + 16;
-
-			usePointerStore.getState().setHover({
-				x,
-				y,
-				width,
-				height,
-				borderRadius,
-			});
 		}
+
+		if (type === "bullet") {
+			setHoverTarget({
+				width: 12 + offsetWidth,
+				height: 12 + offsetHeight,
+				x: rect.x + offsetX + 16,
+				y: rect.y + offsetY + rect.height / 2 + 16,
+				borderRadius,
+			});
+			return;
+		}
+
+		setHoverTarget({
+			width: rect.width + offsetWidth + 16,
+			height: rect.height + offsetHeight,
+			x: rect.x + offsetX + rect.width / 2 + 16,
+			y: rect.y + offsetY + rect.height / 2 + 16,
+			borderRadius,
+		});
 	};
+
+	useScrollEvent(() => {
+		if (!isHoveringRef.current) return;
+
+		const rect = ref?.current?.getBoundingClientRect();
+		if (!rect) return;
+
+		updateHoverTarget(rect);
+	});
+
+	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
+		isHoveringRef.current = true;
+		updateHoverTarget(event.currentTarget.getBoundingClientRect());
+	};
+
 	const onPointerLeave = (_event: React.PointerEvent<HTMLElement>) => {
-		usePointerStore.getState().hoverOut();
+		pointer.hover = false;
+		pointer.target.width = 12;
+		pointer.target.height = 12;
+		pointer.target.borderRadius = 9999;
+		isHoveringRef.current = false;
 	};
 
 	return {
@@ -97,6 +120,8 @@ export const PointerEventHandler = ({
 	asChild?: boolean;
 	type?: PointerEventType;
 } & PointerEventProps) => {
+	const ref = useRef<HTMLDivElement | null>(null);
+
 	const { onPointerEnter, onPointerLeave } = usePointerEvent({
 		type,
 		offsetX,
@@ -104,12 +129,15 @@ export const PointerEventHandler = ({
 		borderRadius,
 		offsetWidth,
 		offsetHeight,
+		ref,
 	});
 
 	const Comp = asChild ? Slot.Root : "div";
 
 	return (
 		<Comp
+			// @ts-ignore
+			ref={ref}
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}
 			{...props}
@@ -120,37 +148,12 @@ export const PointerEventHandler = ({
 };
 
 const Pointer = () => {
-	const state = useIntroStore((state) => state.state);
-	const hover = usePointerStore((state) => state.hover);
-
-	const x = useSpring(-12, {
-		stiffness: 350,
-		damping: 50,
-	});
-	const y = useSpring(-12, {
-		stiffness: 350,
-		damping: 50,
-	});
-	const width = useSpring(12, {
-		stiffness: 350,
-		damping: 50,
-	});
-	const height = useSpring(12, {
-		stiffness: 350,
-		damping: 50,
-	});
-	const borderRadius = useSpring(9999, {
-		stiffness: 350,
-		damping: 50,
-	});
-
-	const hoverEventEnabledRef = useRef(false);
-
+	const ref = useRef<HTMLDivElement>(null);
 	const [isTouch, setIsTouch] = useState(false);
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(pointer: touch)");
-		mediaQuery.matches ? setIsTouch(true) : setIsTouch(false);
+		setIsTouch(mediaQuery.matches);
 
 		const handleMediaQueryChange = (e: MediaQueryListEvent) => {
 			setIsTouch(e.matches);
@@ -163,26 +166,11 @@ const Pointer = () => {
 	}, []);
 
 	useEffect(() => {
-		if (hover) {
-			hoverEventEnabledRef.current = true;
-
-			x.set(hover.x);
-			y.set(hover.y);
-			width.set(hover.width);
-			height.set(hover.height);
-			borderRadius.set(hover.borderRadius);
-
-			return () => {
-				hoverEventEnabledRef.current = false;
-				width.set(12);
-				height.set(12);
-				borderRadius.set(9999);
-			};
-		}
-
 		const handlePointerMove = (e: PointerEvent) => {
-			x.set(e.clientX);
-			y.set(e.clientY);
+			if (pointer.hover) return;
+
+			pointer.target.x = e.clientX;
+			pointer.target.y = e.clientY;
 		};
 
 		window.addEventListener("pointermove", handlePointerMove);
@@ -190,23 +178,47 @@ const Pointer = () => {
 		return () => {
 			window.removeEventListener("pointermove", handlePointerMove);
 		};
-	}, [hover, x, y, width, height, borderRadius]);
+	}, []);
+
+	useAnimationFrame((_, delta) => {
+		const t = delta / 1000 / 0.1;
+
+		pointer.current.x = lerp(pointer.current.x, pointer.target.x, t);
+		pointer.current.y = lerp(pointer.current.y, pointer.target.y, t);
+		pointer.current.width = lerp(
+			pointer.current.width,
+			pointer.target.width,
+			t,
+		);
+		pointer.current.height = lerp(
+			pointer.current.height,
+			pointer.target.height,
+			t,
+		);
+		pointer.current.borderRadius = lerp(
+			pointer.current.borderRadius,
+			pointer.target.borderRadius,
+			t,
+		);
+
+		const el = ref.current;
+		if (!el) return;
+
+		el.style.transform = `translate(${pointer.current.x}px, ${pointer.current.y}px) translate(-50%, -50%)`;
+		el.style.width = `${pointer.current.width}px`;
+		el.style.height = `${pointer.current.height}px`;
+		el.style.borderRadius = `${pointer.current.borderRadius}px`;
+	});
 
 	if (isTouch) return;
 
 	return (
-		<motion.div
-			style={{
-				x,
-				y,
-				width,
-				height,
-				borderRadius,
-			}}
+		<div
+			ref={ref}
 			className={cn(
-				"pointer-events-none fixed -top-4 -left-4 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-full w-3 h-3 z-0 max-md:hidden",
+				"pointer-events-none fixed -top-4 -left-4 bg-primary rounded-full w-3 h-3 z-0 max-md:hidden",
 			)}
-		></motion.div>
+		/>
 	);
 };
 

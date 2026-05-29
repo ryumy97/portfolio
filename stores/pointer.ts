@@ -1,27 +1,31 @@
-import { create } from "zustand";
-
-type PointerStore = {
-  hover: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    borderRadius: number;
-  } | null;
-  setHover: (hover: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    borderRadius: number;
-  }) => void;
-  hoverOut: () => void;
+type PointerValues = {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	borderRadius: number;
 };
 
-const usePointerStore = create<PointerStore>((set) => ({
-  hover: null,
-  setHover: (hover) => set({ hover }),
-  hoverOut: () => set({ hover: null }),
-}));
+type PointerState = {
+	current: PointerValues;
+	target: PointerValues;
+	hover: boolean;
+};
 
-export default usePointerStore;
+export const pointer: PointerState = {
+	current: {
+		x: -12,
+		y: -12,
+		width: 12,
+		height: 12,
+		borderRadius: 9999,
+	},
+	target: {
+		x: -12,
+		y: -12,
+		width: 12,
+		height: 12,
+		borderRadius: 9999,
+	},
+	hover: false,
+};
