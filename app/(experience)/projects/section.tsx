@@ -184,7 +184,7 @@ export const TextSection: React.FC<{
 }> = ({ text, link, linkText, className }) => {
 	return (
 		<div className={cn("md:max-w-[30vw] max-w-[100vw] w-[80vw]", className)}>
-			<PageDescription className="w-full mt-[2.5vw] md:mt-[1vw]">
+			<PageDescription className="w-full mt-[2.5vw] md:mt-[1vw] whitespace-pre-line">
 				{text}
 			</PageDescription>
 			{link && (
