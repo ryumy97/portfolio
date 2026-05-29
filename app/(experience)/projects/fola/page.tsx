@@ -14,6 +14,7 @@ import intro3 from "./assets/intro-3.png";
 import listing from "./assets/listing.png";
 import main from "./assets/main.png";
 import night from "./assets/night.png";
+import sunset from "./assets/sunset.png";
 import transition from "./assets/transition.png";
 
 export default function Page() {
@@ -51,19 +52,21 @@ export default function Page() {
 					<ImageSection image={intro1} type="desktop" />
 					<ImageSection image={intro2} />
 					<ImageSection image={intro3} />
-					<ImageSection image={main} />
 
 					<TextSection text="An intro sequence welcomes visitors underground, followed by a living digital stage that shifts with each festival edition." />
+
+					<ImageSection image={main} />
+
+					<ImageSection image={cards} type="desktop" />
+					<ImageSection image={listing} type="desktop" />
 
 					<TextSection text="The experience localises to Tāmaki Makaurau — gradient and audio shift from sunrise to moonlight." />
 
 					<ImageSection image={day} />
+					<ImageSection image={sunset} />
 					<ImageSection image={night} />
 
 					<ImageSection image={transition} />
-
-					<ImageSection image={cards} type="desktop" />
-					<ImageSection image={listing} type="desktop" />
 
 					<TextSection
 						text="2025 Best Awards — Small Scale Websites, Silver."

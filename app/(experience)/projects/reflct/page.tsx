@@ -3,7 +3,6 @@ import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, PageLink, Title } from "@/components/ui/typography";
-import { cn } from "@/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import { ImageSection, TextSection } from "../section";
@@ -31,7 +30,7 @@ export default function Page() {
 					<div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
 						<Title className="">
 							<div className="">Reflct</div>
-							<div className="text-primary mt-[0.3em]">- Personal</div>
+							<div className="text-primary mt-[0.3em]">- Personal · 2024</div>
 						</Title>
 						<PageLink className="w-full mt-[1em]">
 							<PointerEventHandler asChild type="underline">
@@ -45,27 +44,37 @@ export default function Page() {
 							</PointerEventHandler>
 						</PageLink>
 					</div>
-					<TextSection text="Platform to easily manage and deploy 3D Gaussian Splatting (3DGS) scenes into the website." />
+
+					<TextSection text="Platform to easily manage and deploy 3D Gaussian Splatting (3DGS) scenes into the website. Aug 2024 — present." />
+
 					<ImageSection image={reflct} type="default" />
 					<ImageSection image={logo} type="default" />
+
+					<TextSection text="Upload scenes, manage projects, and tune splats from a dashboard — then embed them on any site." />
 
 					<ImageSection image={home1} />
 					<ImageSection image={dashboard1} />
 					<ImageSection image={dashboard2} />
 
 					<TextSection
-						text="Users can share the 3DGS scene with others."
+						text="@reflct/react — a React package for rendering 3DGS scenes in the browser."
+						link="https://www.npmjs.com/package/@reflct/react"
+						linkText="View on npm"
+					/>
+
+					<TextSection
+						text="Users can share 3DGS scenes with others via a public link."
 						link="https://www.reflct.app/share-scene?token=ZGUyMDY1MjEtZmFmNi00ODFlLWI0MmYtODY0ZGE4YWJlY2FkOjdoVWM0MVB0elVQa0R1Q3pKbW0zbWQ="
-						linkText="Checkout the shared scene"
+						linkText="Check out a shared scene"
 					/>
 
 					<ImageSection image={share} />
 					<ImageSection image={shareMobile} className="w-[60vw] md:w-[20vw]" />
 
 					<TextSection
-						text="Docs"
+						text="Developer docs and guides for integrating 3DGS into React apps."
 						link="https://docs.reflct.app/"
-						linkText="https://docs.reflct.app/"
+						linkText="View on docs.reflct.app"
 					/>
 
 					<ImageSection image={docs} />
@@ -78,11 +87,33 @@ export default function Page() {
 						<PageLink className="w-full mt-[2em]">
 							<PointerEventHandler asChild type="underline">
 								<Link
+									href="https://www.reflct.app/"
+									target="_blank"
+									className="text-secondary italic"
+								>
+									https://www.reflct.app/
+								</Link>
+							</PointerEventHandler>
+						</PageLink>
+						<PageLink className="w-full mt-[0.5em]">
+							<PointerEventHandler asChild type="underline">
+								<Link
 									href="https://www.npmjs.com/package/@reflct/react"
 									target="_blank"
 									className="text-secondary italic"
 								>
-									@reflct/react - npm package
+									https://www.npmjs.com/package/@reflct/react
+								</Link>
+							</PointerEventHandler>
+						</PageLink>
+						<PageLink className="w-full mt-[2em]">
+							<PointerEventHandler asChild type="underline">
+								<Link
+									href="https://docs.reflct.app/"
+									target="_blank"
+									className="text-secondary italic"
+								>
+									https://docs.reflct.app/
 								</Link>
 							</PointerEventHandler>
 						</PageLink>
@@ -93,7 +124,7 @@ export default function Page() {
 									target="_blank"
 									className="text-secondary italic"
 								>
-									Github - https://github.com/Reflct
+									https://github.com/Reflct
 								</Link>
 							</PointerEventHandler>
 						</PageLink>
@@ -104,7 +135,6 @@ export default function Page() {
 									target="_blank"
 									className="text-secondary italic"
 								>
-									Youtube -
 									https://www.youtube.com/channel/UCVVFVZrukfeW6yQ_Scx1Eeg
 								</Link>
 							</PointerEventHandler>
