@@ -23,7 +23,7 @@ import showcaseMain3 from "./assets/cup-showcase/main-3.png";
 import showcaseMain4 from "./assets/cup-showcase/main-4.png";
 import showcaseModal from "./assets/cup-showcase/modal.png";
 import showcaseTransition from "./assets/cup-showcase/transition.png";
-import mobile from "./assets/mobile.png";
+import main from "./assets/main.png";
 import smashError from "./cup-smash/error.png";
 import smashGameplay1 from "./cup-smash/gameplay-1.png";
 import smashGameplay2 from "./cup-smash/gameplay-2.png";
@@ -76,7 +76,7 @@ export default function Page() {
 
 					<TextSection text="McDonald’s New Zealand — a summer promotion built around limited-edition colour-changing Coke® cups, weekly cash draws, and an in-app Cup Smash game with instant food prizes." />
 
-					<ImageSection image={mobile} className="w-[60vw] md:w-[20vw]" />
+					<ImageSection image={main} className="w-[60vw] md:w-[20vw]" />
 
 					<TextSection
 						text={`Cup Showcase — a mobile microsite where customers explore all four cup designs and see them shift from B&W outlines to full colour, when chilled. 
