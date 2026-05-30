@@ -12,6 +12,12 @@ const START = {
 	] as [number, number, number],
 };
 
+export const STAGGED_SCENE_DEFAULTS = {
+	pixelSize: 24,
+	maskStagger: 0.1,
+	granularity: 12,
+} as const;
+
 export type StaggedSceneProps = {
 	pixelSize?: number;
 	maskStagger?: number;
@@ -19,9 +25,9 @@ export type StaggedSceneProps = {
 };
 
 export function StaggedScene({
-	pixelSize = 64,
-	maskStagger = 0.5,
-	granularity = 30,
+	pixelSize = STAGGED_SCENE_DEFAULTS.pixelSize,
+	maskStagger = STAGGED_SCENE_DEFAULTS.maskStagger,
+	granularity = STAGGED_SCENE_DEFAULTS.granularity,
 }: StaggedSceneProps) {
 	return (
 		<>
