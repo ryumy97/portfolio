@@ -16,21 +16,44 @@ import {
 	snapPixelCellSize,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
-import { useMotionValueEvent, type MotionValue } from "motion/react";
+import { useMotionValue, useMotionValueEvent, type MotionValue } from "motion/react";
 import type { StaticImageData } from "next/image";
 import { useEffect, useRef } from "react";
+
+export const WEBGL_PIXELATION_DEFAULTS = {
+	pixelSize: 64,
+	radius: 1,
+	quality: 75,
+} as const;
 
 export type WebGLPixelationCanvasProps = {
 	className?: string;
 	/** Source image sampled into the pixel grid. */
 	image: StaticImageData;
-	/** Size of each pixel cell in screen pixels. Defaults to 20. */
-	pixelSize: MotionValue<number>;
-	/** Dot radius in cell UV space (0–1). Defaults to 0.5. */
-	radius: MotionValue<number>;
-	/** Quality passed to the Next.js image optimizer. */
+	/** Size of each pixel cell in screen pixels. Defaults to 64. */
+	pixelSize?: number | MotionValue<number>;
+	/** Dot radius in cell UV space (0–1). Defaults to 1. */
+	radius?: number | MotionValue<number>;
+	/** Quality passed to the Next.js image optimizer. Defaults to 75. */
 	quality?: number;
 };
+
+type PixelationConfig = {
+	pixelSize: number;
+	radius: number;
+};
+
+function useScheduleOnMotionValue(
+	source: MotionValue<number> | undefined,
+	schedule: () => void,
+) {
+	const idle = useMotionValue(0);
+	const target = source ?? idle;
+
+	useMotionValueEvent(target, "change", () => {
+		if (source) schedule();
+	});
+}
 
 const FS = `
 precision mediump float;
@@ -80,13 +103,46 @@ void main() {
 export function WebGLPixelationCanvas({
 	className,
 	image,
-	pixelSize,
-	radius,
-	quality = 75,
+	pixelSize = WEBGL_PIXELATION_DEFAULTS.pixelSize,
+	radius = WEBGL_PIXELATION_DEFAULTS.radius,
+	quality = WEBGL_PIXELATION_DEFAULTS.quality,
 }: WebGLPixelationCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const drawRef = useRef<(() => void) | null>(null);
 	const invalidate = useRef(createScheduledDraw(drawRef));
+	const configRef = useRef<PixelationConfig>({
+		pixelSize:
+			typeof pixelSize === "number"
+				? pixelSize
+				: pixelSize.get(),
+		radius: typeof radius === "number" ? radius : radius.get(),
+	});
+
+	const pixelSizePropRef = useRef(pixelSize);
+	const radiusPropRef = useRef(radius);
+	const pixelSizeMotion =
+		typeof pixelSize === "number" ? undefined : pixelSize;
+	const radiusMotion = typeof radius === "number" ? undefined : radius;
+
+	useEffect(() => {
+		pixelSizePropRef.current = pixelSize;
+		radiusPropRef.current = radius;
+	}, [pixelSize, radius]);
+
+	useEffect(() => {
+		const nextPixelSize = typeof pixelSize === "number" ? pixelSize : null;
+		const nextRadius = typeof radius === "number" ? radius : null;
+		if (nextPixelSize === null && nextRadius === null) return;
+
+		configRef.current = {
+			pixelSize: nextPixelSize ?? configRef.current.pixelSize,
+			radius: nextRadius ?? configRef.current.radius,
+		};
+		invalidate.current();
+	}, [pixelSize, radius]);
+
+	useScheduleOnMotionValue(pixelSizeMotion, () => invalidate.current());
+	useScheduleOnMotionValue(radiusMotion, () => invalidate.current());
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -133,6 +189,17 @@ export function WebGLPixelationCanvas({
 		const draw = () => {
 			if (!texture) return;
 
+			const pixelSizeProp = pixelSizePropRef.current;
+			const radiusProp = radiusPropRef.current;
+			const pixelSizeTarget =
+				typeof pixelSizeProp === "number"
+					? configRef.current.pixelSize
+					: pixelSizeProp.get();
+			const radiusTarget =
+				typeof radiusProp === "number"
+					? configRef.current.radius
+					: radiusProp.get();
+
 			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 			gl.clearColor(0, 0, 0, 1);
 			gl.clear(gl.COLOR_BUFFER_BIT);
@@ -140,16 +207,15 @@ export function WebGLPixelationCanvas({
 			gl.useProgram(program);
 			setResolutionUniform(gl, uResolution);
 			if (uPixelSizeLoc) {
-				const target = pixelSize.get();
 				const w = gl.drawingBufferWidth;
 				const h = gl.drawingBufferHeight;
 				gl.uniform2f(
 					uPixelSizeLoc,
-					snapPixelCellSize(w, target),
-					snapPixelCellSize(h, target),
+					snapPixelCellSize(w, pixelSizeTarget),
+					snapPixelCellSize(h, pixelSizeTarget),
 				);
 			}
-			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, radius.get());
+			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, radiusTarget);
 
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -161,7 +227,14 @@ export function WebGLPixelationCanvas({
 		drawRef.current = draw;
 
 		const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
-			drawRef.current?.();
+			const sizeChanged =
+				size.w !== loadedTextureSize.w || size.h !== loadedTextureSize.h;
+
+			if (sizeChanged) {
+				reloadTexture(size.w, size.h);
+			} else {
+				invalidate.current();
+			}
 		});
 
 		const { w, h } = getCanvasPixelSize(canvas);
@@ -175,14 +248,7 @@ export function WebGLPixelationCanvas({
 			if (texture) gl.deleteTexture(texture);
 			if (program) gl.deleteProgram(program);
 		};
-	}, [image, pixelSize, radius, quality]);
-
-	useMotionValueEvent(pixelSize, "change", () => {
-		invalidate.current();
-	});
-	useMotionValueEvent(radius, "change", () => {
-		invalidate.current();
-	});
+	}, [image, quality]);
 
 	return <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />;
 }
