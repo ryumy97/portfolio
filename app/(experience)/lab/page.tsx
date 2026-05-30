@@ -11,6 +11,7 @@ const LABS = [
 	{ href: "/lab/ripple", title: "Ripple" },
 	{ href: "/lab/neighbor", title: "Neighbor" },
 	{ href: "/lab/pixelation", title: "Pixelation" },
+	{ href: "/lab/cmyk", title: "CMYK" },
 	{ href: "/lab/stagged", title: "Staggered" },
 ] as const;
 
