@@ -1,13 +1,12 @@
 "use client";
 
+import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
-import { Button } from "@/components/ui/button";
-import { Grid } from "@/components/ui/grid";
 import Link from "next/link";
 
 export default function Home() {
 	return (
-		<div className="relative w-full h-full">
+		<PageTunnelIn>
 			<SmoothScroll horizontal>
 				<div className="flex items-center justify-start w-fit h-screen gap-20">
 					<div className="m-24">
@@ -56,18 +55,6 @@ export default function Home() {
 					</div>
 				</div>
 			</SmoothScroll>
-			<Grid className="absolute top-0 left-0" asChild>
-				<header className="col-span-full p-2">
-					<Button
-						variant="nav"
-						size={"nav"}
-						className="col-start-1 justify-start"
-						asChild
-					>
-						<Link href="/">Home</Link>
-					</Button>
-				</header>
-			</Grid>
-		</div>
+		</PageTunnelIn>
 	);
 }
