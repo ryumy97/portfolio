@@ -20,22 +20,30 @@ import { useMotionValueEvent } from "motion/react";
 import type { StaticImageData } from "next/image";
 import { useEffect, useRef } from "react";
 
+export const WEBGL_NEIGHBOR_DEFAULTS = {
+	pixelSize: 20,
+	radius: 0.72,
+	quality: 75,
+} as const;
+
 export type WebGLNeighborCanvasProps = {
 	className?: string;
 	/** Images sampled as halftone textures (optimized to canvas size). */
 	images: StaticImageData[];
 	/** Global scroll progress from 0 to 1. */
 	progress: MotionValue<number>;
-	/** Size of each halftone cell in pixels. Defaults to 10. */
+	/** Size of each halftone cell in pixels. Defaults to 20. */
 	pixelSize?: number;
-	/** Dot radius as a fraction of cell size (0–1). Defaults to 0.4. */
+	/** Dot radius as a fraction of cell size (0–1). Defaults to 0.72. */
 	radius?: number;
-	/** Quality passed to the Next.js image optimizer. */
+	/** Quality passed to the Next.js image optimizer. Defaults to 75. */
 	quality?: number;
 };
 
-const DEFAULT_PIXEL_SIZE = 20;
-const DEFAULT_RADIUS = 0.72;
+type NeighborConfig = {
+	pixelSize: number;
+	radius: number;
+};
 
 const FS = `
 #extension GL_OES_standard_derivatives : enable
@@ -102,14 +110,20 @@ export function WebGLNeighborCanvas({
 	className,
 	images,
 	progress,
-	pixelSize = DEFAULT_PIXEL_SIZE,
-	radius = DEFAULT_RADIUS,
-	quality = 75,
+	pixelSize = WEBGL_NEIGHBOR_DEFAULTS.pixelSize,
+	radius = WEBGL_NEIGHBOR_DEFAULTS.radius,
+	quality = WEBGL_NEIGHBOR_DEFAULTS.quality,
 }: WebGLNeighborCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const drawRef = useRef<(() => void) | null>(null);
 	const scrollRef = useRef(progress.get());
 	const invalidate = useRef(createScheduledDraw(drawRef));
+	const configRef = useRef<NeighborConfig>({ pixelSize, radius });
+
+	useEffect(() => {
+		configRef.current = { pixelSize, radius };
+		invalidate.current();
+	}, [pixelSize, radius]);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -167,6 +181,7 @@ export function WebGLNeighborCanvas({
 		const draw = () => {
 			if (textures.length === 0) return;
 
+			const config = configRef.current;
 			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 			gl.clearColor(0, 0, 0, 1);
 			gl.clear(gl.COLOR_BUFFER_BIT);
@@ -181,8 +196,8 @@ export function WebGLNeighborCanvas({
 			const to = textures[Math.min(segment + 1, textures.length - 1)];
 
 			setResolutionUniform(gl, uResolution);
-			if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, pixelSize);
-			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, radius);
+			if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, config.pixelSize);
+			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, config.radius);
 			if (uProgressLoc) gl.uniform1f(uProgressLoc, mix);
 
 			gl.activeTexture(gl.TEXTURE0);
@@ -220,7 +235,7 @@ export function WebGLNeighborCanvas({
 			for (const tex of textures) gl.deleteTexture(tex);
 			if (program) gl.deleteProgram(program);
 		};
-	}, [images, pixelSize, radius, quality]);
+	}, [images, quality]);
 
 	useMotionValueEvent(progress, "change", (value) => {
 		scrollRef.current = value;

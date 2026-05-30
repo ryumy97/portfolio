@@ -1,5 +1,6 @@
 "use client";
 
+import { PageTunnelIn } from "@/components/page-tunnel";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import { Slider } from "@/components/ui/slider";
@@ -69,7 +70,7 @@ export default function Home() {
 	});
 
 	return (
-		<div className="relative w-full h-full">
+		<PageTunnelIn>
 			<Grid className="fixed inset-0 h-full w-full">
 				<div className="col-start-1 col-end-3 border-r relative pt-10 pl-2">
 					<Button
@@ -81,6 +82,9 @@ export default function Home() {
 						<Link href="/lab">Back</Link>
 					</Button>
 					<div className="pt-4 pr-2 flex flex-col gap-4">
+						<h1 className="relative text-foreground text-[28px] leading-none font-heading font-bold transition-all duration-300 group">
+							Ripple
+						</h1>
 						{CONTROLS.map(({ key, label, min, max, step }) => (
 							<div key={key} className="flex flex-col gap-1">
 								<div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
@@ -129,11 +133,8 @@ export default function Home() {
 						driftStrength={values.driftStrength}
 						pointerThrottleMs={values.pointerThrottleMs}
 					/>
-					<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
-						Ripple
-					</h1>
 				</div>
 			</Grid>
-		</div>
+		</PageTunnelIn>
 	);
 }
