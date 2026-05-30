@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import image1 from "./neighbor1.png";
 import image2 from "./neighbor2.png";
 import image3 from "./neighbor3.png";
+import { PointerEventHandler } from "@/components/pointer";
 
 const NEIGHBOR_IMAGES: StaticImageData[] = [image1, image2, image3];
 
@@ -57,14 +58,13 @@ export default function Home() {
 		<PageTunnelIn>
 			<Grid className="fixed inset-0 h-full w-full">
 				<div className="col-start-1 col-end-3 border-r relative pt-10 pl-2">
-					<Button
-						variant="nav"
-						size={"nav"}
-						className="col-start-1 justify-start"
-						asChild
-					>
-						<Link href="/lab">Back</Link>
-					</Button>
+					<div className="col-start-1 relative">
+						<PointerEventHandler asChild type="underline">
+							<Button variant="ghost" size={"nav"} asChild>
+								<Link href="/lab">Back</Link>
+							</Button>
+						</PointerEventHandler>
+					</div>
 					<div className="pt-4 pr-2 flex flex-col gap-4">
 						<h1 className="relative text-foreground text-[28px] leading-none font-heading font-bold transition-all duration-300 group">
 							Neighbor
