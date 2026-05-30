@@ -47,9 +47,9 @@ const Loader = () => {
 	return (
 		<div
 			className={cn(
-				"fixed inset-0 z-50 flex items-center justify-center overflow-hidden",
+				"fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black",
 				{
-					"pointer-events-none": state !== "start",
+					"bg-transparent pointer-events-none": state !== "start",
 				},
 			)}
 		>
