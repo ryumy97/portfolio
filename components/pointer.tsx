@@ -91,7 +91,7 @@ export const usePointerEvent = ({
 		updateHoverTarget(event.currentTarget.getBoundingClientRect());
 	};
 
-	const onPointerLeave = (_event: React.PointerEvent<HTMLElement>) => {
+	const onPointerLeave = () => {
 		pointer.hover = false;
 		pointer.target.width = 12;
 		pointer.target.height = 12;
@@ -133,6 +133,13 @@ export const PointerEventHandler = ({
 	});
 
 	const Comp = asChild ? Slot.Root : "div";
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: force cleanup
+	useEffect(() => {
+		return () => {
+			onPointerLeave();
+		};
+	}, []);
 
 	return (
 		<Comp

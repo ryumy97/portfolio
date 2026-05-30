@@ -1,4 +1,3 @@
-import Header from "@/components/header";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
@@ -13,10 +12,10 @@ import {
 } from "@/components/ui/typography";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
-import Section, { ProjectLink, SubSection } from "./section";
-import SectionHeader from "./section-header";
 import GithubIcon from "./assets/github.svg";
 import LinkedinIcon from "./assets/linkedin.svg";
+import Section, { ProjectLink, SubSection } from "./section";
+import SectionHeader from "./section-header";
 
 export default function Page() {
 	return (
@@ -155,7 +154,11 @@ export default function Page() {
 					{/* Typography */}
 					<Section
 						subtitle="2022"
-						title={<b>Typography</b>}
+						title={
+							<ProjectLink link="/projects/typography">
+								<b>Typography</b>
+							</ProjectLink>
+						}
 						link="https://typography.ryumy.com/"
 					>
 						<CVList className="mt-2">
@@ -169,7 +172,11 @@ export default function Page() {
 					{/* Kiwi */}
 					<Section
 						subtitle="2021"
-						title={<b>Kiwi</b>}
+						title={
+							<ProjectLink link="/projects/kiwi">
+								<b>Kiwi</b>
+							</ProjectLink>
+						}
 						link="https://kiwi.ryumy.com/"
 					>
 						<CVList className="mt-2">

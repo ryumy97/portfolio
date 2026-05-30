@@ -1,14 +1,14 @@
-"use client";
-
+import { getGalleryImages } from "@/app/actions/vault";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
 import { createImageUrl } from "@/lib/image";
 import { ArrowRightIcon } from "lucide-react";
 import { ImageSection } from "../section";
-import IMAGES_2025 from "./data";
 
-export default function Page() {
+export default async function Page() {
+	const images = await getGalleryImages("gallery-2025");
+
 	return (
 		<PageTunnelIn>
 			<SmoothScroll horizontal>
@@ -24,12 +24,12 @@ export default function Page() {
 						</Title>
 					</div>
 
-					{IMAGES_2025.map((image) => (
+					{images.map((image) => (
 						<ImageSection
-							key={image.src}
-							image={createImageUrl(image.src)}
-							alt={image.alt}
-							layout={image.layout}
+							key={image.storageKey}
+							image={createImageUrl(image.storageKey)}
+							alt={image.filename}
+							layout={image.isPortrait ? "portrait" : "landscape"}
 						/>
 					))}
 				</main>
