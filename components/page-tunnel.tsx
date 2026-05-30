@@ -27,6 +27,7 @@ export const PageTunnelIn = ({ children }: { children: React.ReactNode }) => {
 				animate={{
 					opacity: 1,
 					transition: {
+						delay: pathname === "/" ? 0.3 : 0,
 						duration: 0.8,
 						ease: cubicBezier(0.3, 0, 0, 1),
 					},

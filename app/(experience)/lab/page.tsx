@@ -12,7 +12,7 @@ export default function Home() {
 				<div className="flex items-center justify-start w-fit h-screen gap-20">
 					<div className="m-24">
 						<Link
-							href="/canvas/ripple"
+							href="/lab/ripple"
 							className="col-start-4 col-end-8 flex items-center justify-center"
 						>
 							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
@@ -23,7 +23,7 @@ export default function Home() {
 					</div>
 					<div className="m-24">
 						<Link
-							href="/canvas/neighbor"
+							href="/lab/neighbor"
 							className="col-start-4 col-end-8 flex items-center justify-center"
 						>
 							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
@@ -34,7 +34,7 @@ export default function Home() {
 					</div>
 					<div className="m-24">
 						<Link
-							href="/canvas/pixelation"
+							href="/lab/pixelation"
 							className="col-start-4 col-end-8 flex items-center justify-center"
 						>
 							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
@@ -45,7 +45,7 @@ export default function Home() {
 					</div>
 					<div className="m-24">
 						<Link
-							href="/canvas/stagged"
+							href="/lab/stagged"
 							className="col-start-4 col-end-8 flex items-center justify-center"
 						>
 							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">

@@ -24,7 +24,7 @@ export default function Home() {
 						className="col-start-1 justify-start"
 						asChild
 					>
-						<Link href="/canvas">Back</Link>
+						<Link href="/lab">Back</Link>
 					</Button>
 				</header>
 			</Grid>

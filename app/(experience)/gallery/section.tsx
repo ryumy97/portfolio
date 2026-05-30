@@ -1,3 +1,5 @@
+"use client";
+
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import { ProjectTitle } from "@/components/ui/typography";
@@ -77,7 +79,7 @@ const useRevealMotionValues = () => {
 	useAnimationFrame((_, delta) => {
 		if (state === "start") return;
 
-		const t = delta / 1000 / 0.3;
+		const t = delta / 1000 / 0.2;
 
 		dataRef.current.current.y = lerp(
 			dataRef.current.current.y,
@@ -151,7 +153,7 @@ export const ImageSection: React.FC<{
 			style={{ y }}
 			ref={ref}
 		>
-			<Image src={image} alt={alt} fill />
+			<Image src={image} alt={alt} fill className="object-cover" />
 		</motion.div>
 	);
 };
