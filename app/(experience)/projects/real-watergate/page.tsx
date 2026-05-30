@@ -50,12 +50,12 @@ export default function Page() {
 					<TextSection text="Explore the underwater evidence of the Real Watergate." />
 					<ImageSection image={ocean} />
 
-					<TextSection text="Threejs with custom shaders to create the look of waves on the ocean." />
+					<TextSection text="Three.js with custom shaders to create the look of waves on the ocean." />
 					<ImageSection image={intro1} />
 					<ImageSection image={intro2} />
 					<ImageSection image={intro3} />
 
-					<TextSection text="The evidences are digitally scanned and displayed as a physical paper-like 3d object." />
+					<TextSection text="The evidences are displayed as a physical paper-like 3d object." />
 
 					<ImageSection image={section1} type="desktop" />
 					<ImageSection image={section2} />

@@ -42,7 +42,7 @@ export default function Page() {
 						</PageLink>
 					</div>
 
-					<TextSection text="Platform to easily manage and deploy 3D Gaussian Splatting (3DGS) scenes into the website. Aug 2024 — present." />
+					<TextSection text="Platform to easily manage and deploy 3D Gaussian Splatting (3DGS) scenes into the website." />
 
 					<ImageSection image={reflct} type="default" />
 					<ImageSection image={logo} type="default" />

@@ -43,7 +43,7 @@ export default function Page() {
 
 					<ImageSection image={main} />
 
-					<TextSection text="The kiwi is a circle you can grab and throw around. Colour palettes and patterns re-skin the same shape — as a bird, a fruit, or something more abstract." />
+					<TextSection text="The kiwi is a circle you can grab and throw around. Colour palettes and patterns re-skin the same shape — as a bird or a fruit." />
 
 					<ImageSection image={kiwiHome} />
 					<ImageSection image={kiwiCorner} />

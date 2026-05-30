@@ -43,7 +43,7 @@ export default function Page() {
 						</PageLink>
 					</div>
 
-					<TextSection text="A mini project — a collection of interactive kinetic typography experiences. Built with Pixi.js and other web APIs." />
+					<TextSection text="A mini project — a collection of interactive kinetic typography experiences. Built with Pixi.js and other web technologies." />
 
 					<ImageSection image={init} type="default" />
 
