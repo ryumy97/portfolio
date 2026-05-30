@@ -31,8 +31,8 @@ const Logo = () => {
 					onPointerEnter(event);
 					setHover(true);
 				}}
-				onPointerLeave={(event) => {
-					onPointerLeave(event);
+				onPointerLeave={() => {
+					onPointerLeave();
 					setHover(false);
 				}}
 				className=" no-underline"
