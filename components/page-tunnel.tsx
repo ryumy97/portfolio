@@ -1,9 +1,9 @@
 "use client";
 
 import { cubicBezier, motion } from "motion/react";
-import tunnel from "./ui/tunnel";
-import { useIntroStore } from "@/stores/intro";
 import { usePathname } from "next/navigation";
+import { useIntroStore } from "@/stores/intro";
+import tunnel from "./ui/tunnel";
 
 const PageTunnel = tunnel();
 

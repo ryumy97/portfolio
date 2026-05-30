@@ -1,9 +1,9 @@
 "use client";
 
-import Rodin from "@/components/three/rodin";
-import { Stagger } from "@/components/three/postprocessing/stagger";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { EffectComposer, Pixelation } from "@react-three/postprocessing";
+import { Stagger } from "@/components/three/postprocessing/stagger";
+import Rodin from "@/components/three/rodin";
 
 const START = {
 	position: [-3.1, 0, 3.711369133013187] as [number, number, number],

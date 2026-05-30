@@ -1,13 +1,9 @@
 "use client";
 
-import { Stagger } from "@/components/three/postprocessing/stagger";
-import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
-import { cn } from "@/lib/utils";
-import { useIntroStore } from "@/stores/intro";
 import { PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { EffectComposer, Pixelation } from "@react-three/postprocessing";
-import Lenis from "lenis";
+import type Lenis from "lenis";
 import { useLenis } from "lenis/react";
 import {
 	animate,
@@ -19,11 +15,15 @@ import {
 	useMotionValueEvent,
 	useSpring,
 } from "motion/react";
-import { PixelationEffect } from "postprocessing";
+import type { PixelationEffect } from "postprocessing";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
+import type * as THREE from "three";
+import { Stagger } from "@/components/three/postprocessing/stagger";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
+import { useIntroStore } from "@/stores/intro";
 import { useScrollEvent } from "../../../components/smooth-scroll";
-import { StaggerEffect } from "../../../components/three/postprocessing/stagger-effect";
+import type { StaggerEffect } from "../../../components/three/postprocessing/stagger-effect";
 import Rodin from "../../../components/three/rodin";
 import { SubGrid } from "../../../components/ui/grid";
 
@@ -306,7 +306,7 @@ const ScrollingPhrase = () => {
 				className="flex flex-col text-[15vw] md:text-[7vw] font-heading font-bold leading-[0.8em] tracking-[-0.03em]"
 				style={{ y }}
 			>
-				{lineKeys.map((key, index, arr) => (
+				{lineKeys.map((key, index, _arr) => (
 					<p
 						key={key}
 						ref={index === 0 ? lineRef : undefined}

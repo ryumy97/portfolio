@@ -1,13 +1,10 @@
-import Header from "@/components/header";
+import { ArrowRightIcon } from "lucide-react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
-import { ArrowRightIcon } from "lucide-react";
-import aimhigh from "./aimhigh/assets/main.png";
 import feastMode from "./feast-mode/assets/main.png";
 import fola from "./fola/assets/cards.png";
 import greenprint from "./greenprint/assets/vw.png";
-import heritageNewZealand from "./heritage-new-zealand/assets/main.png";
 import kiwi from "./kiwi/assets/main.png";
 import realWatergate from "./real-watergate/assets/ocean.png";
 import reflct from "./reflct/assets/main.png";

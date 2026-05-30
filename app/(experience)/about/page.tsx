@@ -1,3 +1,5 @@
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
@@ -10,8 +12,6 @@ import {
 	PageDescription,
 	Title,
 } from "@/components/ui/typography";
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
 import GithubIcon from "./assets/github.svg";
 import LinkedinIcon from "./assets/linkedin.svg";
 import Section, { ProjectLink, SubSection } from "./section";

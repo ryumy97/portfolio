@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import { Slot } from "radix-ui";
+import { cn } from "@/lib/utils";
 
 type Props = {
 	className?: string;

@@ -1,5 +1,7 @@
 "use client";
 
+import type { StaticImageData } from "next/image";
+import { useEffect, useRef } from "react";
 import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
@@ -15,8 +17,6 @@ import {
 	setResolutionUniform,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
-import type { StaticImageData } from "next/image";
-import { useEffect, useRef } from "react";
 
 export const WEBGL_CMYK_DEFAULTS = {
 	pixelSize: 24,

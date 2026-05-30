@@ -1,17 +1,17 @@
 "use client";
 
-import eye2Image from "./assets/about/eye2.png";
-import handImage from "./assets/about/hand.png";
-import roomImage from "./assets/about/room.png";
 import { ArrowRightIcon } from "lucide-react";
 import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
 import Link from "next/link";
 import { useRef } from "react";
+import { SectionDescription, Title } from "@/components/ui/typography";
 import { PointerEventHandler } from "../../../components/pointer";
 import { useScrollEvent } from "../../../components/smooth-scroll";
 import { SubGrid } from "../../../components/ui/grid";
 import { WebGLPixelationCanvas } from "../../../components/webgl/webgl-pixelation-canvas";
-import { SectionDescription, Title } from "@/components/ui/typography";
+import eye2Image from "./assets/about/eye2.png";
+import handImage from "./assets/about/hand.png";
+import roomImage from "./assets/about/room.png";
 
 const About = () => {
 	const ref = useRef<HTMLDivElement>(null);

@@ -1,14 +1,14 @@
 "use client";
 
-import { PageTunnelIn } from "@/components/page-tunnel";
-import { Button } from "@/components/ui/button";
-import { Grid } from "@/components/ui/grid";
-import { Slider } from "@/components/ui/slider";
 import { Canvas } from "@react-three/fiber";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { STAGGED_SCENE_DEFAULTS, StaggedScene } from "./scene";
+import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
+import { Button } from "@/components/ui/button";
+import { Grid } from "@/components/ui/grid";
+import { Slider } from "@/components/ui/slider";
+import { STAGGED_SCENE_DEFAULTS, StaggedScene } from "./scene";
 
 const CONTROLS = [
 	{ key: "pixelSize", label: "Pixel size", min: 4, max: 128, step: 1 },

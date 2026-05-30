@@ -1,9 +1,9 @@
+import { ArrowRightIcon } from "lucide-react";
 import { getGalleryImages } from "@/app/actions/vault";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
 import { createImageUrl } from "@/lib/image";
-import { ArrowRightIcon } from "lucide-react";
 import { ImageSection } from "../section";
 
 export default async function Page() {

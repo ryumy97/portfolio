@@ -1,8 +1,9 @@
 "use client";
 
-import { AnimatePresence, AnimatePresenceProps } from "motion/react";
-import React, { ReactNode, useEffect } from "react";
-import { create, StoreApi } from "zustand";
+import { AnimatePresence, type AnimatePresenceProps } from "motion/react";
+import type React from "react";
+import { type ReactNode, useEffect } from "react";
+import { create, type StoreApi } from "zustand";
 
 type Props = { children: React.ReactNode };
 
@@ -14,7 +15,7 @@ type State = {
 
 export default function tunnel() {
 	const useStore = create<State>((set) => ({
-		current: new Array<ReactNode>(),
+		current: [] as ReactNode[],
 		version: 0,
 		set,
 	}));

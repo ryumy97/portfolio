@@ -1,10 +1,9 @@
-import Header from "@/components/header";
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, PageLink, Title } from "@/components/ui/typography";
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
 import { ImageSection, TextSection } from "../section";
 import colourChanging1 from "./assets/cup-showcase/colour-changing-1.png";
 import colourChanging2 from "./assets/cup-showcase/colour-changing-2.png";

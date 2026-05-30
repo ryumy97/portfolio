@@ -1,11 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useIntroStore } from "@/stores/intro";
 import type { ScrollCallback } from "lenis";
 import { Lenis as LenisComponent, type LenisRef, useLenis } from "lenis/react";
 import { cancelFrame, frame } from "motion";
 import { useEffect, useRef } from "react";
+import { cn } from "@/lib/utils";
+import { useIntroStore } from "@/stores/intro";
 
 type Props = {
 	horizontal?: boolean;

@@ -1,6 +1,13 @@
 "use client";
 
 import {
+	type MotionValue,
+	useMotionValue,
+	useMotionValueEvent,
+} from "motion/react";
+import type { StaticImageData } from "next/image";
+import { useEffect, useRef } from "react";
+import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
 	createProgram,
@@ -16,9 +23,6 @@ import {
 	snapPixelCellSize,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
-import { useMotionValue, useMotionValueEvent, type MotionValue } from "motion/react";
-import type { StaticImageData } from "next/image";
-import { useEffect, useRef } from "react";
 
 export const WEBGL_PIXELATION_DEFAULTS = {
 	pixelSize: 64,
@@ -111,17 +115,13 @@ export function WebGLPixelationCanvas({
 	const drawRef = useRef<(() => void) | null>(null);
 	const invalidate = useRef(createScheduledDraw(drawRef));
 	const configRef = useRef<PixelationConfig>({
-		pixelSize:
-			typeof pixelSize === "number"
-				? pixelSize
-				: pixelSize.get(),
+		pixelSize: typeof pixelSize === "number" ? pixelSize : pixelSize.get(),
 		radius: typeof radius === "number" ? radius : radius.get(),
 	});
 
 	const pixelSizePropRef = useRef(pixelSize);
 	const radiusPropRef = useRef(radius);
-	const pixelSizeMotion =
-		typeof pixelSize === "number" ? undefined : pixelSize;
+	const pixelSizeMotion = typeof pixelSize === "number" ? undefined : pixelSize;
 	const radiusMotion = typeof radius === "number" ? undefined : radius;
 
 	useEffect(() => {

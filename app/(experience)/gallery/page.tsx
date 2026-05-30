@@ -1,10 +1,10 @@
 "use client";
 
+import { ArrowRightIcon } from "lucide-react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
 import { createImageUrl } from "@/lib/image";
-import { ArrowRightIcon } from "lucide-react";
 import { ListItemSection } from "./section";
 
 export default function Page() {

@@ -1,10 +1,9 @@
-import Header from "@/components/header";
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, PageLink, Title } from "@/components/ui/typography";
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
 import { ImageSection, TextSection } from "../section";
 import kiwiHome from "./assets/image-1.png";
 import kiwiCorner from "./assets/image-2.png";

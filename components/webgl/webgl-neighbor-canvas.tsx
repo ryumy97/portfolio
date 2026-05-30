@@ -1,5 +1,9 @@
 "use client";
 
+import type { MotionValue } from "motion/react";
+import { useMotionValueEvent } from "motion/react";
+import type { StaticImageData } from "next/image";
+import { useEffect, useRef } from "react";
 import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
@@ -15,10 +19,6 @@ import {
 	setResolutionUniform,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
-import type { MotionValue } from "motion/react";
-import { useMotionValueEvent } from "motion/react";
-import type { StaticImageData } from "next/image";
-import { useEffect, useRef } from "react";
 
 export const WEBGL_NEIGHBOR_DEFAULTS = {
 	pixelSize: 20,

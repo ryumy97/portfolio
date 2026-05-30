@@ -1,11 +1,5 @@
 "use client";
 
-import { PointerEventHandler } from "@/components/pointer";
-import { useScrollEvent } from "@/components/smooth-scroll";
-import { ProjectTitle } from "@/components/ui/typography";
-import { lerp } from "@/lib/math";
-import { cn } from "@/lib/utils";
-import { useIntroStore } from "@/stores/intro";
 import {
 	cubicBezier,
 	motion,
@@ -16,6 +10,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { PointerEventHandler } from "@/components/pointer";
+import { useScrollEvent } from "@/components/smooth-scroll";
+import { ProjectTitle } from "@/components/ui/typography";
+import { lerp } from "@/lib/math";
+import { cn } from "@/lib/utils";
+import { useIntroStore } from "@/stores/intro";
 
 const useRevealMotionValues = () => {
 	const state = useIntroStore((store) => store.state);
@@ -32,7 +32,7 @@ const useRevealMotionValues = () => {
 
 	const y = useMotionValue("5%");
 
-	useScrollEvent((lenis) => {
+	useScrollEvent((_lenis) => {
 		const rect = ref.current?.getBoundingClientRect();
 		if (!rect) return;
 
