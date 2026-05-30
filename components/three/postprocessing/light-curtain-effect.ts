@@ -76,60 +76,60 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 `;
 
 export const LIGHT_CURTAIN_EFFECT_DEFAULTS = {
-  distortion: 0.2,
-  lightX: 1,
-  lightY: 0,
-  lightZ: 1,
-  fill: 0.5,
+	distortion: 0.2,
+	lightX: 1,
+	lightY: 0,
+	lightZ: 1,
+	fill: 0.5,
 } as const;
 
 export type LightCurtainEffectOptions = {
-  distortion?: number;
-  lightPosition?: Vector3 | [number, number, number];
-  fill?: number;
+	distortion?: number;
+	lightPosition?: Vector3 | [number, number, number];
+	fill?: number;
 };
 
 export class LightCurtainEffect extends Effect {
-  constructor({
-    distortion = LIGHT_CURTAIN_EFFECT_DEFAULTS.distortion,
-    lightPosition = [
-      LIGHT_CURTAIN_EFFECT_DEFAULTS.lightX,
-      LIGHT_CURTAIN_EFFECT_DEFAULTS.lightY,
-      LIGHT_CURTAIN_EFFECT_DEFAULTS.lightZ,
-    ],
-    fill = LIGHT_CURTAIN_EFFECT_DEFAULTS.fill,
-  }: LightCurtainEffectOptions = {}) {
-    const position =
-      lightPosition instanceof Vector3
-        ? lightPosition.clone()
-        : new Vector3(...lightPosition);
+	constructor({
+		distortion = LIGHT_CURTAIN_EFFECT_DEFAULTS.distortion,
+		lightPosition = [
+			LIGHT_CURTAIN_EFFECT_DEFAULTS.lightX,
+			LIGHT_CURTAIN_EFFECT_DEFAULTS.lightY,
+			LIGHT_CURTAIN_EFFECT_DEFAULTS.lightZ,
+		],
+		fill = LIGHT_CURTAIN_EFFECT_DEFAULTS.fill,
+	}: LightCurtainEffectOptions = {}) {
+		const position =
+			lightPosition instanceof Vector3
+				? lightPosition.clone()
+				: new Vector3(...lightPosition);
 
-    super("LightCurtainEffect", fragmentShader, {
-      uniforms: new Map<string, Uniform>([
-        ["distortion", new Uniform(distortion)],
-        ["lightPosition", new Uniform(position)],
-        ["fill", new Uniform(fill)],
-      ]),
-    });
-  }
+		super("LightCurtainEffect", fragmentShader, {
+			uniforms: new Map<string, Uniform>([
+				["distortion", new Uniform(distortion)],
+				["lightPosition", new Uniform(position)],
+				["fill", new Uniform(fill)],
+			]),
+		});
+	}
 
-  setDistortion(value: number) {
-    const uniform = this.uniforms.get("distortion");
-    if (uniform) uniform.value = value;
-  }
+	setDistortion(value: number) {
+		const uniform = this.uniforms.get("distortion");
+		if (uniform) uniform.value = value;
+	}
 
-  setLightPosition(value: Vector3 | [number, number, number]) {
-    const uniform = this.uniforms.get("lightPosition");
-    if (!uniform) return;
-    if (value instanceof Vector3) {
-      uniform.value.copy(value);
-    } else {
-      uniform.value.set(value[0], value[1], value[2]);
-    }
-  }
+	setLightPosition(value: Vector3 | [number, number, number]) {
+		const uniform = this.uniforms.get("lightPosition");
+		if (!uniform) return;
+		if (value instanceof Vector3) {
+			uniform.value.copy(value);
+		} else {
+			uniform.value.set(value[0], value[1], value[2]);
+		}
+	}
 
-  setFill(value: number) {
-    const uniform = this.uniforms.get("fill");
-    if (uniform) uniform.value = value;
-  }
+	setFill(value: number) {
+		const uniform = this.uniforms.get("fill");
+		if (uniform) uniform.value = value;
+	}
 }

@@ -1,13 +1,13 @@
 "use client";
 
+import { Canvas } from "@react-three/fiber";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import { Slider } from "@/components/ui/slider";
-import { Canvas } from "@react-three/fiber";
-import Link from "next/link";
-import { useRef, useState } from "react";
 import { LIGHT_CURTAIN_SCENE_DEFAULTS, LightCurtainScene } from "./scene";
 
 const CONTROLS = [

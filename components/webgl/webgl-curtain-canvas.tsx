@@ -1,5 +1,8 @@
 "use client";
 
+import type { MotionValue } from "motion";
+import { useMotionValueEvent } from "motion/react";
+import { useEffect, useRef } from "react";
 import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
@@ -10,9 +13,6 @@ import {
 	observeCanvasPixelSize,
 	setResolutionUniform,
 } from "@/lib/webgl";
-import type { MotionValue } from "motion";
-import { useMotionValueEvent } from "motion/react";
-import { useEffect, useRef } from "react";
 
 export type WebGLCurtainCanvasProps = {
 	className?: string;

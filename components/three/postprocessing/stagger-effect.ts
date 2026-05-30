@@ -20,29 +20,29 @@ void mainUv(inout vec2 uv) {
 `;
 
 export type StaggerEffectOptions = {
-  pixelSize?: number;
-  maskStagger?: number;
+	pixelSize?: number;
+	maskStagger?: number;
 };
 
 export class StaggerEffect extends Effect {
-  constructor({
-    pixelSize = 64,
-    maskStagger = 0.5,
-  }: StaggerEffectOptions = {}) {
-    super("StaggerEffect", fragmentShader, {
-      uniforms: new Map<string, Uniform>([
-        ["pixelSize", new Uniform(new Vector2(pixelSize, pixelSize))],
-        ["maskStagger", new Uniform(maskStagger)],
-      ]),
-    });
-  }
+	constructor({
+		pixelSize = 64,
+		maskStagger = 0.5,
+	}: StaggerEffectOptions = {}) {
+		super("StaggerEffect", fragmentShader, {
+			uniforms: new Map<string, Uniform>([
+				["pixelSize", new Uniform(new Vector2(pixelSize, pixelSize))],
+				["maskStagger", new Uniform(maskStagger)],
+			]),
+		});
+	}
 
-  setPixelSize(value: number) {
-    this.uniforms.get("pixelSize")?.value.set(value, value);
-  }
+	setPixelSize(value: number) {
+		this.uniforms.get("pixelSize")?.value.set(value, value);
+	}
 
-  setMaskStagger(value: number) {
-    const uniform = this.uniforms.get("maskStagger");
-    if (uniform) uniform.value = value;
-  }
+	setMaskStagger(value: number) {
+		const uniform = this.uniforms.get("maskStagger");
+		if (uniform) uniform.value = value;
+	}
 }

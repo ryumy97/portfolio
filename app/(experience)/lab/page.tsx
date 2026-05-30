@@ -1,11 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { Grid, SubGrid } from "@/components/ui/grid";
 import { PageDescription, Title } from "@/components/ui/typography";
-import Link from "next/link";
 
 const LABS = [
 	{ href: "/lab/ripple", title: "Ripple" },
@@ -24,7 +24,7 @@ export default function Labs() {
 				<Grid className="w-full">
 					<div className="col-start-2 col-end-10">
 						<Title className="text-primary">Lab</Title>
-						<PageDescription>Experiments with webgl</PageDescription>
+						<PageDescription>Something fun</PageDescription>
 					</div>
 					<SubGrid className="col-start-2 col-end-10 mt-12">
 						{LABS.map(({ href, title }) => (

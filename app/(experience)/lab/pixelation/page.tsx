@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
+import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import { Slider } from "@/components/ui/slider";
@@ -8,10 +11,7 @@ import {
 	WEBGL_PIXELATION_DEFAULTS,
 	WebGLPixelationCanvas,
 } from "@/components/webgl/webgl-pixelation-canvas";
-import Link from "next/link";
-import { useState } from "react";
 import image from "../neighbor/neighbor1.png";
-import { PointerEventHandler } from "@/components/pointer";
 
 const CONTROLS = [
 	{ key: "pixelSize", label: "Pixel size", min: 8, max: 128, step: 1 },

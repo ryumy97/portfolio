@@ -1,10 +1,9 @@
-import Header from "@/components/header";
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, PageLink, Title } from "@/components/ui/typography";
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
 import { ImageSection, TextSection } from "../section";
 import cards from "./assets/cards.png";
 import day from "./assets/day.png";

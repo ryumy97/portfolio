@@ -1,16 +1,16 @@
 "use client";
 
-import { LabParticles } from "@/components/three/lab-particles";
-import { useScrollEvent } from "@/components/smooth-scroll";
-import { SubGrid } from "@/components/ui/grid";
 import { PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import { EffectComposer, Pixelation } from "@react-three/postprocessing";
+import { ArrowRightIcon } from "lucide-react";
 import { transform } from "motion/react";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
-import Link from "next/link";
-import { ArrowRightIcon } from "lucide-react";
-import { EffectComposer, Pixelation } from "@react-three/postprocessing";
+import { useScrollEvent } from "@/components/smooth-scroll";
+import { LabParticles } from "@/components/three/lab-particles";
+import { SubGrid } from "@/components/ui/grid";
 
 const Lab = () => {
 	const containerRef = useRef<HTMLDivElement>(null);

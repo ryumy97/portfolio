@@ -1,10 +1,9 @@
-import Header from "@/components/header";
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, PageLink, Title } from "@/components/ui/typography";
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
 import { ImageSection, TextSection } from "../section";
 import dashboard1 from "./assets/dashboard-1.png";
 import dashboard2 from "./assets/dashboard-2.png";
@@ -12,8 +11,8 @@ import docs from "./assets/docs.png";
 import home1 from "./assets/home-1.png";
 import reflct from "./assets/main.png";
 import logo from "./assets/reflct_logo.png";
-import shareMobile from "./assets/share-mobile.png";
 import share from "./assets/share.png";
+import shareMobile from "./assets/share-mobile.png";
 
 export default function Page() {
 	return (

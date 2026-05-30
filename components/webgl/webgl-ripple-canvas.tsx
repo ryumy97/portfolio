@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
@@ -10,7 +11,6 @@ import {
 	observeCanvasPixelSize,
 	setResolutionUniform,
 } from "@/lib/webgl";
-import { useEffect, useRef } from "react";
 
 export const WEBGL_RIPPLE_DEFAULTS = {
 	maxRipples: 24,

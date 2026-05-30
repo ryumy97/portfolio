@@ -1,15 +1,5 @@
 "use client";
 
-import AimHigh from "@/app/(experience)/projects/aimhigh/assets/aimhigh.png";
-import Fola from "@/app/(experience)/projects/fola/assets/main.png";
-import Greenprint from "@/app/(experience)/projects/greenprint/assets/canvas.png";
-import Kiwi from "@/app/(experience)/projects/kiwi/assets/mobile.png";
-import Reflct from "@/app/(experience)/projects/reflct/assets/home-1.png";
-import Typography from "@/app/(experience)/projects/typography/assets/home.png";
-import { PointerEventHandler } from "@/components/pointer";
-import { SectionDescription } from "@/components/ui/typography";
-import { WebGLPixelShiftCanvas } from "@/components/webgl/webgl-pixel-shift-canvas";
-import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import type Lenis from "lenis";
 import { ArrowRightIcon } from "lucide-react";
 import {
@@ -21,11 +11,21 @@ import {
 import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
+import AimHigh from "@/app/(experience)/projects/aimhigh/assets/aimhigh.png";
+import FeastMode from "@/app/(experience)/projects/feast-mode/assets/mobile.png";
+import Fola from "@/app/(experience)/projects/fola/assets/main.png";
+import Greenprint from "@/app/(experience)/projects/greenprint/assets/canvas.png";
+import HeritageNewZealand from "@/app/(experience)/projects/heritage-new-zealand/assets/hero.png";
+import Kiwi from "@/app/(experience)/projects/kiwi/assets/mobile.png";
+import RealWatergate from "@/app/(experience)/projects/real-watergate/assets/main.png";
+import Reflct from "@/app/(experience)/projects/reflct/assets/home-1.png";
+import Typography from "@/app/(experience)/projects/typography/assets/home.png";
+import { PointerEventHandler } from "@/components/pointer";
+import { SectionDescription } from "@/components/ui/typography";
+import { WebGLPixelShiftCanvas } from "@/components/webgl/webgl-pixel-shift-canvas";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { useScrollEvent } from "../../../components/smooth-scroll";
 import { Grid, SubGrid } from "../../../components/ui/grid";
-import FeastMode from "@/app/(experience)/projects/feast-mode/assets/mobile.png";
-import RealWatergate from "@/app/(experience)/projects/real-watergate/assets/main.png";
-import HeritageNewZealand from "@/app/(experience)/projects/heritage-new-zealand/assets/hero.png";
 
 const MAX_SHIFT_PX = 48;
 const VELOCITY_SCALE = 0.03;

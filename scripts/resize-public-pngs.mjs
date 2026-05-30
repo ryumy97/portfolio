@@ -92,7 +92,11 @@ function resizeTarget(meta) {
 	return { needsResize, nextWidth, nextHeight };
 }
 
-async function convertToPng(sourcePath, outPath, { applyExifOrientation = false } = {}) {
+async function convertToPng(
+	sourcePath,
+	outPath,
+	{ applyExifOrientation = false } = {},
+) {
 	const tempPath = `${outPath}.convert-tmp.png`;
 
 	try {
@@ -174,7 +178,9 @@ async function processPng(filePath) {
 
 async function processJpeg(filePath) {
 	const beforeStat = await stat(filePath);
-	const meta = await openImage(filePath, { applyExifOrientation: true }).metadata();
+	const meta = await openImage(filePath, {
+		applyExifOrientation: true,
+	}).metadata();
 	const outPath = pngPathFor(filePath);
 	const from = pixelSize(meta);
 	const { needsResize, nextWidth, nextHeight } = resizeTarget(meta);

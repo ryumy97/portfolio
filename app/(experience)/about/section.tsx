@@ -1,7 +1,7 @@
+import Link from "next/link";
+import type { PropsWithChildren } from "react";
 import { PointerEventHandler } from "@/components/pointer";
 import { CVHeading, CVLink, CVSubHeading } from "@/components/ui/typography";
-import Link from "next/link";
-import { PropsWithChildren } from "react";
 
 type Props = {
 	subtitle: string;

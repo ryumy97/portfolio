@@ -1,13 +1,12 @@
 import About from "@/app/(experience)/home/about";
 import Hero from "@/app/(experience)/home/hero";
-import Header from "@/components/header";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { Grid, SubGrid } from "@/components/ui/grid";
-import Projects from "./home/projects";
+import Footer from "./home/footer";
 import Gallery from "./home/gallery";
 import Lab from "./home/lab";
-import Footer from "./home/footer";
+import Projects from "./home/projects";
 
 export default function Home() {
 	return (

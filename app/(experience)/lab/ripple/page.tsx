@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
@@ -9,8 +11,6 @@ import {
 	WEBGL_RIPPLE_DEFAULTS,
 	WebGLRippleCanvas,
 } from "@/components/webgl/webgl-ripple-canvas";
-import Link from "next/link";
-import { useState } from "react";
 
 const CONTROLS = [
 	{ key: "pixelSize", label: "Pixel size", min: 10, max: 100, step: 1 },

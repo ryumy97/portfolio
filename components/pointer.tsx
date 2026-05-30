@@ -1,11 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { lerp } from "@/lib/math";
-import { pointer } from "@/stores/pointer";
 import { useAnimationFrame } from "motion/react";
 import { Slot } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
+import { lerp } from "@/lib/math";
+import { cn } from "@/lib/utils";
+import { pointer } from "@/stores/pointer";
 import { useScrollEvent } from "./smooth-scroll";
 
 type PointerEventType = "bg" | "underline" | "bullet";
@@ -143,7 +143,7 @@ export const PointerEventHandler = ({
 
 	return (
 		<Comp
-			// @ts-ignore
+			// @ts-expect-error
 			ref={ref}
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}

@@ -1,12 +1,12 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import favicon from "@/public/favicon.png";
 import { AnimatePresence, cubicBezier, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
+import favicon from "@/public/favicon.png";
 import { PointerEventHandler, usePointerEvent } from "./pointer";
 import { Button } from "./ui/button";
 import { Grid } from "./ui/grid";

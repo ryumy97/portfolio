@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
@@ -9,8 +11,6 @@ import {
 	WEBGL_CMYK_DEFAULTS,
 	WebGLCmykCanvas,
 } from "@/components/webgl/webgl-cmyk-canvas";
-import Link from "next/link";
-import { useState } from "react";
 import image from "../neighbor/neighbor1.png";
 
 const CONTROLS = [

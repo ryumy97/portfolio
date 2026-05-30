@@ -1,6 +1,13 @@
 "use client";
 
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { animate } from "motion";
+import { useMotionValue } from "motion/react";
+import type { StaticImageData } from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
+import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import { Slider } from "@/components/ui/slider";
@@ -8,16 +15,9 @@ import {
 	WEBGL_NEIGHBOR_DEFAULTS,
 	WebGLNeighborCanvas,
 } from "@/components/webgl/webgl-neighbor-canvas";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { animate } from "motion";
-import { useMotionValue } from "motion/react";
-import type { StaticImageData } from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
 import image1 from "./neighbor1.png";
 import image2 from "./neighbor2.png";
 import image3 from "./neighbor3.png";
-import { PointerEventHandler } from "@/components/pointer";
 
 const NEIGHBOR_IMAGES: StaticImageData[] = [image1, image2, image3];
 

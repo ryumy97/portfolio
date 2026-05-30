@@ -1,9 +1,9 @@
 "use client";
 
-import { PageTunnelIn } from "@/components/page-tunnel";
-import SmoothScroll from "@/components/smooth-scroll";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { PageTunnelIn } from "@/components/page-tunnel";
+import SmoothScroll from "@/components/smooth-scroll";
 
 export default function Page2() {
 	return (

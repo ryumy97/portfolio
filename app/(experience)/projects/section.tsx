@@ -1,5 +1,15 @@
 "use client";
 
+import {
+	cubicBezier,
+	motion,
+	transform,
+	useAnimationFrame,
+	useMotionValue,
+} from "motion/react";
+import type { StaticImageData } from "next/image";
+import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { MotionImage } from "@/components/motion-image";
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
@@ -11,16 +21,6 @@ import {
 import { lerp } from "@/lib/math";
 import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
-import {
-	cubicBezier,
-	motion,
-	transform,
-	useAnimationFrame,
-	useMotionValue,
-} from "motion/react";
-import { StaticImageData } from "next/image";
-import Link from "next/link";
-import { useEffect, useRef } from "react";
 
 const useRevealMotionValues = () => {
 	const state = useIntroStore((store) => store.state);
@@ -40,7 +40,7 @@ const useRevealMotionValues = () => {
 	const height = useMotionValue("0%");
 	const x = useMotionValue("-5%");
 
-	useScrollEvent((lenis) => {
+	useScrollEvent((_lenis) => {
 		const rect = ref.current?.getBoundingClientRect();
 		if (!rect) return;
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { SubGrid } from "@/components/ui/grid";
 import Image from "next/image";
-import kiwi from "@/app/(experience)/projects/kiwi/assets/circle.png";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
+import kiwi from "@/app/(experience)/projects/kiwi/assets/circle.png";
 import { useScrollEvent } from "@/components/smooth-scroll";
+import { SubGrid } from "@/components/ui/grid";
+import { cn } from "@/lib/utils";
 
 const Footer = () => {
 	const [isEnd, setIsEnd] = useState(false);
