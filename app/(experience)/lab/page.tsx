@@ -1,59 +1,44 @@
 "use client";
 
 import { PageTunnelIn } from "@/components/page-tunnel";
+import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
+import { Grid, SubGrid } from "@/components/ui/grid";
+import { PageDescription, Title } from "@/components/ui/typography";
 import Link from "next/link";
 
-export default function Home() {
+const LABS = [
+	{ href: "/lab/ripple", title: "Ripple" },
+	{ href: "/lab/neighbor", title: "Neighbor" },
+	{ href: "/lab/pixelation", title: "Pixelation" },
+	{ href: "/lab/stagged", title: "Staggered" },
+] as const;
+
+export default function Labs() {
 	return (
 		<PageTunnelIn>
-			<SmoothScroll horizontal>
-				<div className="flex items-center justify-start w-fit h-screen gap-20">
-					<div className="m-24">
-						<Link
-							href="/lab/ripple"
-							className="col-start-4 col-end-8 flex items-center justify-center"
-						>
-							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
-								Ripple
-								<div className="absolute bottom-[8%] left-0 bg-foreground w-0 group-hover:w-full transition-all duration-300 h-1" />
-							</h1>
-						</Link>
+			<SmoothScroll>
+				<div className="mt-14"></div>
+				<Grid className="w-full">
+					<div className="col-start-2 col-end-10">
+						<Title className="text-primary">Lab</Title>
+						<PageDescription>Experiments with webgl</PageDescription>
 					</div>
-					<div className="m-24">
-						<Link
-							href="/lab/neighbor"
-							className="col-start-4 col-end-8 flex items-center justify-center"
-						>
-							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
-								Neighbor
-								<div className="absolute bottom-[8%] left-0 bg-foreground w-0 group-hover:w-full transition-all duration-300 h-1" />
-							</h1>
-						</Link>
-					</div>
-					<div className="m-24">
-						<Link
-							href="/lab/pixelation"
-							className="col-start-4 col-end-8 flex items-center justify-center"
-						>
-							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
-								Pixelation
-								<div className="absolute bottom-[8%] left-0 bg-foreground w-0 group-hover:w-full transition-all duration-300 h-1" />
-							</h1>
-						</Link>
-					</div>
-					<div className="m-24">
-						<Link
-							href="/lab/stagged"
-							className="col-start-4 col-end-8 flex items-center justify-center"
-						>
-							<h1 className="relative text-foreground text-[10vw] font-heading font-bold transition-all duration-300 group">
-								Stagged
-								<div className="absolute bottom-[8%] left-0 bg-foreground w-0 group-hover:w-full transition-all duration-300 h-1" />
-							</h1>
-						</Link>
-					</div>
-				</div>
+					<SubGrid className="col-start-2 col-end-10 mt-12">
+						{LABS.map(({ href, title }) => (
+							<div key={href}>
+								<PointerEventHandler asChild type="underline" offsetY={8}>
+									<Link href={href} className="col-span-2 md:col-span-1">
+										<span className="relative font-heading font-bold leading-none transition-all duration-300 text-[1.5vw]">
+											{title}
+											<span className="absolute bottom-[8%] left-0 h-0.5 w-0 bg-foreground transition-all duration-300 group-hover:w-full" />
+										</span>
+									</Link>
+								</PointerEventHandler>
+							</div>
+						))}
+					</SubGrid>
+				</Grid>
 			</SmoothScroll>
 		</PageTunnelIn>
 	);
