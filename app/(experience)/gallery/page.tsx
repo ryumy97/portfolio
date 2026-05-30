@@ -1,6 +1,5 @@
 "use client";
 
-import Header from "@/components/header";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
