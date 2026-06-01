@@ -4,7 +4,7 @@ import { AnimatePresence, cubicBezier, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import favicon from "@/public/favicon.png";
 import { PointerEventHandler, usePointerEvent } from "./pointer";
@@ -67,6 +67,13 @@ const Header = () => {
 	const pathname = usePathname();
 
 	const [isOpen, setIsOpen] = useState(false);
+	const previousPathname = useRef(pathname);
+
+	useEffect(() => {
+		if (previousPathname.current === pathname) return;
+		previousPathname.current = pathname;
+		setIsOpen(false);
+	}, [pathname]);
 
 	return (
 		<>
