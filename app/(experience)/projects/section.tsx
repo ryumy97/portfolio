@@ -10,8 +10,8 @@ import {
 import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { MotionImage } from "@/components/motion-image";
 import { PointerEventHandler } from "@/components/pointer";
-import { ProgressiveImage } from "@/components/progressive-image";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import {
 	PageDescription,
@@ -158,11 +158,11 @@ export const ListItemSection: React.FC<{
 						}}
 						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100"
 					>
-						<ProgressiveImage
+						<MotionImage
 							src={image}
 							alt={typeof title === "string" ? title : "Project"}
 							sizes="(max-width: 768px) 50vw, 30vw"
-							lqipSizes="48px"
+							placeholder="blur"
 						/>
 					</motion.div>
 				</motion.div>
@@ -255,7 +255,7 @@ export const ImageSection: React.FC<{
 					}}
 					className="w-full h-full"
 				>
-					<ProgressiveImage
+					<MotionImage
 						src={image}
 						alt="Project"
 						className="w-full h-full object-cover"
@@ -266,7 +266,7 @@ export const ImageSection: React.FC<{
 									? "(max-width: 768px) 60vw, 20vw"
 									: "(max-width: 768px) 80vw, 40vw"
 						}
-						lqipSizes="48px"
+						placeholder="blur"
 					/>
 				</motion.div>
 			</motion.div>

@@ -7,12 +7,13 @@ import {
 	useAnimationFrame,
 	useMotionValue,
 } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
-import { ProgressiveImage } from "@/components/progressive-image";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import { ProjectTitle } from "@/components/ui/typography";
+import { REMOTE_IMAGE_BLUR_DATA_URL } from "@/lib/image";
 import { lerp } from "@/lib/math";
 import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
@@ -116,11 +117,13 @@ export const ListItemSection: React.FC<{
 				style={{ y }}
 				ref={ref}
 			>
-				<ProgressiveImage
+				<Image
 					src={image}
 					alt="Gallery"
 					fill
 					sizes="(max-width: 768px) 50vw, 30vw"
+					placeholder="blur"
+					blurDataURL={REMOTE_IMAGE_BLUR_DATA_URL}
 				/>
 			</motion.div>
 			<ProjectTitle className="relative">
@@ -158,7 +161,7 @@ export const ImageSection: React.FC<{
 			style={{ y }}
 			ref={ref}
 		>
-			<ProgressiveImage
+			<Image
 				src={image}
 				alt={alt}
 				fill
@@ -168,6 +171,8 @@ export const ImageSection: React.FC<{
 						: "(max-width: 768px) 60vw, 20vw"
 				}
 				className="object-cover"
+				placeholder="blur"
+				blurDataURL={REMOTE_IMAGE_BLUR_DATA_URL}
 			/>
 		</motion.div>
 	);
