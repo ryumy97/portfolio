@@ -7,10 +7,10 @@ import {
 	useAnimationFrame,
 	useMotionValue,
 } from "motion/react";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
+import { ProgressiveImage } from "@/components/progressive-image";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import { ProjectTitle } from "@/components/ui/typography";
 import { lerp } from "@/lib/math";
@@ -116,7 +116,12 @@ export const ListItemSection: React.FC<{
 				style={{ y }}
 				ref={ref}
 			>
-				<Image src={image} alt="Gallery" fill />
+				<ProgressiveImage
+					src={image}
+					alt="Gallery"
+					fill
+					sizes="(max-width: 768px) 50vw, 30vw"
+				/>
 			</motion.div>
 			<ProjectTitle className="relative">
 				<PointerEventHandler asChild type="underline" offsetHeight={2}>
@@ -153,7 +158,17 @@ export const ImageSection: React.FC<{
 			style={{ y }}
 			ref={ref}
 		>
-			<Image src={image} alt={alt} fill className="object-cover" />
+			<ProgressiveImage
+				src={image}
+				alt={alt}
+				fill
+				sizes={
+					layout === "landscape"
+						? "(max-width: 768px) 90vw, 30vw"
+						: "(max-width: 768px) 60vw, 20vw"
+				}
+				className="object-cover"
+			/>
 		</motion.div>
 	);
 };

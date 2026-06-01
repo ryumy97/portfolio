@@ -10,8 +10,8 @@ import {
 import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { MotionImage } from "@/components/motion-image";
 import { PointerEventHandler } from "@/components/pointer";
+import { ProgressiveImage } from "@/components/progressive-image";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import {
 	PageDescription,
@@ -151,15 +151,20 @@ export const ListItemSection: React.FC<{
 					}}
 					className="w-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
 				>
-					<MotionImage
-						src={image}
-						alt={typeof title === "string" ? title : "Project"}
-						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100"
+					<motion.div
 						style={{
 							scale: 1,
 							x,
 						}}
-					/>
+						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100"
+					>
+						<ProgressiveImage
+							src={image}
+							alt={typeof title === "string" ? title : "Project"}
+							sizes="(max-width: 768px) 50vw, 30vw"
+							lqipSizes="48px"
+						/>
+					</motion.div>
 				</motion.div>
 			</motion.div>
 			<ProjectTitle className="relative">
@@ -243,15 +248,27 @@ export const ImageSection: React.FC<{
 				}}
 				className="w-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
 			>
-				<MotionImage
-					src={image}
-					alt="Project"
-					className="w-full h-full object-cover"
+				<motion.div
 					style={{
 						scale: 1,
 						x,
 					}}
-				/>
+					className="w-full h-full"
+				>
+					<ProgressiveImage
+						src={image}
+						alt="Project"
+						className="w-full h-full object-cover"
+						sizes={
+							type === "desktop"
+								? "(max-width: 768px) 120vw, 60vw"
+								: type === "mobile"
+									? "(max-width: 768px) 60vw, 20vw"
+									: "(max-width: 768px) 80vw, 40vw"
+						}
+						lqipSizes="48px"
+					/>
+				</motion.div>
 			</motion.div>
 		</motion.div>
 	);

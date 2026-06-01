@@ -2,10 +2,10 @@
 
 import { ArrowRightIcon } from "lucide-react";
 import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
+import { ProgressiveImage } from "@/components/progressive-image";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import { SubGrid } from "@/components/ui/grid";
 import { SectionDescription } from "@/components/ui/typography";
@@ -43,7 +43,7 @@ const Gallery = () => {
 				className="relative border-white border-[0.5vw] col-start-2 col-span-6 md:col-start-4 md:col-span-3 row-start-3 mt-4 aspect-landscape shadow-2xl"
 				style={{ y }}
 			>
-				<Image
+				<ProgressiveImage
 					src={createImageUrl(
 						"upload/cb84b9a6-e044-4439-af24-900e9f61a7b3/DSC_0788.JPG",
 					)}
@@ -57,7 +57,7 @@ const Gallery = () => {
 				className="relative border-white border-[0.5vw] col-start-4 col-span-6 md:col-start-2 md:col-span-3 row-start-4 mt-4 aspect-landscape shadow-2xl"
 				style={{ y }}
 			>
-				<Image
+				<ProgressiveImage
 					src={createImageUrl(
 						"upload/b502d3d8-3fff-43c7-9935-cef2ff95a4a6/SAM_0091.png",
 					)}
@@ -70,7 +70,7 @@ const Gallery = () => {
 				className="relative border-white border-[0.5vw] col-start-3 col-span-5 md:col-start-7 md:col-span-2 row-start-5 mt-4 aspect-portrait shadow-2xl"
 				style={{ y }}
 			>
-				<Image
+				<ProgressiveImage
 					src={createImageUrl(
 						"upload/240ccb84-acbb-4d2b-85a8-890704c6aa02/DSC_3557.JPG",
 					)}
