@@ -209,7 +209,6 @@ export function WebGLCmykCanvas({
 			angleK,
 		};
 
-		console.log(configRef.current);
 		invalidate.current();
 	}, [
 		pixelSize,

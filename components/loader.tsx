@@ -16,9 +16,7 @@ export const ForceLoad = () => {
 };
 
 const Loader = () => {
-	const { progress, total } = useProgress();
-
-	console.log(progress, total);
+	const { progress } = useProgress();
 
 	const state = useIntroStore((store) => store.state);
 

@@ -134,7 +134,7 @@ export const ListItemSection: React.FC<{
 	return (
 		<div
 			className={cn(
-				"w-[50vw] md:w-[30vw] text-center relative mr-[40vw] md:mr-[30vw]",
+				"w-[80vw] md:w-[30vw] text-center relative mr-[40vw] md:mr-[30vw]",
 				className,
 			)}
 		>
@@ -156,7 +156,7 @@ export const ListItemSection: React.FC<{
 							scale: 1,
 							x,
 						}}
-						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100"
+						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100 w-[80vw] md:w-[30vw]"
 					>
 						<MotionImage
 							src={image}
