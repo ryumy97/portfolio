@@ -1,15 +1,14 @@
 "use client";
 
+import { Canvas } from "@react-three/fiber";
+import Link from "next/link";
+import { useRef } from "react";
 import { usePointerEvent } from "@/components/pointer";
 import MainScene from "@/components/three/main-scene";
 import { SubGrid } from "@/components/ui/grid";
 import { Title } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { usePartHoverStore } from "@/stores/part-hover";
-import { Canvas } from "@react-three/fiber";
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
-import { useRef } from "react";
 
 const Main = () => {
 	const ref = useRef<HTMLDivElement>(null);

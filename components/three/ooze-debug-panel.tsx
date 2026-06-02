@@ -1,10 +1,10 @@
 "use client";
 
+import { Slider } from "@/components/ui/slider";
 import {
 	createOozeDebugState,
 	type OozeDebugState,
 } from "@/lib/three/ooze-debug";
-import { Slider } from "@/components/ui/slider";
 
 const CONTROLS = [
 	{ key: "oozeY", label: "Surface Y", min: -2, max: 2.5, step: 0.01 },

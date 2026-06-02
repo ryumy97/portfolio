@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
+import { PointerEventHandler } from "@/components/pointer";
 import { OozeDebugPanel } from "@/components/three/ooze-debug-panel";
 import { OozeDebugScene } from "@/components/three/ooze-debug-scene";
-import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import {
@@ -15,7 +15,9 @@ import {
 } from "@/lib/three/ooze-debug";
 
 export default function OozeLabPage() {
-	const [debug, setDebug] = useState<OozeDebugState>(() => createOozeDebugState());
+	const [debug, setDebug] = useState<OozeDebugState>(() =>
+		createOozeDebugState(),
+	);
 	const debugRef = useRef(debug);
 	debugRef.current = debug;
 

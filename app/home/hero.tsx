@@ -2,12 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { useLenis } from "lenis/react";
-import {
-	delay,
-	motion,
-	useAnimationFrame,
-	useMotionValue,
-} from "motion/react";
+import { delay, motion, useAnimationFrame, useMotionValue } from "motion/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import RodinScene from "@/components/three/rodin-scene";
 import { cn } from "@/lib/utils";

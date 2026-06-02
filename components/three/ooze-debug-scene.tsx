@@ -3,10 +3,10 @@
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import type { OozeDebugState } from "@/lib/three/ooze-debug";
 import type * as THREE from "three";
 import { Vector3 } from "three";
 import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
+import type { OozeDebugState } from "@/lib/three/ooze-debug";
 import { Eye } from "./eye";
 import { Hand } from "./hand";
 import { Head } from "./head";

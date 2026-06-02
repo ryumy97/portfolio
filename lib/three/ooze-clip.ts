@@ -49,8 +49,7 @@ export function patchMaterialForOozeClip(material: THREE.Material) {
 			`,
 		);
 
-		shader.fragmentShader =
-			`varying vec3 vOozeWorldPos;\nuniform float uOozeY;\nuniform float uTime;\n${shader.fragmentShader}`;
+		shader.fragmentShader = `varying vec3 vOozeWorldPos;\nuniform float uOozeY;\nuniform float uTime;\n${shader.fragmentShader}`;
 	};
 
 	return uniforms;

@@ -1,8 +1,5 @@
 "use client";
 
-import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
-import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
-import { usePartHoverStore } from "@/stores/part-hover";
 import { PerspectiveCamera } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import {
@@ -21,6 +18,9 @@ import {
 } from "react";
 import type * as THREE from "three";
 import { Vector3 } from "three";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
+import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
+import { usePartHoverStore } from "@/stores/part-hover";
 import { useScrollEvent } from "../smooth-scroll";
 import { Eye } from "./eye";
 import { Hand } from "./hand";

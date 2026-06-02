@@ -1,12 +1,12 @@
 "use client";
 
-import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
-import { useIntroStore } from "@/stores/intro";
 import { PerspectiveCamera } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useMotionValueEvent, useSpring } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
+import { useIntroStore } from "@/stores/intro";
 import { Head } from "./head";
 
 const START = {
@@ -90,47 +90,69 @@ const HeadScene = () => {
 	});
 
 	useMotionValueEvent(positionX, "change", (value) => {
-		meshRef.current!.position.x = value;
+		if (meshRef.current) {
+			meshRef.current.position.x = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(positionY, "change", (value) => {
-		meshRef.current!.position.y = value;
+		if (meshRef.current) {
+			meshRef.current.position.y = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(positionZ, "change", (value) => {
-		meshRef.current!.position.z = value;
+		if (meshRef.current) {
+			meshRef.current.position.z = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(rotationX, "change", (value) => {
-		meshRef.current!.rotation.x = value;
+		if (meshRef.current) {
+			meshRef.current.rotation.x = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(rotationY, "change", (value) => {
-		meshRef.current!.rotation.y = value;
+		if (meshRef.current) {
+			meshRef.current.rotation.y = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(rotationZ, "change", (value) => {
-		meshRef.current!.rotation.z = value;
+		if (meshRef.current) {
+			meshRef.current.rotation.z = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(ambientLight, "change", (value) => {
-		ambientLightRef.current!.intensity = value;
+		if (ambientLightRef.current) {
+			ambientLightRef.current.intensity = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(pointLightX, "change", (value) => {
-		pointLightRef.current!.position.x = value;
+		if (pointLightRef.current) {
+			pointLightRef.current.position.x = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(pointLightY, "change", (value) => {
-		pointLightRef.current!.position.y = value;
+		if (pointLightRef.current) {
+			pointLightRef.current.position.y = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(pointLightZ, "change", (value) => {
-		pointLightRef.current!.position.z = value;
+		if (pointLightRef.current) {
+			pointLightRef.current.position.z = value;
+		}
 		three.invalidate();
 	});
 	useMotionValueEvent(pointLightIntensity, "change", (value) => {
-		pointLightRef.current!.intensity = value;
+		if (pointLightRef.current) {
+			pointLightRef.current.intensity = value;
+		}
 		three.invalidate();
 	});
 
