@@ -4,7 +4,7 @@ import { AnimatePresence, cubicBezier, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Ref, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import favicon from "@/public/favicon.png";
 import { PointerEventHandler, usePointerEvent } from "./pointer";
@@ -15,7 +15,10 @@ const Logo = () => {
 	const pathname = usePathname();
 	const [hover, setHover] = useState(false);
 
+	const logoRef = useRef<HTMLDivElement>(null);
+
 	const { onPointerEnter, onPointerLeave } = usePointerEvent({
+		ref: logoRef,
 		offsetX: 26,
 		offsetY: 2,
 		offsetWidth: 8,
@@ -38,6 +41,7 @@ const Logo = () => {
 				className=" no-underline"
 			>
 				<Link
+					ref={logoRef as Ref<HTMLAnchorElement>}
 					className={cn("relative transition-all duration-300", {
 						"pl-[32px]": hover,
 					})}
