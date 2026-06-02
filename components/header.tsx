@@ -27,8 +27,8 @@ const Logo = () => {
 				variant={pathname === "/" ? "navActive" : "nav"}
 				size={"nav"}
 				asChild
-				onPointerEnter={(event) => {
-					onPointerEnter(event);
+				onPointerEnter={() => {
+					onPointerEnter();
 					setHover(true);
 				}}
 				onPointerLeave={() => {
