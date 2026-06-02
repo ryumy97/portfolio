@@ -163,6 +163,7 @@ export const ListItemSection: React.FC<{
 							alt={typeof title === "string" ? title : "Project"}
 							sizes="(max-width: 768px) 50vw, 30vw"
 							placeholder="blur"
+							className="w-full h-full"
 						/>
 					</motion.div>
 				</motion.div>
