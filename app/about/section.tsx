@@ -14,13 +14,13 @@ const Section: React.FC<Props> = ({ subtitle, title, link, children }) => {
 		<div className="max-w-[100vw] md:max-w-[30vw] w-full">
 			<CVSubHeading className="text-primary">{subtitle}</CVSubHeading>
 			<CVHeading>{title}</CVHeading>
-			<CVLink asChild>
-				<PointerEventHandler asChild type="underline">
+			<PointerEventHandler asChild type="underline">
+				<CVLink asChild>
 					<Link href={link} target="_blank">
 						{link}
 					</Link>
-				</PointerEventHandler>
-			</CVLink>
+				</CVLink>
+			</PointerEventHandler>
 			{children}
 		</div>
 	);

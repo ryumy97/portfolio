@@ -43,12 +43,12 @@ export default function Page() {
 						</PageDescription>
 						<div className="flex flex-col mt-2">
 							<div className="flex items-center gap-2">
-								<PointerEventHandler asChild type="underline">
+								<PointerEventHandler type="underline" asChild>
 									<Link href="https://github.com/ryumy" target="_blank">
 										<GithubIcon className="w-[24px] h-[24px]" />
 									</Link>
 								</PointerEventHandler>
-								<PointerEventHandler asChild type="underline">
+								<PointerEventHandler type="underline" asChild>
 									<Link
 										href="https://www.linkedin.com/in/in-ha-ryu-775398147/"
 										target="_blank"
@@ -58,23 +58,23 @@ export default function Page() {
 								</PointerEventHandler>
 							</div>
 							<div className="mt-1">
-								<CVLink asChild>
-									<PointerEventHandler asChild type="underline">
+								<PointerEventHandler type="underline" asChild>
+									<CVLink asChild>
 										<Link href={"tel:+642102831932"} target="_blank">
 											(+64) 21 028 31932
 										</Link>
-									</PointerEventHandler>
-								</CVLink>
+									</CVLink>
+								</PointerEventHandler>
 							</div>
 
 							<div>
-								<CVLink asChild>
-									<PointerEventHandler asChild type="underline">
+								<PointerEventHandler type="underline" asChild>
+									<CVLink asChild>
 										<Link href={"mailto:INHA.RYU.97@GMAIL.COM"} target="_blank">
 											INHA.RYU.97@GMAIL.COM
 										</Link>
-									</PointerEventHandler>
-								</CVLink>
+									</CVLink>
+								</PointerEventHandler>
 							</div>
 						</div>
 					</div>
@@ -104,16 +104,16 @@ export default function Page() {
 								@reflct/react npm package -
 								<CVSubList>
 									<CVListItem>
-										<CVLink asChild>
-											<PointerEventHandler asChild type="underline">
+										<PointerEventHandler asChild type="underline">
+											<CVLink asChild>
 												<Link
 													href="https://www.npmjs.com/package/@reflct/react"
 													target="_blank"
 												>
 													https://www.npmjs.com/package/@reflct/react
 												</Link>
-											</PointerEventHandler>
-										</CVLink>
+											</CVLink>
+										</PointerEventHandler>
 									</CVListItem>
 								</CVSubList>
 							</CVListItem>
@@ -121,13 +121,13 @@ export default function Page() {
 								Github -
 								<CVSubList>
 									<CVListItem>
-										<CVLink asChild>
-											<PointerEventHandler asChild type="underline">
+										<PointerEventHandler asChild type="underline">
+											<CVLink asChild>
 												<Link href="https://github.com/Reflct" target="_blank">
 													https://github.com/Reflct
 												</Link>
-											</PointerEventHandler>
-										</CVLink>
+											</CVLink>
+										</PointerEventHandler>
 									</CVListItem>
 								</CVSubList>
 							</CVListItem>
@@ -135,16 +135,16 @@ export default function Page() {
 								Youtube -
 								<CVSubList>
 									<CVListItem>
-										<CVLink asChild>
-											<PointerEventHandler asChild type="underline">
+										<PointerEventHandler asChild type="underline">
+											<CVLink asChild>
 												<Link
 													href="https://www.youtube.com/channel/UCVVFVZrukfeW6yQ_Scx1Eeg"
 													target="_blank"
 												>
 													https://www.youtube.com/channel/UCVVFVZrukfeW6yQ_Scx1Eeg
 												</Link>
-											</PointerEventHandler>
-										</CVLink>
+											</CVLink>
+										</PointerEventHandler>
 									</CVListItem>
 								</CVSubList>
 							</CVListItem>
