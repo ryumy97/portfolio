@@ -1,6 +1,8 @@
 "use client";
 
 import "@/components/three/rodin";
+import "@/components/three/head";
+import "@/components/three/eye";
 import { useProgress } from "@react-three/drei";
 import { animate } from "motion";
 import { cubicBezier, useMotionValue } from "motion/react";
@@ -60,7 +62,7 @@ const Loader = () => {
 			/>
 			{state !== "transitioning" && (
 				<span className="relative z-10 text-sm font-medium text-background tabular-nums drop-shadow-md">
-					{progress}%
+					{progress.toFixed(0)}%
 				</span>
 			)}
 		</div>

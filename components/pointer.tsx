@@ -86,9 +86,13 @@ export const usePointerEvent = ({
 		updateHoverTarget(rect);
 	});
 
-	const onPointerEnter = (event: React.PointerEvent<HTMLElement>) => {
+	const onPointerEnter = () => {
 		isHoveringRef.current = true;
-		updateHoverTarget(event.currentTarget.getBoundingClientRect());
+
+		const rect = ref?.current?.getBoundingClientRect();
+		if (!rect) return;
+
+		updateHoverTarget(rect);
 	};
 
 	const onPointerLeave = () => {

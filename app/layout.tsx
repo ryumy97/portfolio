@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
 import Loader from "@/components/loader";
 import { PageTunnelOut } from "@/components/page-tunnel";
-import "../globals.css";
+import "./globals.css";
 import Header from "@/components/header";
 import Pointer from "@/components/pointer";
 
