@@ -164,16 +164,14 @@ export const ListItemSection: React.FC<{
 							sizes="(max-width: 768px) 50vw, 30vw"
 							placeholder="blur"
 							className="w-full h-full"
+							loading="eager"
 						/>
 					</motion.div>
 				</motion.div>
 			</motion.div>
 			<ProjectTitle className="relative">
 				<PointerEventHandler asChild type="underline" offsetHeight={2}>
-					<Link
-						href={link}
-						className="bg-white/24 backdrop-blur-3xl drop-shadow-2xl"
-					>
+					<Link href={link} className="bg-white/80">
 						{title}
 					</Link>
 				</PointerEventHandler>
@@ -268,6 +266,7 @@ export const ImageSection: React.FC<{
 									: "(max-width: 768px) 80vw, 40vw"
 						}
 						placeholder="blur"
+						loading="eager"
 					/>
 				</motion.div>
 			</motion.div>

@@ -13,7 +13,6 @@ import { useEffect, useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import { ProjectTitle } from "@/components/ui/typography";
-import { REMOTE_IMAGE_BLUR_DATA_URL } from "@/lib/image";
 import { lerp } from "@/lib/math";
 import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
@@ -122,16 +121,12 @@ export const ListItemSection: React.FC<{
 					alt="Gallery"
 					fill
 					sizes="(max-width: 768px) 50vw, 30vw"
-					placeholder="blur"
-					blurDataURL={REMOTE_IMAGE_BLUR_DATA_URL}
+					loading="eager"
 				/>
 			</motion.div>
 			<ProjectTitle className="relative">
 				<PointerEventHandler asChild type="underline" offsetHeight={2}>
-					<Link
-						href={link}
-						className="bg-white/24 backdrop-blur-3xl drop-shadow-2xl"
-					>
+					<Link href={link} className="bg-white/80">
 						{title}
 					</Link>
 				</PointerEventHandler>
@@ -171,8 +166,7 @@ export const ImageSection: React.FC<{
 						: "(max-width: 768px) 60vw, 20vw"
 				}
 				className="object-cover"
-				placeholder="blur"
-				blurDataURL={REMOTE_IMAGE_BLUR_DATA_URL}
+				loading="eager"
 			/>
 		</motion.div>
 	);
