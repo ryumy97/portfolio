@@ -19,10 +19,11 @@ import {
 import type * as THREE from "three";
 import { Vector3 } from "three";
 import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
-import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
+import { CLIP_DEBUG_DEFAULTS } from "@/lib/three/clip-debug";
+import { type ClipUniforms, patchObjectForClip } from "@/lib/three/clip-patch";
 import { usePartHoverStore } from "@/stores/part-hover";
 import { useScrollEvent } from "../smooth-scroll";
-import { OozeSurface } from "./clip-surface";
+import { ClipSurface } from "./clip-surface";
 import { Eye } from "./eye";
 import { Hand } from "./hand";
 import { Head } from "./head";
@@ -85,12 +86,10 @@ const MainScene = ({ sectionRef }: MainSceneProps) => {
 	const handLightRef = useRef<THREE.PointLight>(null);
 	const phoneLightRef = useRef<THREE.PointLight>(null);
 
-	const oozeUniformsRef = useRef<
-		{ uOozeY: { value: number }; uTime: { value: number } }[]
-	>([]);
+	const clipUniformsRef = useRef<ClipUniforms[]>([]);
 
 	const reveal = useMotionValue(0);
-	const oozeYRef = useRef(0);
+	const clipYRef = useRef(0);
 	const cameraRef = useRef<THREE.PerspectiveCamera>(null);
 	const lookTarget = useMemo(() => new Vector3(), []);
 
@@ -223,7 +222,7 @@ const MainScene = ({ sectionRef }: MainSceneProps) => {
 			);
 		}
 
-		for (const uniforms of oozeUniformsRef.current) {
+		for (const uniforms of clipUniformsRef.current) {
 			uniforms.uTime.value = progressValue * 20;
 		}
 
@@ -236,16 +235,19 @@ const MainScene = ({ sectionRef }: MainSceneProps) => {
 		updateReveal();
 
 		const uniforms = [
-			...(headRef.current ? patchObjectForOozeClip(headRef.current) : []),
-			...(eyeRef.current ? patchObjectForOozeClip(eyeRef.current) : []),
-			...(handRef.current ? patchObjectForOozeClip(handRef.current) : []),
-			...(phoneRef.current ? patchObjectForOozeClip(phoneRef.current) : []),
+			...(headRef.current ? patchObjectForClip(headRef.current) : []),
+			...(eyeRef.current ? patchObjectForClip(eyeRef.current) : []),
+			...(handRef.current ? patchObjectForClip(handRef.current) : []),
+			...(phoneRef.current ? patchObjectForClip(phoneRef.current) : []),
 		];
 
 		for (const uniform of uniforms) {
-			uniform.uOozeY.value = -0.3;
+			uniform.uClipY.value = CLIP_DEBUG_DEFAULTS.clipY;
+			uniform.uWave1.value = CLIP_DEBUG_DEFAULTS.wave1;
+			uniform.uWave2.value = CLIP_DEBUG_DEFAULTS.wave2;
+			uniform.uWave3.value = CLIP_DEBUG_DEFAULTS.wave3;
 		}
-		oozeUniformsRef.current = uniforms;
+		clipUniformsRef.current = uniforms;
 
 		const camera = cameraRef.current;
 		if (camera) {
@@ -331,7 +333,7 @@ const MainScene = ({ sectionRef }: MainSceneProps) => {
 				/>
 			</group>
 
-			<OozeSurface oozeYRef={oozeYRef} />
+			<ClipSurface clipYRef={clipYRef} />
 
 			<ambientLight color={WARM_AMBIENT_COLOR} intensity={8} />
 			<directionalLight

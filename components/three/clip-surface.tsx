@@ -1,16 +1,19 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import type { OozeDebugState } from "@/lib/three/ooze-debug";
+import type { ClipDebugState } from "@/lib/three/clip-debug";
 
-type OozeSurfaceProps = {
-	oozeYRef: React.RefObject<number>;
-	debugRef?: React.RefObject<OozeDebugState | null>;
+const PLANE_SIZE = 12;
+const PLANE_SEGMENTS = 96;
+
+type ClipSurfaceProps = {
+	clipYRef: React.RefObject<number>;
+	debugRef?: React.RefObject<ClipDebugState | null>;
 };
 
-export function OozeSurface({ oozeYRef, debugRef }: OozeSurfaceProps) {
+export function ClipSurface({ clipYRef, debugRef }: ClipSurfaceProps) {
 	const meshRef = useRef<THREE.Mesh>(null);
 	const materialRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
 
@@ -34,20 +37,23 @@ export function OozeSurface({ oozeYRef, debugRef }: OozeSurfaceProps) {
 		return mat;
 	}, []);
 
-	const segments = debugRef?.current?.segments ?? 48;
-	const planeSize = debugRef?.current?.planeSize ?? 12;
-
-	useEffect(() => {
+	useLayoutEffect(() => {
 		const mesh = meshRef.current;
 		if (!mesh) return;
-		mesh.geometry.dispose();
-		mesh.geometry = new THREE.PlaneGeometry(
-			planeSize,
-			planeSize,
-			segments,
-			segments,
+
+		const geometry = new THREE.PlaneGeometry(
+			PLANE_SIZE,
+			PLANE_SIZE,
+			PLANE_SEGMENTS,
+			PLANE_SEGMENTS,
 		);
-	}, [planeSize, segments]);
+		mesh.geometry.dispose();
+		mesh.geometry = geometry;
+
+		return () => {
+			geometry.dispose();
+		};
+	}, []);
 
 	useFrame((state) => {
 		const mesh = meshRef.current;
@@ -56,16 +62,13 @@ export function OozeSurface({ oozeYRef, debugRef }: OozeSurfaceProps) {
 
 		const debug = debugRef?.current;
 		const time = state.clock.elapsedTime * (debug?.speed ?? 1);
-		const oozeY = debug?.oozeY ?? oozeYRef.current ?? 0;
+		const y = debug?.clipY ?? clipYRef.current ?? 0;
 
 		const wave1 = debug?.wave1 ?? 0.028;
 		const wave2 = debug?.wave2 ?? 0.02;
 		const wave3 = debug?.wave3 ?? 0.015;
 
 		mat.color.set(debug?.color ?? "#f06058");
-		mat.opacity = debug?.opacity ?? 0.92;
-		mat.transmission = debug?.transmission ?? 0.35;
-		mat.wireframe = debug?.wireframe ?? false;
 
 		const geometry = mesh.geometry as THREE.PlaneGeometry;
 		const position = geometry.attributes.position as THREE.BufferAttribute;
@@ -82,8 +85,8 @@ export function OozeSurface({ oozeYRef, debugRef }: OozeSurfaceProps) {
 
 		position.needsUpdate = true;
 		geometry.computeVertexNormals();
-		mesh.position.y = oozeY;
-		oozeYRef.current = oozeY;
+		mesh.position.y = y;
+		clipYRef.current = y;
 	});
 
 	return (
@@ -93,40 +96,7 @@ export function OozeSurface({ oozeYRef, debugRef }: OozeSurfaceProps) {
 			renderOrder={2}
 			raycast={() => null}
 		>
-			<planeGeometry args={[planeSize, planeSize, segments, segments]} />
 			<primitive object={material} attach="material" />
-		</mesh>
-	);
-}
-
-export function OozePool({ oozeYRef, debugRef }: OozeSurfaceProps) {
-	const meshRef = useRef<THREE.Mesh>(null);
-
-	useFrame(() => {
-		const mesh = meshRef.current;
-		if (!mesh) return;
-
-		const oozeY = debugRef?.current?.oozeY ?? oozeYRef.current ?? 0;
-		const depth = Math.max(oozeY + 2.8, 0.2);
-
-		mesh.position.y = oozeY * 0.5 - depth * 0.5;
-		mesh.scale.y = depth;
-
-		const color = debugRef?.current?.color ?? "#e8544c";
-		const mat = mesh.material as THREE.MeshPhysicalMaterial;
-		mat.color.set(color);
-	});
-
-	return (
-		<mesh ref={meshRef} renderOrder={0}>
-			<boxGeometry args={[14, 1, 8]} />
-			<meshPhysicalMaterial
-				color="#e8544c"
-				roughness={0.45}
-				metalness={0.02}
-				transmission={0.08}
-				thickness={1.2}
-			/>
 		</mesh>
 	);
 }

@@ -1,13 +1,16 @@
 "use client";
 
 import { PerspectiveCamera } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
 import { Vector3 } from "three";
-import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
-import type { OozeDebugState } from "@/lib/three/ooze-debug";
-import { OozeSurface } from "./clip-surface";
+import {
+	CLIP_DEBUG_DEFAULTS,
+	type ClipDebugState,
+} from "@/lib/three/clip-debug";
+import { type ClipUniforms, patchObjectForClip } from "@/lib/three/clip-patch";
+import { ClipSurface } from "./clip-surface";
 import { Eye } from "./eye";
 import { Hand } from "./hand";
 import { Head } from "./head";
@@ -33,14 +36,28 @@ const POSITION_DESKTOP = {
 	phoneZ: 0.8,
 };
 
-type OozeDebugSceneProps = {
-	debugRef: React.RefObject<OozeDebugState>;
+export const CLIP_SURFACE_SCENE_DEFAULTS = CLIP_DEBUG_DEFAULTS;
+
+export type ClipSurfaceSceneProps = {
+	clipY?: number;
+	wave1?: number;
+	wave2?: number;
+	wave3?: number;
+	speed?: number;
+	color?: string;
 };
 
 const WARM_AMBIENT_COLOR = "#80d0ff";
 const WARM_KEY_COLOR = "#ffffff";
 
-export function OozeDebugScene({ debugRef }: OozeDebugSceneProps) {
+export function ClipSurfaceScene({
+	clipY = CLIP_SURFACE_SCENE_DEFAULTS.clipY,
+	wave1 = CLIP_SURFACE_SCENE_DEFAULTS.wave1,
+	wave2 = CLIP_SURFACE_SCENE_DEFAULTS.wave2,
+	wave3 = CLIP_SURFACE_SCENE_DEFAULTS.wave3,
+	speed = CLIP_SURFACE_SCENE_DEFAULTS.speed,
+	color = CLIP_SURFACE_SCENE_DEFAULTS.color,
+}: ClipSurfaceSceneProps) {
 	const headRef = useRef<THREE.Group>(null);
 	const eyeRef = useRef<THREE.Group>(null);
 	const handRef = useRef<THREE.Group>(null);
@@ -51,43 +68,59 @@ export function OozeDebugScene({ debugRef }: OozeDebugSceneProps) {
 	const handLightRef = useRef<THREE.PointLight>(null);
 	const phoneLightRef = useRef<THREE.PointLight>(null);
 
-	const oozeUniformsRef = useRef<
-		{ uOozeY: { value: number }; uTime: { value: number } }[]
-	>([]);
+	const clipUniformsRef = useRef<ClipUniforms[]>([]);
 
-	const oozeYRef = useRef(0);
+	const clipYRef = useRef(clipY);
+	const configRef = useRef<ClipDebugState>(CLIP_SURFACE_SCENE_DEFAULTS);
 	const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+	const backgroundRef = useRef<THREE.Color>(null);
 	const lookTarget = useMemo(() => new Vector3(), []);
 
-	const three = useThree();
+	configRef.current = {
+		clipY,
+		wave1,
+		wave2,
+		wave3,
+		speed,
+		color,
+	};
 
 	useLayoutEffect(() => {
 		const uniforms = [
-			...(headRef.current ? patchObjectForOozeClip(headRef.current) : []),
-			...(eyeRef.current ? patchObjectForOozeClip(eyeRef.current) : []),
-			...(handRef.current ? patchObjectForOozeClip(handRef.current) : []),
-			...(phoneRef.current ? patchObjectForOozeClip(phoneRef.current) : []),
+			...(headRef.current ? patchObjectForClip(headRef.current) : []),
+			...(eyeRef.current ? patchObjectForClip(eyeRef.current) : []),
+			...(handRef.current ? patchObjectForClip(handRef.current) : []),
+			...(phoneRef.current ? patchObjectForClip(phoneRef.current) : []),
 		];
 
 		for (const uniform of uniforms) {
-			uniform.uOozeY.value = -0.3;
+			uniform.uClipY.value = clipY;
+			uniform.uWave1.value = wave1;
+			uniform.uWave2.value = wave2;
+			uniform.uWave3.value = wave3;
 		}
-		oozeUniformsRef.current = uniforms;
+		clipUniformsRef.current = uniforms;
 
 		const camera = cameraRef.current;
 		if (camera) {
 			camera.lookAt(lookTarget);
 		}
-	}, [lookTarget]);
+	}, [clipY, lookTarget, wave1, wave2, wave3]);
 
 	useFrame((state) => {
-		const debug = debugRef.current;
-		if (!debug) return;
+		const elapsed = state.clock.elapsedTime * speed;
 
-		debug.oozeY = oozeYRef.current;
+		for (const uniforms of clipUniformsRef.current) {
+			uniforms.uClipY.value = clipY;
+			uniforms.uWave1.value = wave1;
+			uniforms.uWave2.value = wave2;
+			uniforms.uWave3.value = wave3;
+			uniforms.uTime.value = elapsed;
+		}
 
-		for (const uniforms of oozeUniformsRef.current) {
-			uniforms.uTime.value = state.clock.elapsedTime;
+		const background = backgroundRef.current;
+		if (background) {
+			background.set(color);
 		}
 	});
 
@@ -157,7 +190,7 @@ export function OozeDebugScene({ debugRef }: OozeDebugSceneProps) {
 				/>
 			</group>
 
-			<OozeSurface oozeYRef={oozeYRef} />
+			<ClipSurface clipYRef={clipYRef} debugRef={configRef} />
 
 			<ambientLight color={WARM_AMBIENT_COLOR} intensity={8} />
 			<directionalLight
@@ -165,6 +198,7 @@ export function OozeDebugScene({ debugRef }: OozeDebugSceneProps) {
 				intensity={4}
 				color={WARM_KEY_COLOR}
 			/>
+			<color attach="background" args={["#f06058"]} ref={backgroundRef} />
 
 			<PerspectiveCamera
 				ref={cameraRef}
