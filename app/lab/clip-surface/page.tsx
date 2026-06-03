@@ -1,5 +1,8 @@
 "use client";
 
+import { Canvas } from "@react-three/fiber";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import { OozeDebugScene } from "@/components/three/clip-surface-scene";
@@ -9,9 +12,6 @@ import {
 	createOozeDebugState,
 	type OozeDebugState,
 } from "@/lib/three/ooze-debug";
-import { Canvas } from "@react-three/fiber";
-import Link from "next/link";
-import { useRef, useState } from "react";
 
 export default function Page() {
 	const [debug, setDebug] = useState<OozeDebugState>(() =>

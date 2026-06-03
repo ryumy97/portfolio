@@ -22,10 +22,10 @@ import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
 import { usePartHoverStore } from "@/stores/part-hover";
 import { useScrollEvent } from "../smooth-scroll";
+import { OozeSurface } from "./clip-surface";
 import { Eye } from "./eye";
 import { Hand } from "./hand";
 import { Head } from "./head";
-import { OozeSurface } from "./clip-surface";
 import { Phone } from "./phone";
 
 const WARM_AMBIENT_COLOR = "#80d0ff";

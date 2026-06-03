@@ -1,12 +1,12 @@
 "use client";
 
-import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
-import type { OozeDebugState } from "@/lib/three/ooze-debug";
 import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
 import { Vector3 } from "three";
+import { patchObjectForOozeClip } from "@/lib/three/ooze-clip";
+import type { OozeDebugState } from "@/lib/three/ooze-debug";
 import { OozeSurface } from "./clip-surface";
 import { Eye } from "./eye";
 import { Hand } from "./hand";
