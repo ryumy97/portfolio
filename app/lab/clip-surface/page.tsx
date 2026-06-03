@@ -1,20 +1,19 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
-import Link from "next/link";
-import { useRef, useState } from "react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
-import { OozeDebugPanel } from "@/components/three/ooze-debug-panel";
-import { OozeDebugScene } from "@/components/three/ooze-debug-scene";
+import { OozeDebugScene } from "@/components/three/clip-surface-scene";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import {
 	createOozeDebugState,
 	type OozeDebugState,
 } from "@/lib/three/ooze-debug";
+import { Canvas } from "@react-three/fiber";
+import Link from "next/link";
+import { useRef, useState } from "react";
 
-export default function OozeLabPage() {
+export default function Page() {
 	const [debug, setDebug] = useState<OozeDebugState>(() =>
 		createOozeDebugState(),
 	);
@@ -32,14 +31,12 @@ export default function OozeLabPage() {
 					</PointerEventHandler>
 					<div className="pt-4 pr-2 pb-8">
 						<h1 className="mb-4 text-[28px] leading-none font-heading font-bold">
-							Ooze surface
+							Clip surface
 						</h1>
-						<OozeDebugPanel values={debug} onChange={setDebug} />
 					</div>
 				</div>
 				<div className="col-start-3 col-end-11 h-full">
-					<Canvas frameloop="always" style={{ background: "#f9f8f5" }}>
-						<color attach="background" args={["#f9f8f5"]} />
+					<Canvas frameloop="always">
 						<OozeDebugScene debugRef={debugRef} />
 					</Canvas>
 				</div>

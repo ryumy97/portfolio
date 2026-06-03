@@ -25,7 +25,7 @@ import { useScrollEvent } from "../smooth-scroll";
 import { Eye } from "./eye";
 import { Hand } from "./hand";
 import { Head } from "./head";
-import { OozeSurface } from "./ooze-surface";
+import { OozeSurface } from "./clip-surface";
 import { Phone } from "./phone";
 
 const WARM_AMBIENT_COLOR = "#80d0ff";

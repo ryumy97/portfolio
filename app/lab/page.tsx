@@ -15,7 +15,7 @@ const LABS = [
 	{ href: "/lab/ripple-gradient", title: "Ripple Gradient" },
 	{ href: "/lab/light-curtain", title: "Light Curtain" },
 	{ href: "/lab/stagged", title: "Staggered" },
-	{ href: "/lab/ooze", title: "Ooze surface" },
+	{ href: "/lab/clip-surface", title: "Clip surface" },
 ] as const;
 
 export default function Labs() {

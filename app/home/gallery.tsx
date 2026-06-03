@@ -1,15 +1,15 @@
 "use client";
 
-import { PointerEventHandler } from "@/components/pointer";
-import { useScrollEvent } from "@/components/smooth-scroll";
-import { SubGrid } from "@/components/ui/grid";
-import { SectionDescription } from "@/components/ui/typography";
-import { createImageUrl } from "@/lib/image";
 import { ArrowRightIcon } from "lucide-react";
 import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
+import { PointerEventHandler } from "@/components/pointer";
+import { useScrollEvent } from "@/components/smooth-scroll";
+import { SubGrid } from "@/components/ui/grid";
+import { SectionDescription } from "@/components/ui/typography";
+import { createImageUrl } from "@/lib/image";
 
 const Gallery = () => {
 	const containerRef = useRef<HTMLDivElement>(null);
