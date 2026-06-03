@@ -1,15 +1,15 @@
 "use client";
 
+import { PointerEventHandler } from "@/components/pointer";
+import { useScrollEvent } from "@/components/smooth-scroll";
+import { SubGrid } from "@/components/ui/grid";
+import { SectionDescription } from "@/components/ui/typography";
+import { createImageUrl } from "@/lib/image";
 import { ArrowRightIcon } from "lucide-react";
 import { cubicBezier, motion, transform, useMotionValue } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
-import { PointerEventHandler } from "@/components/pointer";
-import { useScrollEvent } from "@/components/smooth-scroll";
-import { SubGrid } from "@/components/ui/grid";
-import { SectionDescription } from "@/components/ui/typography";
-import { createImageUrl, REMOTE_IMAGE_BLUR_DATA_URL } from "@/lib/image";
 
 const Gallery = () => {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +51,6 @@ const Gallery = () => {
 					fill
 					sizes="75vw"
 					placeholder="blur"
-					blurDataURL={REMOTE_IMAGE_BLUR_DATA_URL}
 				/>
 			</motion.div>
 
@@ -67,7 +66,6 @@ const Gallery = () => {
 					fill
 					sizes="75vw"
 					placeholder="blur"
-					blurDataURL={REMOTE_IMAGE_BLUR_DATA_URL}
 				/>
 			</motion.div>
 			<motion.div
@@ -82,7 +80,6 @@ const Gallery = () => {
 					fill
 					sizes="60vw"
 					placeholder="blur"
-					blurDataURL={REMOTE_IMAGE_BLUR_DATA_URL}
 				/>
 			</motion.div>
 
