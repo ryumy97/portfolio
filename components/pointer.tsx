@@ -2,7 +2,7 @@
 
 import { useAnimationFrame } from "motion/react";
 import { Slot } from "radix-ui";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { lerp } from "@/lib/math";
 import { cn } from "@/lib/utils";
 import { pointer } from "@/stores/pointer";
@@ -95,13 +95,19 @@ export const usePointerEvent = ({
 		updateHoverTarget(rect);
 	};
 
-	const onPointerLeave = () => {
+	const onPointerLeave = useCallback(() => {
 		pointer.hover = false;
 		pointer.target.width = 12;
 		pointer.target.height = 12;
 		pointer.target.borderRadius = 9999;
 		isHoveringRef.current = false;
-	};
+	}, []);
+
+	useEffect(() => {
+		return () => {
+			onPointerLeave();
+		};
+	}, [onPointerLeave]);
 
 	return {
 		onPointerEnter,
