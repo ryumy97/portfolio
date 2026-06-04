@@ -32,7 +32,7 @@ export default function Page() {
 					<div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
 						<Title className="">
 							<div className="">Real Watergate</div>
-							<div className="text-primary mt-[0.3em]">- - DDB NZ</div>
+							<div className="text-primary mt-[0.3em]">- DDB NZ</div>
 						</Title>
 						<PageLink className="w-full mt-[1em]">
 							<PointerEventHandler asChild type="underline">
