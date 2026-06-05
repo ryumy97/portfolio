@@ -7,6 +7,7 @@ import {
 } from "motion/react";
 import type { StaticImageData } from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { CanvasLoader } from "@/components/canvas-loader";
 import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
@@ -23,7 +24,6 @@ import {
 	snapPixelCellSize,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
-import { CanvasLoader } from "@/components/canvas-loader";
 
 export const WEBGL_PIXELATION_DEFAULTS = {
 	pixelSize: 64,
