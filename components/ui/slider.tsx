@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { Slider as SliderPrimitive } from "radix-ui";
 import * as React from "react";
+import { cn } from "@/lib/utils";
 import { usePointerEvent } from "../pointer";
 
 function Slider({

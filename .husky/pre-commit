@@ -1,1 +1,16 @@
-yarn lint --fix
+#!/usr/bin/env sh
+
+# Fail the commit if formatting/lint would require changes.
+# (No auto-fix in pre-commit.)
+
+yarn -s lint
+
+# Guardrail: ensure the hook did not modify anything.
+before_worktree="$(git diff | shasum | cut -d' ' -f1)"
+before_index="$(git diff --cached --binary | shasum | cut -d' ' -f1)"
+
+after_worktree="$(git diff | shasum | cut -d' ' -f1)"
+after_index="$(git diff --cached --binary | shasum | cut -d' ' -f1)"
+
+[ "$before_worktree" = "$after_worktree" ] || exit 1
+[ "$before_index" = "$after_index" ] || exit 1
