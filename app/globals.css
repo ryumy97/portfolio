@@ -48,6 +48,7 @@
 	--radius-4xl: calc(var(--radius) * 2.6);
 	--aspect-landscape: 6048 / 4032;
 	--aspect-portrait: 4032 / 6048;
+	--ease-default: cubic-bezier(0.3, 0, 0, 1);
 }
 
 :root {

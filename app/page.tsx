@@ -14,11 +14,6 @@ export default function Home() {
 						<main className="px-2">
 							<Hero />
 							<Main />
-
-							{/* <About />
-							<Projects />
-							<Gallery />
-							<Lab /> */}
 						</main>
 					</SubGrid>
 					<Footer />

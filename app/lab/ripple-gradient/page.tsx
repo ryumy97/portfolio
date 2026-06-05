@@ -1,16 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { PageTunnelIn } from "@/components/page-tunnel";
-import { PointerEventHandler } from "@/components/pointer";
-import { Button } from "@/components/ui/button";
-import { Grid } from "@/components/ui/grid";
-import { Slider } from "@/components/ui/slider";
+import { LabNumericControls } from "@/app/lab/lab-numeric-controls";
+import { LabPageLayout } from "@/app/lab/lab-page-layout";
 import {
 	WEBGL_RIPPLE_GRADIENT_DEFAULTS,
 	WebGLRippleGradientCanvas,
 } from "@/components/webgl/webgl-ripple-gradient-canvas";
+import type { LabNumericControlDef } from "@/lib/lab/controls";
 
 const CONTROLS = [
 	{
@@ -30,7 +27,7 @@ const CONTROLS = [
 	{ key: "chromatic", label: "Chromatic", min: 0, max: 1.5, step: 0.01 },
 	{ key: "nestedMode", label: "Nested mode", min: 0, max: 1, step: 0.01 },
 	{ key: "glassRadius", label: "Glass radius", min: 0, max: 120, step: 1 },
-] as const;
+] as const satisfies readonly LabNumericControlDef[];
 
 type ControlKey = (typeof CONTROLS)[number]["key"];
 
@@ -50,69 +47,32 @@ export default function RippleGradientPage() {
 	});
 
 	return (
-		<PageTunnelIn>
-			<Grid className="fixed inset-0 h-full w-full">
-				<div className="col-start-1 col-end-3 border-r relative pt-10 pl-2 overflow-y-auto">
-					<PointerEventHandler asChild type="underline">
-						<Button variant="ghost" size={"nav"} asChild>
-							<Link href="/lab">Back</Link>
-						</Button>
-					</PointerEventHandler>
-					<div className="pt-4 pr-2 pb-8 flex flex-col gap-4">
-						<h1 className="relative text-foreground text-[28px] leading-none font-heading font-bold transition-all duration-300 group">
-							Ripple Gradient
-						</h1>
-						{CONTROLS.map(({ key, label, min, max, step }) => (
-							<div key={key} className="flex flex-col gap-1">
-								<div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-									<span>{label}</span>
-									<input
-										type="number"
-										min={min}
-										max={max}
-										step={step}
-										value={values[key]}
-										onChange={(event) => {
-											const next = Number(event.target.value);
-											if (Number.isNaN(next)) return;
-											setValues((current) => ({
-												...current,
-												[key]: Math.min(max, Math.max(min, next)),
-											}));
-										}}
-										className="h-6 w-16 shrink-0 rounded border border-border bg-background px-1.5 text-right text-xs text-foreground tabular-nums outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
-									/>
-								</div>
-								<Slider
-									value={[values[key]]}
-									onValueChange={([next]) =>
-										setValues((current) => ({ ...current, [key]: next }))
-									}
-									min={min}
-									max={max}
-									step={step}
-								/>
-							</div>
-						))}
-					</div>
-				</div>
-				<div className="col-start-3 col-end-11 flex flex-col items-center justify-center relative">
-					<WebGLRippleGradientCanvas
-						className="absolute inset-0 h-full w-full"
-						noiseIntensity={values.noiseIntensity}
-						noiseStyle={values.noiseStyle}
-						ripple={values.ripple}
-						depth={values.depth}
-						speed={values.speed}
-						thickness={values.thickness}
-						speedField={values.speedField}
-						rippleCount={values.rippleCount}
-						chromatic={values.chromatic}
-						nestedMode={values.nestedMode}
-						glassRadius={values.glassRadius}
-					/>
-				</div>
-			</Grid>
-		</PageTunnelIn>
+		<LabPageLayout
+			title="Ripple Gradient"
+			sidebar={
+				<LabNumericControls
+					controls={CONTROLS}
+					values={values}
+					onValueChange={(key, value) =>
+						setValues((current) => ({ ...current, [key]: value }))
+					}
+				/>
+			}
+		>
+			<WebGLRippleGradientCanvas
+				className="absolute inset-0 h-full w-full"
+				noiseIntensity={values.noiseIntensity}
+				noiseStyle={values.noiseStyle}
+				ripple={values.ripple}
+				depth={values.depth}
+				speed={values.speed}
+				thickness={values.thickness}
+				speedField={values.speedField}
+				rippleCount={values.rippleCount}
+				chromatic={values.chromatic}
+				nestedMode={values.nestedMode}
+				glassRadius={values.glassRadius}
+			/>
+		</LabPageLayout>
 	);
 }
