@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { pointer } from "@/stores/pointer";
 import { useScrollEvent } from "./smooth-scroll";
 
-type PointerEventType = "bg" | "underline" | "bullet";
+type PointerEventType = "bg" | "underline" | "bullet" | "hide";
 type PointerEventProps = {
 	ref?: React.RefObject<HTMLElement | null>;
 	type?: PointerEventType;
@@ -88,6 +88,17 @@ export const usePointerEvent = ({
 
 	const onPointerEnter = () => {
 		isHoveringRef.current = true;
+
+		if (type === "hide") {
+			setHoverTarget({
+				width: 0,
+				height: 0,
+				x: pointer.target.x,
+				y: pointer.target.y,
+				borderRadius,
+			});
+			return;
+		}
 
 		const rect = ref?.current?.getBoundingClientRect();
 		if (!rect) return;

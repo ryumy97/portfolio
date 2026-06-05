@@ -1,7 +1,7 @@
 "use client";
 
 import type { StaticImageData } from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
@@ -17,6 +17,7 @@ import {
 	setResolutionUniform,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
+import { CanvasLoader } from "@/components/canvas-loader";
 
 export const WEBGL_CMYK_DEFAULTS = {
 	pixelSize: 24,
@@ -182,6 +183,7 @@ export function WebGLCmykCanvas({
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const drawRef = useRef<(() => void) | null>(null);
 	const invalidate = useRef(createScheduledDraw(drawRef));
+	const [isLoadingTexture, setIsLoadingTexture] = useState(false);
 	const configRef = useRef<CmykConfig>({
 		pixelSize,
 		dotSize,
@@ -243,8 +245,15 @@ export function WebGLCmykCanvas({
 			if (w <= 0 || h <= 0) return;
 
 			const loadId = ++textureLoadId;
+			setIsLoadingTexture(true);
 			const src = getOptimizedImageSrc(image, w, h, quality);
-			const imageElement = await loadImage(src);
+			let imageElement: HTMLImageElement;
+			try {
+				imageElement = await loadImage(src);
+			} finally {
+				// Only clear loading for the latest request (avoid flicker on resize).
+				if (!cancelled && loadId === textureLoadId) setIsLoadingTexture(false);
+			}
 			if (cancelled || loadId !== textureLoadId) return;
 
 			if (texture) gl.deleteTexture(texture);
@@ -330,6 +339,7 @@ export function WebGLCmykCanvas({
 
 		return () => {
 			cancelled = true;
+			setIsLoadingTexture(false);
 			disconnectResize();
 			drawRef.current = null;
 			if (buf) gl.deleteBuffer(buf);
@@ -338,5 +348,10 @@ export function WebGLCmykCanvas({
 		};
 	}, [image, quality]);
 
-	return <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />;
+	return (
+		<div className="relative h-full w-full">
+			<canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />
+			<CanvasLoader active={isLoadingTexture} />
+		</div>
+	);
 }

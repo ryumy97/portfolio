@@ -3,7 +3,7 @@
 import type { MotionValue } from "motion/react";
 import { useMotionValueEvent } from "motion/react";
 import type { StaticImageData } from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	CANVAS_STYLE,
 	createFullscreenTriangleBuffer,
@@ -19,6 +19,7 @@ import {
 	setResolutionUniform,
 	uploadTextureFromImage,
 } from "@/lib/webgl";
+import { CanvasLoader } from "@/components/canvas-loader";
 
 export const WEBGL_NEIGHBOR_DEFAULTS = {
 	pixelSize: 20,
@@ -119,6 +120,7 @@ export function WebGLNeighborCanvas({
 	const scrollRef = useRef(progress.get());
 	const invalidate = useRef(createScheduledDraw(drawRef));
 	const configRef = useRef<NeighborConfig>({ pixelSize, radius });
+	const [isLoadingTextures, setIsLoadingTextures] = useState(false);
 
 	useEffect(() => {
 		configRef.current = { pixelSize, radius };
@@ -147,7 +149,14 @@ export function WebGLNeighborCanvas({
 			if (w <= 0 || h <= 0) return;
 
 			const loadId = ++textureLoadId;
-			const imageElements = await loadOptimizedImages(images, w, h, quality);
+			setIsLoadingTextures(true);
+			let imageElements: HTMLImageElement[];
+			try {
+				imageElements = await loadOptimizedImages(images, w, h, quality);
+			} finally {
+				// Only clear loading for the latest request (avoid flicker on resize).
+				if (!cancelled && loadId === textureLoadId) setIsLoadingTextures(false);
+			}
 			if (cancelled || loadId !== textureLoadId) return;
 
 			for (const tex of textures) gl.deleteTexture(tex);
@@ -229,6 +238,8 @@ export function WebGLNeighborCanvas({
 
 		return () => {
 			cancelled = true;
+			// Avoid leaving the overlay up if we unmount during a load.
+			setIsLoadingTextures(false);
 			disconnectResize();
 			drawRef.current = null;
 			if (buf) gl.deleteBuffer(buf);
@@ -242,5 +253,10 @@ export function WebGLNeighborCanvas({
 		invalidate.current();
 	});
 
-	return <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />;
+	return (
+		<div className="relative h-full w-full">
+			<canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />
+			<CanvasLoader active={isLoadingTextures} />
+		</div>
+	);
 }
