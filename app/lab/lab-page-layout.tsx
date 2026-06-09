@@ -49,7 +49,9 @@ export function LabPageLayout({
 						<h1 className="relative text-foreground text-[28px] leading-none font-heading font-bold transition-all duration-300 group">
 							{title}
 						</h1>
-						{description ? <LabDescription>{description}</LabDescription> : null}
+						{description ? (
+							<LabDescription>{description}</LabDescription>
+						) : null}
 						{sidebar}
 					</div>
 				</motion.div>
