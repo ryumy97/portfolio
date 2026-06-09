@@ -1,7 +1,7 @@
 "use client";
 
 import { useGLTF } from "@react-three/drei";
-import { useMemo, type ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 import {
 	buildShapePositionSets,
 	createDefaultShapeSources,

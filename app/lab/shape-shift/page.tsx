@@ -1,8 +1,8 @@
 "use client";
 
+import { Canvas } from "@react-three/fiber";
 import { LabNumericControls } from "@/app/lab/lab-numeric-controls";
 import { LabPageLayout } from "@/app/lab/lab-page-layout";
-import { Canvas } from "@react-three/fiber";
 import {
 	SHAPE_SHIFT_CONTROLS,
 	SHAPE_SHIFT_MOTION_CONTROLS,

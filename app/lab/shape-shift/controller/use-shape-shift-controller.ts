@@ -1,18 +1,18 @@
 "use client";
 
-import type { LabNumericControlDef } from "@/lib/lab/controls";
 import {
 	animate,
 	cubicBezier,
-	useMotionValue,
 	type MotionValue,
+	useMotionValue,
 } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
-import { SHAPE_SHIFT_DEFAULTS } from "../model/shapes";
+import type { LabNumericControlDef } from "@/lib/lab/controls";
 import {
 	PARTICLE_MOTION_DEFAULTS,
 	type ParticleMotionParams,
 } from "../model/particles";
+import { SHAPE_SHIFT_DEFAULTS } from "../model/shapes";
 
 export const SHAPE_SHIFT_CONTROLS = [
 	{ key: "count", label: "Particles", min: 1000, max: 8000, step: 100 },

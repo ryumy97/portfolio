@@ -18,11 +18,11 @@ import {
 } from "react";
 import type * as THREE from "three";
 import { Vector3 } from "three";
+import { useScrollEvent } from "@/components/smooth-scroll";
 import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { CLIP_DEBUG_DEFAULTS } from "@/lib/three/clip-debug";
 import { type ClipUniforms, patchObjectForClip } from "@/lib/three/clip-patch";
 import { usePartHoverStore } from "@/stores/part-hover";
-import { useScrollEvent } from "@/components/smooth-scroll";
 import { ClipSurface } from "../clip-surface";
 import { Eye } from "../model/eye";
 import { Hand } from "../model/hand";

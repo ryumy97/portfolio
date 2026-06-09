@@ -29,7 +29,9 @@ function triangleArea(
 	return _ab.cross(_ac).length() * 0.5;
 }
 
-function buildTriangleSampler(geometry: THREE.BufferGeometry): TriangleSampler | null {
+function buildTriangleSampler(
+	geometry: THREE.BufferGeometry,
+): TriangleSampler | null {
 	const index = geometry.index;
 	const positionAttr = geometry.attributes.position as THREE.BufferAttribute;
 

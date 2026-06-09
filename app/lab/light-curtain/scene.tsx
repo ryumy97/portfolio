@@ -3,9 +3,9 @@
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { EffectComposer } from "@react-three/postprocessing";
 import { memo } from "react";
+import Rodin from "@/components/three/model/rodin";
 import { LightCurtain } from "@/components/three/postprocessing/light-curtain";
 import { LIGHT_CURTAIN_EFFECT_DEFAULTS } from "@/components/three/postprocessing/light-curtain-effect";
-import Rodin from "@/components/three/model/rodin";
 
 const START = {
 	position: [-3.1, 0, 3.711369133013187] as [number, number, number],

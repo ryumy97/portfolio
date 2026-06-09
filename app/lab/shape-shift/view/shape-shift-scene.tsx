@@ -1,8 +1,8 @@
 "use client";
 
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { memo } from "react";
 import type { MotionValue } from "motion/react";
+import { memo } from "react";
 import type { ParticleMotionParams } from "../model/particles";
 import { ShapeShiftParticlesView } from "./shape-shift-particles";
 

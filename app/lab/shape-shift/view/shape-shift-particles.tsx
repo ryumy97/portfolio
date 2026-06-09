@@ -1,9 +1,9 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
+import type { MotionValue } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import type { MotionValue } from "motion/react";
 import {
 	computeShapeTargetPositions,
 	integrateParticlePositions,
