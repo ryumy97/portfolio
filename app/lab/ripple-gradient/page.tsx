@@ -49,6 +49,7 @@ export default function RippleGradientPage() {
 	return (
 		<LabPageLayout
 			title="Ripple Gradient"
+			description="A living gradient field distorted by glass-like ripples. Tune noise, depth, and chromatic aberration to shape the motion."
 			sidebar={
 				<LabNumericControls
 					controls={CONTROLS}

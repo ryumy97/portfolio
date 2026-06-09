@@ -26,6 +26,7 @@ export default function Home() {
 	return (
 		<LabPageLayout
 			title="Staggered"
+			description="A 3D scan with staggered pixelation post-processing. Orbit the model and tweak mask stagger and block granularity."
 			sidebar={
 				<LabNumericControls
 					controls={CONTROLS}

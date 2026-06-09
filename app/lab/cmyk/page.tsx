@@ -54,6 +54,7 @@ export default function Home() {
 	return (
 		<LabPageLayout
 			title="CMYK"
+			description="Break an image into offset CMYK halftone plates. Adjust dot size, ink strength, and screen angles like print separations."
 			sidebar={
 				<LabNumericControls
 					controls={CONTROLS}

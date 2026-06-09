@@ -26,6 +26,7 @@ export default function Home() {
 	return (
 		<LabPageLayout
 			title="Pixelation"
+			description="Reveal a sharp image inside a soft pixelated mask that follows the pointer. Dial in block size and falloff."
 			sidebar={
 				<LabNumericControls
 					controls={CONTROLS}

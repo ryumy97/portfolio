@@ -32,6 +32,7 @@ export default function Page() {
 	return (
 		<LabPageLayout
 			title="Clip surface"
+			description="Clip a shaded surface with an animated wave boundary. Slide the clip plane and layer multiple wave frequencies."
 			sidebar={
 				<>
 					<LabNumericControls

@@ -44,6 +44,7 @@ export default function Home() {
 	return (
 		<LabPageLayout
 			title="Neighbor"
+			description="Crossfade between portrait stills through a halftone field that reacts to pointer proximity."
 			sidebar={
 				<>
 					<LabNumericControls

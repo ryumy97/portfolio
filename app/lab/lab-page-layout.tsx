@@ -8,16 +8,19 @@ import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
+import { LabDescription } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 
 type LabPageLayoutProps = {
 	title: string;
+	description?: ReactNode;
 	sidebar: ReactNode;
 	children: ReactNode;
 };
 
 export function LabPageLayout({
 	title,
+	description,
 	sidebar,
 	children,
 }: LabPageLayoutProps) {
@@ -46,6 +49,7 @@ export function LabPageLayout({
 						<h1 className="relative text-foreground text-[28px] leading-none font-heading font-bold transition-all duration-300 group">
 							{title}
 						</h1>
+						{description ? <LabDescription>{description}</LabDescription> : null}
 						{sidebar}
 					</div>
 				</motion.div>

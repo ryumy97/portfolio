@@ -30,6 +30,7 @@ export default function Home() {
 	return (
 		<LabPageLayout
 			title="Light curtain"
+			description="A refractive light curtain in Three.js. Move the pointer to bend light and tune distortion, fill, and light position."
 			sidebar={
 				<LabNumericControls
 					controls={CONTROLS}

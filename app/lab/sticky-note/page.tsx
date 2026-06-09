@@ -13,6 +13,7 @@ export default function StickyNotePage() {
 	return (
 		<LabPageLayout
 			title="Sticky Note"
+			description="Grab any corner and drag inward to fold the note like paper. Pull far enough and it peels off the surface so you can move it around."
 			sidebar={
 				<div className="flex flex-col gap-4">
 					<div className="flex items-center justify-between gap-3">

@@ -59,6 +59,22 @@ export const PageDescription: React.FC<Props> = ({
 	);
 };
 
+export const LabDescription: React.FC<Props> = ({
+	children,
+	className,
+	asChild,
+}) => {
+	const Comp = asChild ? Slot.Root : "p";
+
+	return (
+		<Comp
+			className={cn("text-sm text-muted-foreground leading-relaxed", className)}
+		>
+			{children}
+		</Comp>
+	);
+};
+
 export const PageLink: React.FC<Props> = ({ children, className, asChild }) => {
 	const Comp = asChild ? Slot.Root : "div";
 

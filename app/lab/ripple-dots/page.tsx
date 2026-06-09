@@ -59,6 +59,7 @@ export default function Home() {
 	return (
 		<LabPageLayout
 			title="Ripple"
+			description="Move the pointer to send halftone ripples across the canvas."
 			sidebar={
 				<LabNumericControls
 					controls={CONTROLS}
