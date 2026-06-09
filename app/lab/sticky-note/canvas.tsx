@@ -12,11 +12,6 @@ type Props = {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-const lerpPoint = (a: Point, b: Point, t: number): Point => ({
-	x: lerp(a.x, b.x, t),
-	y: lerp(a.y, b.y, t),
-});
-
 /** Intersection of two infinite lines (a→b and c→d). */
 const lineLineIntersect = (
 	a: Point,
