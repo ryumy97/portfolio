@@ -119,20 +119,6 @@ const reflectPointAcrossLine = (
 	return { x: 2 * px - p.x, y: 2 * py - p.y };
 };
 
-const traceCubicBezierByLerp = (
-	ctx: CanvasRenderingContext2D,
-	p0: Point,
-	p1: Point,
-	p2: Point,
-	p3: Point,
-	steps = 20,
-) => {
-	for (let i = 1; i <= steps; i++) {
-		const p = cubicBezierPointByLerp(i / steps, p0, p1, p2, p3);
-		ctx.lineTo(p.x, p.y);
-	}
-};
-
 type CornerId = "tl" | "tr" | "br" | "bl";
 
 type NoteCorners = Record<CornerId, Point>;
