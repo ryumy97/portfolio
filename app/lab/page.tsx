@@ -8,6 +8,7 @@ import { Grid, SubGrid } from "@/components/ui/grid";
 import { PageDescription, Title } from "@/components/ui/typography";
 
 const LABS = [
+	{ href: "/lab/shape-shift", title: "Shape Shift" },
 	{ href: "/lab/sticky-note", title: "Sticky Note" },
 	{ href: "/lab/ripple-dots", title: "Ripple Dots" },
 	{ href: "/lab/cmyk", title: "CMYK" },

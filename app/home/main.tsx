@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import Link from "next/link";
 import { useRef } from "react";
 import { usePointerEvent } from "@/components/pointer";
-import MainScene from "@/components/three/main-scene";
+import MainScene from "@/components/three/scene/main-scene";
 import { SubGrid } from "@/components/ui/grid";
 import { Title } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";

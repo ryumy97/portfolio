@@ -22,12 +22,12 @@ import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { CLIP_DEBUG_DEFAULTS } from "@/lib/three/clip-debug";
 import { type ClipUniforms, patchObjectForClip } from "@/lib/three/clip-patch";
 import { usePartHoverStore } from "@/stores/part-hover";
-import { useScrollEvent } from "../smooth-scroll";
-import { ClipSurface } from "./clip-surface";
-import { Eye } from "./eye";
-import { Hand } from "./hand";
-import { Head } from "./head";
-import { Phone } from "./phone";
+import { useScrollEvent } from "@/components/smooth-scroll";
+import { ClipSurface } from "../clip-surface";
+import { Eye } from "../model/eye";
+import { Hand } from "../model/hand";
+import { Head } from "../model/head";
+import { Phone } from "../model/phone";
 
 const WARM_AMBIENT_COLOR = "#80d0ff";
 const WARM_KEY_COLOR = "#ffffff";

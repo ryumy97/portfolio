@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { useRef } from "react";
-import HeadScene from "@/components/three/head-scene";
+import HeadScene from "@/components/three/scene/head-scene";
 
 const Background = () => {
 	const ref = useRef<HTMLDivElement>(null);

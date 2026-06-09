@@ -16,10 +16,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type * as THREE from "three";
 import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { useIntroStore } from "@/stores/intro";
-import { useScrollEvent } from "../smooth-scroll";
-import { Stagger } from "./postprocessing/stagger";
-import type { StaggerEffect } from "./postprocessing/stagger-effect";
-import Rodin from "./rodin";
+import { useScrollEvent } from "../../smooth-scroll";
+import { Stagger } from "../postprocessing/stagger";
+import type { StaggerEffect } from "../postprocessing/stagger-effect";
+import Rodin from "../model/rodin";
 
 const START = {
 	position: [-0.57, 1.8, 1],

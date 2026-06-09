@@ -10,11 +10,11 @@ import {
 	type ClipDebugState,
 } from "@/lib/three/clip-debug";
 import { type ClipUniforms, patchObjectForClip } from "@/lib/three/clip-patch";
-import { ClipSurface } from "./clip-surface";
-import { Eye } from "./eye";
-import { Hand } from "./hand";
-import { Head } from "./head";
-import { Phone } from "./phone";
+import { ClipSurface } from "../clip-surface";
+import { Eye } from "../model/eye";
+import { Hand } from "../model/hand";
+import { Head } from "../model/head";
+import { Phone } from "../model/phone";
 
 const CAMERA_POSITION = new Vector3(0, 3.8, 1.85);
 

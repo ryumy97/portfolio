@@ -7,7 +7,7 @@ import { LabPageLayout } from "@/app/lab/lab-page-layout";
 import {
 	CLIP_SURFACE_SCENE_DEFAULTS,
 	ClipSurfaceScene,
-} from "@/components/three/clip-surface-scene";
+} from "@/components/three/scene/clip-surface-scene";
 import type { LabNumericControlDef } from "@/lib/lab/controls";
 import type { ClipDebugState } from "@/lib/three/clip-debug";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { LabNumericControls } from "@/app/lab/lab-numeric-controls";
 import { LabPageLayout } from "@/app/lab/lab-page-layout";
 import type { LabNumericControlDef } from "@/lib/lab/controls";
@@ -18,7 +18,7 @@ const CONTROLS = [
 type ControlKey = (typeof CONTROLS)[number]["key"];
 
 export default function Home() {
-	const eventSourceRef = useRef<HTMLDivElement>(null);
+	const [eventSource, setEventSource] = useState<HTMLDivElement | null>(null);
 	const [values, setValues] = useState<Record<ControlKey, number>>({
 		distortion: LIGHT_CURTAIN_SCENE_DEFAULTS.distortion,
 		fill: LIGHT_CURTAIN_SCENE_DEFAULTS.fill,
@@ -41,10 +41,10 @@ export default function Home() {
 				/>
 			}
 		>
-			<div ref={eventSourceRef} className="absolute inset-0 h-full w-full">
+			<div ref={setEventSource} className="absolute inset-0 h-full w-full">
 				<Canvas
 					className="absolute inset-0 h-full w-full"
-					eventSource={eventSourceRef.current ?? undefined}
+					eventSource={eventSource ?? undefined}
 					frameloop="always"
 				>
 					<color attach="background" args={["#ffffff"]} />

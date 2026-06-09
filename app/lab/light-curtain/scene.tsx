@@ -2,9 +2,10 @@
 
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { EffectComposer } from "@react-three/postprocessing";
+import { memo } from "react";
 import { LightCurtain } from "@/components/three/postprocessing/light-curtain";
 import { LIGHT_CURTAIN_EFFECT_DEFAULTS } from "@/components/three/postprocessing/light-curtain-effect";
-import Rodin from "@/components/three/rodin";
+import Rodin from "@/components/three/model/rodin";
 
 const START = {
 	position: [-3.1, 0, 3.711369133013187] as [number, number, number],
@@ -23,6 +24,23 @@ export type LightCurtainSceneProps = {
 	fill?: number;
 };
 
+const LightCurtainSceneShell = memo(function LightCurtainSceneShell() {
+	return (
+		<>
+			<Rodin position={[0, -1, 0]} />
+			<ambientLight intensity={0.1} />
+			<directionalLight position={[1, 1, 1]} intensity={2} />
+			<PerspectiveCamera
+				fov={28.5}
+				position={START.position}
+				rotation={START.rotation}
+				makeDefault
+			/>
+			<OrbitControls makeDefault />
+		</>
+	);
+});
+
 export function LightCurtainScene({
 	distortion = LIGHT_CURTAIN_SCENE_DEFAULTS.distortion,
 	lightX = LIGHT_CURTAIN_SCENE_DEFAULTS.lightX,
@@ -32,16 +50,7 @@ export function LightCurtainScene({
 }: LightCurtainSceneProps) {
 	return (
 		<>
-			<Rodin position={[0, -1, 0]} />
-			<ambientLight intensity={0.1} />
-			<directionalLight position={[1, 1, 1]} intensity={2} />
-			<OrbitControls />
-			<PerspectiveCamera
-				fov={28.5}
-				position={START.position}
-				rotation={START.rotation}
-				makeDefault
-			/>
+			<LightCurtainSceneShell />
 			<EffectComposer>
 				<LightCurtain
 					distortion={distortion}

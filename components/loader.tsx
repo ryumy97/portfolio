@@ -1,8 +1,10 @@
 "use client";
 
-import "@/components/three/rodin";
-import "@/components/three/head";
-import "@/components/three/eye";
+import "@/components/three/model/rodin";
+import "@/components/three/model/head";
+import "@/components/three/model/eye";
+import "@/components/three/model/hand";
+import "@/components/three/model/phone";
 import { useProgress } from "@react-three/drei";
 import { animate } from "motion";
 import { cubicBezier, useMotionValue } from "motion/react";

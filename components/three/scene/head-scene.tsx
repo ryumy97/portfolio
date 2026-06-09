@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
 import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { useIntroStore } from "@/stores/intro";
-import { Head } from "./head";
+import { Head } from "../model/head";
 
 const START = {
 	ambientLight: 0,
