@@ -8,14 +8,15 @@ import { Grid, SubGrid } from "@/components/ui/grid";
 import { PageDescription, Title } from "@/components/ui/typography";
 
 const LABS = [
+	{ href: "/lab/sticky-note", title: "Sticky Note" },
 	{ href: "/lab/ripple-dots", title: "Ripple Dots" },
+	{ href: "/lab/cmyk", title: "CMYK" },
+	{ href: "/lab/light-curtain", title: "Light Curtain" },
+	{ href: "/lab/ripple-gradient", title: "Ripple Gradient" },
+	{ href: "/lab/clip-surface", title: "Clip surface" },
+	{ href: "/lab/stagged", title: "Staggered" },
 	{ href: "/lab/neighbor", title: "Neighbor" },
 	{ href: "/lab/pixelation", title: "Pixelation" },
-	{ href: "/lab/cmyk", title: "CMYK" },
-	{ href: "/lab/ripple-gradient", title: "Ripple Gradient" },
-	{ href: "/lab/light-curtain", title: "Light Curtain" },
-	{ href: "/lab/stagged", title: "Staggered" },
-	{ href: "/lab/clip-surface", title: "Clip surface" },
 ] as const;
 
 export default function Labs() {

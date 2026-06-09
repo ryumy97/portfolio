@@ -3,7 +3,7 @@
 # Fail the commit if formatting/lint would require changes.
 # (No auto-fix in pre-commit.)
 
-yarn -s lint
+yarn -s lint --fix
 
 # Guardrail: ensure the hook did not modify anything.
 before_worktree="$(git diff | shasum | cut -d' ' -f1)"
