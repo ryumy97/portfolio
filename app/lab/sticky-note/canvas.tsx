@@ -123,9 +123,6 @@ const isValidFoldDrag = (corner: CornerId, diff: Point): boolean => {
 
 type Rect = { minX: number; maxX: number; minY: number; maxY: number };
 
-const OPPOSITE_QUADRANT_RATIO = 0.3;
-
-/** 30% × 30% region anchored at the note corner opposite the fold. */
 const getOppositeQuadrant = (
 	corner: CornerId,
 	cx: number,
@@ -133,39 +130,34 @@ const getOppositeQuadrant = (
 	w: number,
 	h: number,
 ): Rect => {
-	const qw = w * OPPOSITE_QUADRANT_RATIO;
-	const qh = h * OPPOSITE_QUADRANT_RATIO;
-	const hw = w / 2;
-	const hh = h / 2;
-
 	switch (corner) {
 		case "tl":
 			return {
-				minX: cx + hw - qw,
-				maxX: cx + hw,
-				minY: cy + hh - qh,
-				maxY: cy + hh,
+				minX: cx + w * 0.5,
+				maxX: cx + w,
+				minY: cy + h * 0.5,
+				maxY: cy + h,
 			};
 		case "tr":
 			return {
-				minX: cx - hw,
-				maxX: cx - hw + qw,
-				minY: cy + hh - qh,
-				maxY: cy + hh,
+				minX: cx - w * 0.5,
+				maxX: cx - w,
+				minY: cy + h * 0.5,
+				maxY: cy + h,
 			};
 		case "br":
 			return {
-				minX: cx - hw,
-				maxX: cx - hw + qw,
-				minY: cy - hh,
-				maxY: cy - hh + qh,
+				minX: cx - w * 0.5,
+				maxX: cx - w,
+				minY: cy - h * 0.5,
+				maxY: cy - h,
 			};
 		case "bl":
 			return {
-				minX: cx + hw - qw,
-				maxX: cx + hw,
-				minY: cy - hh,
-				maxY: cy - hh + qh,
+				minX: cx + w * 0.5,
+				maxX: cx + w,
+				minY: cy - h * 0.5,
+				maxY: cy - h,
 			};
 	}
 };
@@ -637,11 +629,11 @@ function StickyNoteCanvas({ isDebug = true, resetKey = 0 }: Props) {
 				container.clientWidth / container.clientHeight;
 
 			if (containerAspectRatio > 1) {
-				noteRef.current.width = container.clientWidth / 3;
-				noteRef.current.height = container.clientWidth / 3;
+				noteRef.current.width = container.clientWidth * 0.2;
+				noteRef.current.height = container.clientWidth * 0.2;
 			} else {
-				noteRef.current.width = container.clientHeight / 3;
-				noteRef.current.height = container.clientHeight / 3;
+				noteRef.current.width = container.clientHeight * 0.2;
+				noteRef.current.height = container.clientHeight * 0.2;
 			}
 
 			noteRef.current.x = container.clientWidth / 2;
@@ -755,8 +747,19 @@ function StickyNoteCanvas({ isDebug = true, resetKey = 0 }: Props) {
 		ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
 
 		if (noteRef.current.moveNote) {
-			note.x = lerp(note.x, note.dragTarget.x, MOVE_NOTE_LERP);
-			note.y = lerp(note.y, note.dragTarget.y, MOVE_NOTE_LERP);
+			if (note.activeCorner === "tl") {
+				note.x = lerp(note.x, note.dragTarget.x - note.width, MOVE_NOTE_LERP);
+				note.y = lerp(note.y, note.dragTarget.y - note.height, MOVE_NOTE_LERP);
+			} else if (note.activeCorner === "tr") {
+				note.x = lerp(note.x, note.dragTarget.x + note.width, MOVE_NOTE_LERP);
+				note.y = lerp(note.y, note.dragTarget.y - note.height, MOVE_NOTE_LERP);
+			} else if (note.activeCorner === "br") {
+				note.x = lerp(note.x, note.dragTarget.x + note.width, MOVE_NOTE_LERP);
+				note.y = lerp(note.y, note.dragTarget.y + note.height, MOVE_NOTE_LERP);
+			} else if (note.activeCorner === "bl") {
+				note.x = lerp(note.x, note.dragTarget.x - note.width, MOVE_NOTE_LERP);
+				note.y = lerp(note.y, note.dragTarget.y + note.height, MOVE_NOTE_LERP);
+			}
 		} else if (note.isDragging) {
 			note.drag.x = lerp(note.drag.x, note.dragTarget.x, DRAG_LERP);
 			note.drag.y = lerp(note.drag.y, note.dragTarget.y, DRAG_LERP);
