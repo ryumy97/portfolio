@@ -5,43 +5,97 @@ import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { Grid, SubGrid } from "@/components/ui/grid";
-import { PageDescription, Title } from "@/components/ui/typography";
+import {
+	CVSubHeading,
+	PageDescription,
+	PageParagraphHeading,
+	Title,
+} from "@/components/ui/typography";
+import {
+	LAB_CATEGORIES,
+	type LabCategory,
+	type LabEntry,
+	type LabSubcategory,
+} from "@/lib/lab/labs";
 
-const LABS = [
-	{ href: "/lab/shape-shift", title: "Shape Shift" },
-	{ href: "/lab/sticky-note", title: "Sticky Note" },
-	{ href: "/lab/ripple-dots", title: "Ripple Dots" },
-	{ href: "/lab/cmyk", title: "CMYK" },
-	{ href: "/lab/light-curtain", title: "Light Curtain" },
-	{ href: "/lab/ripple-gradient", title: "Ripple Gradient" },
-	{ href: "/lab/clip-surface", title: "Clip surface" },
-	{ href: "/lab/stagged", title: "Staggered" },
-	{ href: "/lab/neighbor", title: "Neighbor" },
-	{ href: "/lab/pixelation", title: "Pixelation" },
-] as const;
+function LabLink({ href, title }: LabEntry) {
+	return (
+		<PointerEventHandler asChild type="underline" offsetY={8}>
+			<Link href={href} className="w-fit block">
+				<PageParagraphHeading className="relative font-heading font-bold leading-none transition-all duration-300">
+					{title}
+					<span className="absolute bottom-[8%] left-0 h-0.5 w-0 bg-foreground transition-all duration-300 group-hover:w-full" />
+				</PageParagraphHeading>
+			</Link>
+		</PointerEventHandler>
+	);
+}
+
+function LabList({ labs }: { labs: readonly LabEntry[] }) {
+	return (
+		<SubGrid className="col-span-full gap-y-4">
+			{labs.map((lab) => (
+				<div key={lab.href} className="col-span-1 pr-[1vw] mt-2">
+					<LabLink {...lab} />
+				</div>
+			))}
+		</SubGrid>
+	);
+}
+
+function LabSubcategorySection({ title, labs }: LabSubcategory) {
+	return (
+		<SubGrid className="col-span-full">
+			<CVSubHeading
+				asChild
+				className="col-span-full text-muted-foreground mt-4"
+			>
+				<h3>{title}</h3>
+			</CVSubHeading>
+			<LabList labs={labs} />
+		</SubGrid>
+	);
+}
+
+function LabCategorySection({ title, labs, subcategories }: LabCategory) {
+	return (
+		<SubGrid asChild>
+			<section className="col-span-full">
+				<PageParagraphHeading
+					asChild
+					className="col-span-full font-heading font-bold tracking-[-0.02em] text-primary"
+				>
+					<h2>{title}</h2>
+				</PageParagraphHeading>
+				{subcategories ? (
+					<SubGrid className="col-span-full gap-y-12">
+						{subcategories.map((subcategory) => (
+							<LabSubcategorySection key={subcategory.title} {...subcategory} />
+						))}
+					</SubGrid>
+				) : labs ? (
+					<LabList labs={labs} />
+				) : null}
+			</section>
+		</SubGrid>
+	);
+}
 
 export default function Labs() {
 	return (
 		<PageTunnelIn>
 			<SmoothScroll>
-				<div className="mt-14"></div>
+				<div className="mt-14" />
 				<Grid className="w-full max-md:p-4">
 					<div className="col-span-full md:col-start-2 md:col-end-10">
 						<Title className="text-primary">Lab</Title>
-						<PageDescription>Something fun</PageDescription>
+						<PageDescription>
+							Experiments in Three.js, WebGL shaders, and canvas.
+						</PageDescription>
 					</div>
-					<SubGrid className="col-span-full md:col-start-2 md:col-end-10 mt-12 max-md:flex flex-col gap-4">
-						{LABS.map(({ href, title }) => (
-							<div key={href} className="pr-[1vw]">
-								<PointerEventHandler asChild type="underline" offsetY={8}>
-									<Link href={href} className="col-span-2 md:col-span-1">
-										<span className="relative font-heading font-bold leading-none transition-all duration-300 text-[18px] md:text-[max(1.5vw,18px)]">
-											{title}
-											<span className="absolute bottom-[8%] left-0 h-0.5 w-0 bg-foreground transition-all duration-300 group-hover:w-full" />
-										</span>
-									</Link>
-								</PointerEventHandler>
-							</div>
+					<SubGrid className="col-span-full md:col-start-2 md:col-end-10 mt-12 gap-y-14 content-start">
+						{LAB_CATEGORIES.map((category) => (
+							<LabCategorySection key={category.title} {...category} />
 						))}
 					</SubGrid>
 				</Grid>
