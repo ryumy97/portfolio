@@ -227,7 +227,7 @@ export default function Page() {
 								<b>
 									McCann <i>(formerly DDB)</i>, Auckland
 								</b>
-								<i>- Intermediate/Senior Frontend Developer</i>
+								<i>- Senior Frontend Developer</i>
 							</>
 						}
 						link=""
