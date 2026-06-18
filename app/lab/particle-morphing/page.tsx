@@ -49,7 +49,7 @@ export default function ParticleMorphingPage() {
 	return (
 		<LabPageLayout
 			title="Particle Morphing"
-			description="Image pixels sampled into a Three.js particle field."
+			description="Image pixels sampled into a Three.js particle field, morphing between them in a loop."
 			sidebar={
 				<LabNumericControls
 					controls={CONTROLS}

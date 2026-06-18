@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import dotAlphaMap from "@/app/lab/particle-morphing/assets/dot.png";
 import {
-	dampImageParticleVelocities,
 	IMAGE_PARTICLE_POINTER_DEFAULTS,
 	type ImageParticlePointer,
 	integrateImageParticlePositions,
@@ -170,10 +169,6 @@ export function ImageParticlesView({
 			ease: SAMPLE_EASE,
 		});
 
-		if (velocitiesRef.current) {
-			dampImageParticleVelocities(velocitiesRef.current, 0);
-		}
-
 		indexRef.current = index;
 	}, [geometry, index, transition]);
 
@@ -243,23 +238,18 @@ export function ImageParticlesView({
 		pointer.y += (pointerTarget.y - pointer.y) * pointerLerp;
 		pointer.active = state.events.connected;
 
-		if (transitioning) {
-			basePositions.set(morphedPositions);
-			displayColors.set(morphedColors);
-			displayAlphas.set(morphedAlphas);
-		} else {
-			integrateImageParticlePositions(
-				basePositions,
-				velocities,
-				targets.positions,
-				targets.alphas,
-				pointer,
-				delta,
-				IMAGE_PARTICLE_POINTER_DEFAULTS,
-			);
-			displayColors.set(targets.colors);
-			displayAlphas.set(targets.alphas);
-		}
+		integrateImageParticlePositions(
+			basePositions,
+			velocities,
+			morphedPositions,
+			morphedAlphas,
+			pointer,
+			delta,
+			IMAGE_PARTICLE_POINTER_DEFAULTS,
+		);
+
+		displayColors.set(morphedColors);
+		displayAlphas.set(morphedAlphas);
 
 		computeImageParticleWaveOffsets(
 			waveOffsets,
