@@ -5,7 +5,7 @@ import flower2 from "./assets/flower2.png";
 import flower3 from "./assets/flower3.png";
 import flower4 from "./assets/flower4.png";
 
-export const DOTS_IMAGES = [
+export const IMAGE_PARTICLE_IMAGES = [
 	bird,
 	flower1,
 	flower2,

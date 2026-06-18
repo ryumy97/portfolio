@@ -5,24 +5,24 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { animate, cubicBezier, useMotionValue } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import dotAlphaMap from "@/app/lab/dots/assets/dot.png";
+import dotAlphaMap from "@/app/lab/particle-morphing/assets/dot.png";
 import {
 	dampImageParticleVelocities,
 	IMAGE_PARTICLE_POINTER_DEFAULTS,
 	type ImageParticlePointer,
 	integrateImageParticlePositions,
-} from "@/app/lab/dots/model/image-particle-pointer";
+} from "@/app/lab/particle-morphing/model/image-particle-pointer";
 import {
 	createPaddedImageParticleTargets,
 	getMaxImageParticleCount,
 	IMAGE_PARTICLE_TRANSITION_DURATION_S,
-} from "@/app/lab/dots/model/image-particle-targets";
+} from "@/app/lab/particle-morphing/model/image-particle-targets";
 import {
 	computeImageParticleWaveOffsets,
 	createImageParticleWaveFactors,
 	IMAGE_PARTICLE_WAVE_DEFAULTS,
-} from "@/app/lab/dots/model/image-particle-wave";
-import { createImageParticlesMaterial } from "@/app/lab/dots/view/image-particles-material";
+} from "@/app/lab/particle-morphing/model/image-particle-wave";
+import { createImageParticlesMaterial } from "@/app/lab/particle-morphing/view/image-particles-material";
 import { lerpPositionSets } from "@/lib/three/sample-geometry-surface";
 import type { ImageParticleSample } from "@/lib/three/sample-image-particles";
 

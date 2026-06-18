@@ -8,7 +8,7 @@ import { LabPageLayout } from "@/app/lab/lab-page-layout";
 import { CanvasLoader } from "@/components/canvas-loader";
 import type { LabNumericControlDef } from "@/lib/lab/controls";
 import { useImageParticleSamples } from "./hooks/use-image-particle-samples";
-import { DOTS_IMAGES } from "./images";
+import { IMAGE_PARTICLE_IMAGES } from "./images";
 import { ImageParticlesView } from "./view/image-particles";
 
 const IMAGE_INTERVAL_MS = 3000;
@@ -20,7 +20,7 @@ const CONTROLS = [
 
 type ControlKey = (typeof CONTROLS)[number]["key"];
 
-export default function DotsPage() {
+export default function ParticleMorphingPage() {
 	const [eventSource, setEventSource] = useState<HTMLDivElement | null>(null);
 	const [imageIndex, setImageIndex] = useState(0);
 	const [values, setValues] = useState<Record<ControlKey, number>>({
@@ -28,7 +28,7 @@ export default function DotsPage() {
 		size: 0.1,
 	});
 
-	const { samples, loading } = useImageParticleSamples(DOTS_IMAGES, {
+	const { samples, loading } = useImageParticleSamples(IMAGE_PARTICLE_IMAGES, {
 		step: values.step,
 	});
 
@@ -40,7 +40,7 @@ export default function DotsPage() {
 		setImageIndex(0);
 
 		const interval = setInterval(() => {
-			setImageIndex((current) => (current + 1) % DOTS_IMAGES.length);
+			setImageIndex((current) => (current + 1) % IMAGE_PARTICLE_IMAGES.length);
 		}, IMAGE_INTERVAL_MS);
 
 		return () => clearInterval(interval);
@@ -48,7 +48,7 @@ export default function DotsPage() {
 
 	return (
 		<LabPageLayout
-			title="Dots"
+			title="Particle Morphing"
 			description="Image pixels sampled into a Three.js particle field."
 			sidebar={
 				<LabNumericControls

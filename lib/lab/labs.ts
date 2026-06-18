@@ -23,7 +23,7 @@ export const LAB_CATEGORIES = [
 				labs: [
 					{ href: "/lab/shape-shift", title: "Shape Shift" },
 					{ href: "/lab/clip-surface", title: "Clip Surface" },
-					{ href: "/lab/dots", title: "Dots" },
+					{ href: "/lab/particle-morphing", title: "Particle Morphing" },
 				],
 			},
 			{
