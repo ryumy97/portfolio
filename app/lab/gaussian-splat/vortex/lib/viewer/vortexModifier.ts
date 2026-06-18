@@ -127,6 +127,8 @@ export function computeSplatDepthRange(
   };
 }
 
+type FloatDyno = dyno.DynoVal<"float">;
+
 function sampleFlowField({
   x,
   y,
@@ -134,11 +136,11 @@ function sampleFlowField({
   t,
   frequency,
 }: {
-  x: ReturnType<typeof dynoConst>;
-  y: ReturnType<typeof dynoConst>;
-  z: ReturnType<typeof dynoConst>;
-  t: ReturnType<typeof dynoConst>;
-  frequency: ReturnType<typeof dynoFloat>;
+  x: FloatDyno;
+  y: FloatDyno;
+  z: FloatDyno;
+  t: FloatDyno;
+  frequency: FloatDyno;
 }) {
   const c067 = dynoConst("float", 0.67);
   const c083 = dynoConst("float", 0.83);
