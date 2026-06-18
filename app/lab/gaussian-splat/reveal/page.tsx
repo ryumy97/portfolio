@@ -3,17 +3,19 @@
 import { useCallback, useState } from "react";
 import { LabPageLayout } from "@/app/lab/lab-page-layout";
 import { CanvasLoader } from "@/components/canvas-loader";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
 	SAMPLE_SPLAT_METADATA_URL,
 	SAMPLE_SPLAT_NAME,
 	SAMPLE_SPLAT_URL,
-} from "./assets";
+} from "../assets";
 import { GaussianSplatViewer } from "./view/gaussian-splat-viewer";
 
 export default function GaussianSplatPage() {
 	const [loading, setLoading] = useState(true);
 	const [pointCloudMode, setPointCloudMode] = useState(false);
+	const [reloadKey, setReloadKey] = useState(0);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const handleLoad = useCallback(() => {
@@ -26,9 +28,15 @@ export default function GaussianSplatPage() {
 		setErrorMessage(error.message);
 	}, []);
 
+	const handleReload = useCallback(() => {
+		setLoading(true);
+		setErrorMessage(null);
+		setReloadKey((key) => key + 1);
+	}, []);
+
 	return (
 		<LabPageLayout
-			title="Gaussian Splat"
+			title="Reveal"
 			description="Move the pointer to subtly tilt the scene."
 			sidebar={
 				<div className="flex flex-col gap-4">
@@ -49,6 +57,14 @@ export default function GaussianSplatPage() {
 							onCheckedChange={setPointCloudMode}
 						/>
 					</div>
+					<Button
+						type="button"
+						variant="outline"
+						disabled={loading}
+						onClick={handleReload}
+					>
+						Reload
+					</Button>
 				</div>
 			}
 		>
@@ -58,6 +74,7 @@ export default function GaussianSplatPage() {
 			>
 				<CanvasLoader active={loading} />
 				<GaussianSplatViewer
+					key={reloadKey}
 					initialUrl={SAMPLE_SPLAT_URL}
 					initialFileName={SAMPLE_SPLAT_NAME}
 					initialMetadataUrl={SAMPLE_SPLAT_METADATA_URL}
