@@ -14,8 +14,8 @@
 import { execFile } from "node:child_process";
 import { readdir, rename, stat, unlink } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import sharp from "sharp";
 
 const execFileAsync = promisify(execFile);
