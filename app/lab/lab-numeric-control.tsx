@@ -1,6 +1,7 @@
 "use client";
 
 import { Slider } from "@/components/ui/slider";
+import { LabControlLabel } from "@/components/ui/typography";
 import { clampControlValue } from "@/lib/lab/controls";
 
 type LabNumericControlProps = {
@@ -22,8 +23,8 @@ export function LabNumericControl({
 }: LabNumericControlProps) {
 	return (
 		<div className="flex flex-col gap-1">
-			<div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-				<span>{label}</span>
+			<div className="flex items-center justify-between gap-2">
+				<LabControlLabel>{label}</LabControlLabel>
 				<input
 					type="number"
 					min={min}

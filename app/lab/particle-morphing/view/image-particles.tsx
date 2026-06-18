@@ -7,8 +7,8 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import dotAlphaMap from "@/app/lab/particle-morphing/assets/dot.png";
 import {
-	IMAGE_PARTICLE_POINTER_DEFAULTS,
 	type ImageParticlePointer,
+	type ImageParticlePointerParams,
 	integrateImageParticlePositions,
 } from "@/app/lab/particle-morphing/model/image-particle-pointer";
 import {
@@ -19,7 +19,7 @@ import {
 import {
 	computeImageParticleWaveOffsets,
 	createImageParticleWaveFactors,
-	IMAGE_PARTICLE_WAVE_DEFAULTS,
+	type ImageParticleWaveParams,
 } from "@/app/lab/particle-morphing/model/image-particle-wave";
 import { createImageParticlesMaterial } from "@/app/lab/particle-morphing/view/image-particles-material";
 import { lerpPositionSets } from "@/lib/three/sample-geometry-surface";
@@ -29,6 +29,8 @@ export type ImageParticlesViewProps = {
 	samples: ImageParticleSample[];
 	index: number;
 	size: number;
+	pointer: ImageParticlePointerParams;
+	wave: ImageParticleWaveParams;
 };
 
 const _plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
@@ -46,6 +48,8 @@ export function ImageParticlesView({
 	samples,
 	index,
 	size,
+	pointer: pointerParams,
+	wave,
 }: ImageParticlesViewProps) {
 	const pointsRef = useRef<THREE.Points>(null);
 	const alphaMap = useTexture(dotAlphaMap.src);
@@ -57,9 +61,14 @@ export function ImageParticlesView({
 	const maxCount = useMemo(() => getMaxImageParticleCount(samples), [samples]);
 
 	const waveFactors = useMemo(
-		() => createImageParticleWaveFactors(maxCount),
-		[maxCount],
+		() => createImageParticleWaveFactors(maxCount, wave.frequencyJitter),
+		[maxCount, wave.frequencyJitter],
 	);
+
+	const pointerParamsRef = useRef(pointerParams);
+	pointerParamsRef.current = pointerParams;
+	const waveRef = useRef(wave);
+	waveRef.current = wave;
 
 	const currentTargets = useMemo(
 		() => createPaddedImageParticleTargets(samples[index], maxCount),
@@ -245,7 +254,7 @@ export function ImageParticlesView({
 			morphedAlphas,
 			pointer,
 			delta,
-			IMAGE_PARTICLE_POINTER_DEFAULTS,
+			pointerParamsRef.current,
 		);
 
 		displayColors.set(morphedColors);
@@ -257,7 +266,7 @@ export function ImageParticlesView({
 			morphedAlphas,
 			waveFactors,
 			state.clock.elapsedTime,
-			IMAGE_PARTICLE_WAVE_DEFAULTS,
+			waveRef.current,
 		);
 
 		for (let i = 0; i < bufferLength; i++) {

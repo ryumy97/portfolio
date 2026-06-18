@@ -75,6 +75,39 @@ export const LabDescription: React.FC<Props> = ({
 	);
 };
 
+export const LabControlGroupLabel: React.FC<Props> = ({
+	children,
+	className,
+	asChild,
+}) => {
+	const Comp = asChild ? Slot.Root : "h2";
+
+	return (
+		<Comp
+			className={cn(
+				"text-xs font-mono uppercase tracking-wider text-muted-foreground",
+				className,
+			)}
+		>
+			{children}
+		</Comp>
+	);
+};
+
+export const LabControlLabel: React.FC<Props> = ({
+	children,
+	className,
+	asChild,
+}) => {
+	const Comp = asChild ? Slot.Root : "span";
+
+	return (
+		<Comp className={cn("text-xs text-muted-foreground", className)}>
+			{children}
+		</Comp>
+	);
+};
+
 export const PageLink: React.FC<Props> = ({ children, className, asChild }) => {
 	const Comp = asChild ? Slot.Root : "div";
 
