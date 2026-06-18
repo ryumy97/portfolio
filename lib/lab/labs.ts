@@ -37,6 +37,7 @@ export const LAB_CATEGORIES = [
             title: "Particles - Surface Morph",
           },
           { href: "/lab/clip-surface", title: "Clip Surface" },
+          { href: "/lab/flower-tunnel", title: "Flower Tunnel" },
         ],
       },
       {
