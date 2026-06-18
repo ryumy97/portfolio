@@ -9,7 +9,10 @@ import {
   createTunnelParticleSortBuffers,
   sortTunnelParticlesBackToFront,
 } from "./lib/sort-tunnel-particles";
-import { configureTunnelTextureAtlas, TUNNEL_CAMERA_FOV } from "./lib/tunnel-colors";
+import {
+  configureTunnelTextureAtlas,
+  TUNNEL_CAMERA_FOV,
+} from "./lib/tunnel-colors";
 import {
   buildTunnelParticlesGeometry,
   TUNNEL_PARTICLES_DEFAULTS,
