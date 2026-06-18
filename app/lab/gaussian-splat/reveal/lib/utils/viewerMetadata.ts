@@ -1,10 +1,10 @@
 export interface ViewerMetadata {
-	imageSize: [number, number];
-	focalLength: number;
-	colorSpace?: "sRGB" | "linearRGB";
-	hasMetadata: boolean;
+  imageSize: [number, number];
+  focalLength: number;
+  colorSpace?: "sRGB" | "linearRGB";
+  hasMetadata: boolean;
 }
 
 export function estimateFocalLength(imageSize: [number, number]): number {
-	return imageSize[1] * 1.07;
+  return imageSize[1] * 1.07;
 }

@@ -2,14 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import {
-	CANVAS_STYLE,
-	createFullscreenTriangleBuffer,
-	createProgram,
-	drawFullscreenTriangle,
-	FULLSCREEN_VS,
-	getWebGLContext,
-	observeCanvasPixelSize,
-	setResolutionUniform,
+  CANVAS_STYLE,
+  createFullscreenTriangleBuffer,
+  createProgram,
+  drawFullscreenTriangle,
+  FULLSCREEN_VS,
+  getWebGLContext,
+  observeCanvasPixelSize,
+  setResolutionUniform,
 } from "@/lib/webgl";
 
 const MAX_CLICK_RIPPLES = 6;
@@ -238,11 +238,11 @@ void main() {
 `;
 
 const DEFAULT_COLORS: [number, number, number][] = [
-	[0.984, 0.357, 0.365],
-	[0.988, 0.576, 0.373],
-	[0.996, 0.792, 0.439],
-	[0.459, 0.816, 0.875],
-	[0.165, 0.212, 0.333],
+  [0.984, 0.357, 0.365],
+  [0.988, 0.576, 0.373],
+  [0.996, 0.792, 0.439],
+  [0.459, 0.816, 0.875],
+  [0.165, 0.212, 0.333],
 ];
 const DEFAULT_COLORS_FLAT = new Float32Array(DEFAULT_COLORS.flat());
 const EMPTY_RIPPLE = Object.freeze({ x: 0, y: 0, t: -1, seed: 0 });
@@ -250,201 +250,201 @@ const EMPTY_RIPPLE = Object.freeze({ x: 0, y: 0, t: -1, seed: 0 });
 type ClickRipple = { x: number; y: number; t: number; seed: number };
 
 export const WEBGL_RIPPLE_GRADIENT_DEFAULTS = {
-	noiseIntensity: 0.06,
-	noiseStyle: 1.4,
-	ripple: 1.0,
-	depth: 1.0,
-	speed: 1.0,
-	thickness: 1.0,
-	speedField: 1.0,
-	rippleCount: 4.0,
-	chromatic: 1.0,
-	nestedMode: 1.0,
-	glassRadius: 48.0,
-	maxClickRipples: MAX_CLICK_RIPPLES,
-	rippleLifetime: 6.0,
+  noiseIntensity: 0.06,
+  noiseStyle: 1.4,
+  ripple: 1.0,
+  depth: 1.0,
+  speed: 1.0,
+  thickness: 1.0,
+  speedField: 1.0,
+  rippleCount: 4.0,
+  chromatic: 1.0,
+  nestedMode: 1.0,
+  glassRadius: 48.0,
+  maxClickRipples: MAX_CLICK_RIPPLES,
+  rippleLifetime: 6.0,
 } as const;
 
 export type WebGLRippleGradientCanvasProps = {
-	className?: string;
-	noiseIntensity?: number;
-	noiseStyle?: number;
-	ripple?: number;
-	depth?: number;
-	speed?: number;
-	thickness?: number;
-	speedField?: number;
-	rippleCount?: number;
-	chromatic?: number;
-	nestedMode?: number;
-	glassRadius?: number;
-	maxClickRipples?: number;
-	rippleLifetime?: number;
+  className?: string;
+  noiseIntensity?: number;
+  noiseStyle?: number;
+  ripple?: number;
+  depth?: number;
+  speed?: number;
+  thickness?: number;
+  speedField?: number;
+  rippleCount?: number;
+  chromatic?: number;
+  nestedMode?: number;
+  glassRadius?: number;
+  maxClickRipples?: number;
+  rippleLifetime?: number;
 };
 
 export function WebGLRippleGradientCanvas({
-	className,
-	noiseIntensity = WEBGL_RIPPLE_GRADIENT_DEFAULTS.noiseIntensity,
-	noiseStyle = WEBGL_RIPPLE_GRADIENT_DEFAULTS.noiseStyle,
-	ripple = WEBGL_RIPPLE_GRADIENT_DEFAULTS.ripple,
-	depth = WEBGL_RIPPLE_GRADIENT_DEFAULTS.depth,
-	speed = WEBGL_RIPPLE_GRADIENT_DEFAULTS.speed,
-	thickness = WEBGL_RIPPLE_GRADIENT_DEFAULTS.thickness,
-	speedField = WEBGL_RIPPLE_GRADIENT_DEFAULTS.speedField,
-	rippleCount = WEBGL_RIPPLE_GRADIENT_DEFAULTS.rippleCount,
-	chromatic = WEBGL_RIPPLE_GRADIENT_DEFAULTS.chromatic,
-	nestedMode = WEBGL_RIPPLE_GRADIENT_DEFAULTS.nestedMode,
-	glassRadius = WEBGL_RIPPLE_GRADIENT_DEFAULTS.glassRadius,
-	maxClickRipples = WEBGL_RIPPLE_GRADIENT_DEFAULTS.maxClickRipples,
-	rippleLifetime = WEBGL_RIPPLE_GRADIENT_DEFAULTS.rippleLifetime,
+  className,
+  noiseIntensity = WEBGL_RIPPLE_GRADIENT_DEFAULTS.noiseIntensity,
+  noiseStyle = WEBGL_RIPPLE_GRADIENT_DEFAULTS.noiseStyle,
+  ripple = WEBGL_RIPPLE_GRADIENT_DEFAULTS.ripple,
+  depth = WEBGL_RIPPLE_GRADIENT_DEFAULTS.depth,
+  speed = WEBGL_RIPPLE_GRADIENT_DEFAULTS.speed,
+  thickness = WEBGL_RIPPLE_GRADIENT_DEFAULTS.thickness,
+  speedField = WEBGL_RIPPLE_GRADIENT_DEFAULTS.speedField,
+  rippleCount = WEBGL_RIPPLE_GRADIENT_DEFAULTS.rippleCount,
+  chromatic = WEBGL_RIPPLE_GRADIENT_DEFAULTS.chromatic,
+  nestedMode = WEBGL_RIPPLE_GRADIENT_DEFAULTS.nestedMode,
+  glassRadius = WEBGL_RIPPLE_GRADIENT_DEFAULTS.glassRadius,
+  maxClickRipples = WEBGL_RIPPLE_GRADIENT_DEFAULTS.maxClickRipples,
+  rippleLifetime = WEBGL_RIPPLE_GRADIENT_DEFAULTS.rippleLifetime,
 }: WebGLRippleGradientCanvasProps) {
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const startTimeRef = useRef(0);
-	const rafRef = useRef(0);
-	const clickRipplesRef = useRef<ClickRipple[]>([]);
-	const clickRippleUniformRef = useRef(
-		new Float32Array(MAX_CLICK_RIPPLES * 4).fill(0),
-	);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const startTimeRef = useRef(0);
+  const rafRef = useRef(0);
+  const clickRipplesRef = useRef<ClickRipple[]>([]);
+  const clickRippleUniformRef = useRef(
+    new Float32Array(MAX_CLICK_RIPPLES * 4).fill(0),
+  );
 
-	useEffect(() => {
-		const cappedMaxClickRipples = Math.min(
-			MAX_CLICK_RIPPLES,
-			Math.max(0, Math.floor(maxClickRipples)),
-		);
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+  useEffect(() => {
+    const cappedMaxClickRipples = Math.min(
+      MAX_CLICK_RIPPLES,
+      Math.max(0, Math.floor(maxClickRipples)),
+    );
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-		const gl = getWebGLContext(canvas);
-		if (!gl) return;
+    const gl = getWebGLContext(canvas);
+    if (!gl) return;
 
-		const program = createProgram(gl, FULLSCREEN_VS, FS);
-		if (!program) return;
+    const program = createProgram(gl, FULLSCREEN_VS, FS);
+    if (!program) return;
 
-		const uResolution = gl.getUniformLocation(program, "uResolution");
-		const uTime = gl.getUniformLocation(program, "uTime");
-		const uColors = gl.getUniformLocation(program, "uColors");
-		const uNoiseIntensity = gl.getUniformLocation(program, "uNoiseIntensity");
-		const uNoiseStyle = gl.getUniformLocation(program, "uNoiseStyle");
-		const uRipple = gl.getUniformLocation(program, "uRipple");
-		const uDepth = gl.getUniformLocation(program, "uDepth");
-		const uSpeed = gl.getUniformLocation(program, "uSpeed");
-		const uThickness = gl.getUniformLocation(program, "uThickness");
-		const uSpeedField = gl.getUniformLocation(program, "uSpeedField");
-		const uRippleCount = gl.getUniformLocation(program, "uRippleCount");
-		const uChromatic = gl.getUniformLocation(program, "uChromatic");
-		const uNestedMode = gl.getUniformLocation(program, "uNestedMode");
-		const uGlassRadius = gl.getUniformLocation(program, "uGlassRadius");
-		const uClickRipples = gl.getUniformLocation(program, "uClickRipples");
+    const uResolution = gl.getUniformLocation(program, "uResolution");
+    const uTime = gl.getUniformLocation(program, "uTime");
+    const uColors = gl.getUniformLocation(program, "uColors");
+    const uNoiseIntensity = gl.getUniformLocation(program, "uNoiseIntensity");
+    const uNoiseStyle = gl.getUniformLocation(program, "uNoiseStyle");
+    const uRipple = gl.getUniformLocation(program, "uRipple");
+    const uDepth = gl.getUniformLocation(program, "uDepth");
+    const uSpeed = gl.getUniformLocation(program, "uSpeed");
+    const uThickness = gl.getUniformLocation(program, "uThickness");
+    const uSpeedField = gl.getUniformLocation(program, "uSpeedField");
+    const uRippleCount = gl.getUniformLocation(program, "uRippleCount");
+    const uChromatic = gl.getUniformLocation(program, "uChromatic");
+    const uNestedMode = gl.getUniformLocation(program, "uNestedMode");
+    const uGlassRadius = gl.getUniformLocation(program, "uGlassRadius");
+    const uClickRipples = gl.getUniformLocation(program, "uClickRipples");
 
-		const buf = createFullscreenTriangleBuffer(gl);
-		if (!buf) {
-			gl.deleteProgram(program);
-			return;
-		}
+    const buf = createFullscreenTriangleBuffer(gl);
+    if (!buf) {
+      gl.deleteProgram(program);
+      return;
+    }
 
-		startTimeRef.current = performance.now() / 1000;
+    startTimeRef.current = performance.now() / 1000;
 
-		// Uniforms that don't change frame-to-frame.
-		// biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-		gl.useProgram(program);
-		if (uColors) gl.uniform3fv(uColors, DEFAULT_COLORS_FLAT);
-		if (uNoiseIntensity) gl.uniform1f(uNoiseIntensity, noiseIntensity);
-		if (uNoiseStyle) gl.uniform1f(uNoiseStyle, noiseStyle);
-		if (uRipple) gl.uniform1f(uRipple, ripple);
-		if (uDepth) gl.uniform1f(uDepth, depth);
-		if (uSpeed) gl.uniform1f(uSpeed, speed);
-		if (uThickness) gl.uniform1f(uThickness, thickness);
-		if (uSpeedField) gl.uniform1f(uSpeedField, speedField);
-		if (uRippleCount) gl.uniform1f(uRippleCount, rippleCount);
-		if (uChromatic) gl.uniform1f(uChromatic, chromatic);
-		if (uNestedMode) gl.uniform1f(uNestedMode, nestedMode);
-		if (uGlassRadius) gl.uniform1f(uGlassRadius, glassRadius);
+    // Uniforms that don't change frame-to-frame.
+    // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
+    gl.useProgram(program);
+    if (uColors) gl.uniform3fv(uColors, DEFAULT_COLORS_FLAT);
+    if (uNoiseIntensity) gl.uniform1f(uNoiseIntensity, noiseIntensity);
+    if (uNoiseStyle) gl.uniform1f(uNoiseStyle, noiseStyle);
+    if (uRipple) gl.uniform1f(uRipple, ripple);
+    if (uDepth) gl.uniform1f(uDepth, depth);
+    if (uSpeed) gl.uniform1f(uSpeed, speed);
+    if (uThickness) gl.uniform1f(uThickness, thickness);
+    if (uSpeedField) gl.uniform1f(uSpeedField, speedField);
+    if (uRippleCount) gl.uniform1f(uRippleCount, rippleCount);
+    if (uChromatic) gl.uniform1f(uChromatic, chromatic);
+    if (uNestedMode) gl.uniform1f(uNestedMode, nestedMode);
+    if (uGlassRadius) gl.uniform1f(uGlassRadius, glassRadius);
 
-		const draw = (now: number) => {
-			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-			gl.clearColor(0, 0, 0, 0);
-			gl.clear(gl.COLOR_BUFFER_BIT);
-			// biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-			gl.useProgram(program);
-			setResolutionUniform(gl, uResolution);
+    const draw = (now: number) => {
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
+      gl.useProgram(program);
+      setResolutionUniform(gl, uResolution);
 
-			if (uTime) gl.uniform1f(uTime, now);
+      if (uTime) gl.uniform1f(uTime, now);
 
-			if (uClickRipples) {
-				const clickUniform = clickRippleUniformRef.current;
-				for (let i = 0; i < MAX_CLICK_RIPPLES; i++) {
-					const ripple = clickRipplesRef.current[i] ?? EMPTY_RIPPLE;
-					const base = i * 4;
-					clickUniform[base] = ripple.x;
-					clickUniform[base + 1] = ripple.y;
-					clickUniform[base + 2] = ripple.t;
-					clickUniform[base + 3] = ripple.seed;
-				}
-				gl.uniform4fv(uClickRipples, clickUniform);
-			}
+      if (uClickRipples) {
+        const clickUniform = clickRippleUniformRef.current;
+        for (let i = 0; i < MAX_CLICK_RIPPLES; i++) {
+          const ripple = clickRipplesRef.current[i] ?? EMPTY_RIPPLE;
+          const base = i * 4;
+          clickUniform[base] = ripple.x;
+          clickUniform[base + 1] = ripple.y;
+          clickUniform[base + 2] = ripple.t;
+          clickUniform[base + 3] = ripple.seed;
+        }
+        gl.uniform4fv(uClickRipples, clickUniform);
+      }
 
-			drawFullscreenTriangle(gl, program, buf);
-		};
+      drawFullscreenTriangle(gl, program, buf);
+    };
 
-		const loop = () => {
-			const now = performance.now() / 1000 - startTimeRef.current;
-			const ripples = clickRipplesRef.current;
-			let nextIndex = 0;
-			for (let i = 0; i < ripples.length; i++) {
-				if (now - ripples[i].t < rippleLifetime) {
-					ripples[nextIndex] = ripples[i];
-					nextIndex += 1;
-				}
-			}
-			ripples.length = nextIndex;
-			draw(now);
-			rafRef.current = requestAnimationFrame(loop);
-		};
+    const loop = () => {
+      const now = performance.now() / 1000 - startTimeRef.current;
+      const ripples = clickRipplesRef.current;
+      let nextIndex = 0;
+      for (let i = 0; i < ripples.length; i++) {
+        if (now - ripples[i].t < rippleLifetime) {
+          ripples[nextIndex] = ripples[i];
+          nextIndex += 1;
+        }
+      }
+      ripples.length = nextIndex;
+      draw(now);
+      rafRef.current = requestAnimationFrame(loop);
+    };
 
-		const addClickRipple = (event: PointerEvent) => {
-			const rect = canvas.getBoundingClientRect();
-			const x = (event.clientX - rect.left) / rect.width;
-			const y = 1 - (event.clientY - rect.top) / rect.height;
-			const t = performance.now() / 1000 - startTimeRef.current;
+    const addClickRipple = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = 1 - (event.clientY - rect.top) / rect.height;
+      const t = performance.now() / 1000 - startTimeRef.current;
 
-			clickRipplesRef.current.unshift({
-				x: x * 2 - 1,
-				y: y * 2 - 1,
-				t,
-				seed: Math.random() * 1000,
-			});
-			clickRipplesRef.current = clickRipplesRef.current.slice(
-				0,
-				cappedMaxClickRipples,
-			);
-		};
+      clickRipplesRef.current.unshift({
+        x: x * 2 - 1,
+        y: y * 2 - 1,
+        t,
+        seed: Math.random() * 1000,
+      });
+      clickRipplesRef.current = clickRipplesRef.current.slice(
+        0,
+        cappedMaxClickRipples,
+      );
+    };
 
-		const disconnectResize = observeCanvasPixelSize(canvas, () => {});
-		canvas.addEventListener("pointerdown", addClickRipple);
-		loop();
+    const disconnectResize = observeCanvasPixelSize(canvas, () => {});
+    canvas.addEventListener("pointerdown", addClickRipple);
+    loop();
 
-		return () => {
-			disconnectResize();
-			canvas.removeEventListener("pointerdown", addClickRipple);
-			cancelAnimationFrame(rafRef.current);
-			gl.deleteBuffer(buf);
-			gl.deleteProgram(program);
-		};
-	}, [
-		noiseIntensity,
-		noiseStyle,
-		ripple,
-		depth,
-		speed,
-		thickness,
-		speedField,
-		rippleCount,
-		chromatic,
-		nestedMode,
-		glassRadius,
-		maxClickRipples,
-		rippleLifetime,
-	]);
+    return () => {
+      disconnectResize();
+      canvas.removeEventListener("pointerdown", addClickRipple);
+      cancelAnimationFrame(rafRef.current);
+      gl.deleteBuffer(buf);
+      gl.deleteProgram(program);
+    };
+  }, [
+    noiseIntensity,
+    noiseStyle,
+    ripple,
+    depth,
+    speed,
+    thickness,
+    speedField,
+    rippleCount,
+    chromatic,
+    nestedMode,
+    glassRadius,
+    maxClickRipples,
+    rippleLifetime,
+  ]);
 
-	return <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />;
+  return <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />;
 }

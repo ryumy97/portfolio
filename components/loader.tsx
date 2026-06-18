@@ -14,61 +14,61 @@ import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
 
 export const ForceLoad = () => {
-	useIntroStore.getState().setState("end");
+  useIntroStore.getState().setState("end");
 
-	return null;
+  return null;
 };
 
 const Loader = () => {
-	const { progress } = useProgress();
+  const { progress } = useProgress();
 
-	const state = useIntroStore((store) => store.state);
+  const state = useIntroStore((store) => store.state);
 
-	const progressMotion = useMotionValue(0);
+  const progressMotion = useMotionValue(0);
 
-	useEffect(() => {
-		useIntroStore.getState().setProgress(progress);
-		if (progress === 100) {
-			useIntroStore.getState().setState("transitioning");
-		}
-	}, [progress]);
+  useEffect(() => {
+    useIntroStore.getState().setProgress(progress);
+    if (progress === 100) {
+      useIntroStore.getState().setState("transitioning");
+    }
+  }, [progress]);
 
-	useEffect(() => {
-		if (state === "transitioning") {
-			animate(progressMotion, 1, {
-				duration: 2,
-				ease: cubicBezier(0.3, 0, 0, 1),
-				onComplete() {
-					useIntroStore.getState().setState("end");
-				},
-			});
+  useEffect(() => {
+    if (state === "transitioning") {
+      animate(progressMotion, 1, {
+        duration: 2,
+        ease: cubicBezier(0.3, 0, 0, 1),
+        onComplete() {
+          useIntroStore.getState().setState("end");
+        },
+      });
 
-			return;
-		}
-	}, [state, progressMotion]);
+      return;
+    }
+  }, [state, progressMotion]);
 
-	if (state === "end") return null;
+  if (state === "end") return null;
 
-	return (
-		<div
-			className={cn(
-				"fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black",
-				{
-					"bg-transparent pointer-events-none": state !== "start",
-				},
-			)}
-		>
-			<WebGLGradientCanvas
-				className="absolute inset-0 h-full w-full"
-				progress={progressMotion}
-			/>
-			{state !== "transitioning" && (
-				<span className="relative z-10 text-sm font-medium text-background tabular-nums drop-shadow-md">
-					{progress.toFixed(0)}%
-				</span>
-			)}
-		</div>
-	);
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black",
+        {
+          "bg-transparent pointer-events-none": state !== "start",
+        },
+      )}
+    >
+      <WebGLGradientCanvas
+        className="absolute inset-0 h-full w-full"
+        progress={progressMotion}
+      />
+      {state !== "transitioning" && (
+        <span className="relative z-10 text-sm font-medium text-background tabular-nums drop-shadow-md">
+          {progress.toFixed(0)}%
+        </span>
+      )}
+    </div>
+  );
 };
 
 export default Loader;

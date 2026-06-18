@@ -8,15 +8,15 @@ import { useGLTF } from "@react-three/drei";
 const EYE_MODEL_URL = "/models/eye.glb";
 
 export function Eye(props) {
-	const { nodes } = useGLTF(EYE_MODEL_URL);
-	return (
-		<group {...props} dispose={null}>
-			<mesh
-				geometry={nodes.geometry_0.geometry}
-				material={nodes.geometry_0.material}
-			/>
-		</group>
-	);
+  const { nodes } = useGLTF(EYE_MODEL_URL);
+  return (
+    <group {...props} dispose={null}>
+      <mesh
+        geometry={nodes.geometry_0.geometry}
+        material={nodes.geometry_0.material}
+      />
+    </group>
+  );
 }
 
 useGLTF.preload(EYE_MODEL_URL);

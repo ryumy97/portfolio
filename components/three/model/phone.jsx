@@ -8,15 +8,15 @@ import { useGLTF } from "@react-three/drei";
 const PHONE_MODEL_URL = "/models/phone.glb";
 
 export function Phone(props) {
-	const { nodes } = useGLTF(PHONE_MODEL_URL);
-	return (
-		<group {...props} dispose={null}>
-			<mesh
-				geometry={nodes.geometry_0.geometry}
-				material={nodes.geometry_0.material}
-			/>
-		</group>
-	);
+  const { nodes } = useGLTF(PHONE_MODEL_URL);
+  return (
+    <group {...props} dispose={null}>
+      <mesh
+        geometry={nodes.geometry_0.geometry}
+        material={nodes.geometry_0.material}
+      />
+    </group>
+  );
 }
 
 useGLTF.preload(PHONE_MODEL_URL);

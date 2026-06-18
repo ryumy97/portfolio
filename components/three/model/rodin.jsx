@@ -14,17 +14,17 @@ import { useGLTF } from "@react-three/drei";
 const RODIN_MODEL_URL = "/models/the_thinker_by_auguste_rodin.glb";
 
 function Rodin(props) {
-	const { nodes, materials } = useGLTF(RODIN_MODEL_URL);
-	return (
-		<group {...props} dispose={null}>
-			<mesh
-				geometry={nodes.Object_2.geometry}
-				material={materials.material_0}
-				position={[0.007, 0.001, 0.005]}
-				rotation={[-1.576, -0.008, 0]}
-			/>
-		</group>
-	);
+  const { nodes, materials } = useGLTF(RODIN_MODEL_URL);
+  return (
+    <group {...props} dispose={null}>
+      <mesh
+        geometry={nodes.Object_2.geometry}
+        material={materials.material_0}
+        position={[0.007, 0.001, 0.005]}
+        rotation={[-1.576, -0.008, 0]}
+      />
+    </group>
+  );
 }
 
 useGLTF.preload(RODIN_MODEL_URL);

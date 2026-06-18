@@ -39,21 +39,21 @@ void main() {
 `;
 
 export function createImageParticlesMaterial(
-	alphaMap: THREE.Texture,
-	size: number,
-	scale: number,
+  alphaMap: THREE.Texture,
+  size: number,
+  scale: number,
 ) {
-	return new THREE.ShaderMaterial({
-		uniforms: {
-			alphaMap: { value: alphaMap },
-			size: { value: size },
-			scale: { value: scale },
-		},
-		vertexShader: IMAGE_PARTICLES_VERTEX_SHADER,
-		fragmentShader: IMAGE_PARTICLES_FRAGMENT_SHADER,
-		transparent: true,
-		depthWrite: false,
-		depthTest: true,
-		blending: THREE.NormalBlending,
-	});
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      alphaMap: { value: alphaMap },
+      size: { value: size },
+      scale: { value: scale },
+    },
+    vertexShader: IMAGE_PARTICLES_VERTEX_SHADER,
+    fragmentShader: IMAGE_PARTICLES_FRAGMENT_SHADER,
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.NormalBlending,
+  });
 }

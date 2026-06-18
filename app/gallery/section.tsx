@@ -1,11 +1,11 @@
 "use client";
 
 import {
-	cubicBezier,
-	motion,
-	transform,
-	useAnimationFrame,
-	useMotionValue,
+  cubicBezier,
+  motion,
+  transform,
+  useAnimationFrame,
+  useMotionValue,
 } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,156 +18,156 @@ import { cn } from "@/lib/utils";
 import { useIntroStore } from "@/stores/intro";
 
 const useRevealMotionValues = () => {
-	const state = useIntroStore((store) => store.state);
-	const ref = useRef<HTMLDivElement>(null);
+  const state = useIntroStore((store) => store.state);
+  const ref = useRef<HTMLDivElement>(null);
 
-	const dataRef = useRef({
-		target: {
-			y: 100,
-		},
-		current: {
-			y: 100,
-		},
-	});
+  const dataRef = useRef({
+    target: {
+      y: 100,
+    },
+    current: {
+      y: 100,
+    },
+  });
 
-	const y = useMotionValue("5%");
+  const y = useMotionValue("5%");
 
-	useScrollEvent((_lenis) => {
-		const rect = ref.current?.getBoundingClientRect();
-		if (!rect) return;
+  useScrollEvent((_lenis) => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
 
-		dataRef.current.target.y = transform(
-			transform(
-				rect.left,
-				[window.innerWidth * 0.75, window.innerWidth],
-				[1, 0],
-				{
-					clamp: true,
-				},
-			),
-			[0, 1],
-			[100, 0],
-			{
-				clamp: true,
-				ease: cubicBezier(0.3, 0, 0.3, 1),
-			},
-		);
-	});
+    dataRef.current.target.y = transform(
+      transform(
+        rect.left,
+        [window.innerWidth * 0.75, window.innerWidth],
+        [1, 0],
+        {
+          clamp: true,
+        },
+      ),
+      [0, 1],
+      [100, 0],
+      {
+        clamp: true,
+        ease: cubicBezier(0.3, 0, 0.3, 1),
+      },
+    );
+  });
 
-	useEffect(() => {
-		const rect = ref.current?.getBoundingClientRect();
-		if (!rect) return;
+  useEffect(() => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
 
-		dataRef.current.target.y = transform(
-			transform(
-				rect.left,
-				[window.innerWidth * 0.75, window.innerWidth],
-				[1, 0],
-				{
-					clamp: true,
-				},
-			),
-			[0, 1],
-			[100, 0],
-			{
-				clamp: true,
-				ease: cubicBezier(0.3, 0, 0.3, 1),
-			},
-		);
-	}, []);
+    dataRef.current.target.y = transform(
+      transform(
+        rect.left,
+        [window.innerWidth * 0.75, window.innerWidth],
+        [1, 0],
+        {
+          clamp: true,
+        },
+      ),
+      [0, 1],
+      [100, 0],
+      {
+        clamp: true,
+        ease: cubicBezier(0.3, 0, 0.3, 1),
+      },
+    );
+  }, []);
 
-	useAnimationFrame((_, delta) => {
-		if (state === "start") return;
+  useAnimationFrame((_, delta) => {
+    if (state === "start") return;
 
-		const t = delta / 1000 / 0.2;
+    const t = delta / 1000 / 0.2;
 
-		dataRef.current.current.y = lerp(
-			dataRef.current.current.y,
-			dataRef.current.target.y,
-			t,
-		);
+    dataRef.current.current.y = lerp(
+      dataRef.current.current.y,
+      dataRef.current.target.y,
+      t,
+    );
 
-		y.set(`${dataRef.current.current.y}vh`);
-	});
+    y.set(`${dataRef.current.current.y}vh`);
+  });
 
-	return {
-		y,
-		ref,
-	};
+  return {
+    y,
+    ref,
+  };
 };
 
 export const ListItemSection: React.FC<{
-	link: string;
-	title: React.ReactNode;
-	image: string;
-	className?: string;
+  link: string;
+  title: React.ReactNode;
+  image: string;
+  className?: string;
 }> = ({ link, title, image, className }) => {
-	const { y, ref } = useRevealMotionValues();
+  const { y, ref } = useRevealMotionValues();
 
-	return (
-		<div
-			className={cn(
-				"w-[50vw] md:w-[30vw] text-center relative mr-[40vw] md:mr-[30vw]",
-				className,
-			)}
-		>
-			<motion.div
-				className="w-full absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 border-white overflow-hidden border-[0.5vw] aspect-landscape shadow-2xl"
-				style={{ y }}
-				ref={ref}
-			>
-				<Image
-					src={image}
-					alt="Gallery"
-					fill
-					sizes="(max-width: 768px) 50vw, 30vw"
-					loading="eager"
-				/>
-			</motion.div>
-			<ProjectTitle className="relative">
-				<PointerEventHandler asChild type="underline" offsetHeight={2}>
-					<Link href={link} className="bg-white/80">
-						{title}
-					</Link>
-				</PointerEventHandler>
-			</ProjectTitle>
-		</div>
-	);
+  return (
+    <div
+      className={cn(
+        "w-[50vw] md:w-[30vw] text-center relative mr-[40vw] md:mr-[30vw]",
+        className,
+      )}
+    >
+      <motion.div
+        className="w-full absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 border-white overflow-hidden border-[0.5vw] aspect-landscape shadow-2xl"
+        style={{ y }}
+        ref={ref}
+      >
+        <Image
+          src={image}
+          alt="Gallery"
+          fill
+          sizes="(max-width: 768px) 50vw, 30vw"
+          loading="eager"
+        />
+      </motion.div>
+      <ProjectTitle className="relative">
+        <PointerEventHandler asChild type="underline" offsetHeight={2}>
+          <Link href={link} className="bg-white/80">
+            {title}
+          </Link>
+        </PointerEventHandler>
+      </ProjectTitle>
+    </div>
+  );
 };
 
 export const ImageSection: React.FC<{
-	image: string;
-	alt: string;
-	layout: "landscape" | "portrait";
-	className?: string;
+  image: string;
+  alt: string;
+  layout: "landscape" | "portrait";
+  className?: string;
 }> = ({ image, alt, layout, className }) => {
-	const { y, ref } = useRevealMotionValues();
+  const { y, ref } = useRevealMotionValues();
 
-	return (
-		<motion.div
-			className={cn(
-				"text-center relative mr-[10vw] md:mr-[10vw] border-white overflow-hidden border-[0.5vw] shadow-2xl",
-				{
-					"w-[90vw] md:w-[30vw] aspect-landscape": layout === "landscape",
-					"w-[60vw] md:w-[20vw] aspect-portrait": layout === "portrait",
-				},
-				className,
-			)}
-			style={{ y }}
-			ref={ref}
-		>
-			<Image
-				src={image}
-				alt={alt}
-				fill
-				sizes={
-					layout === "landscape"
-						? "(max-width: 768px) 90vw, 30vw"
-						: "(max-width: 768px) 60vw, 20vw"
-				}
-				className="object-cover"
-				loading="eager"
-			/>
-		</motion.div>
-	);
+  return (
+    <motion.div
+      className={cn(
+        "text-center relative mr-[10vw] md:mr-[10vw] border-white overflow-hidden border-[0.5vw] shadow-2xl",
+        {
+          "w-[90vw] md:w-[30vw] aspect-landscape": layout === "landscape",
+          "w-[60vw] md:w-[20vw] aspect-portrait": layout === "portrait",
+        },
+        className,
+      )}
+      style={{ y }}
+      ref={ref}
+    >
+      <Image
+        src={image}
+        alt={alt}
+        fill
+        sizes={
+          layout === "landscape"
+            ? "(max-width: 768px) 90vw, 30vw"
+            : "(max-width: 768px) 60vw, 20vw"
+        }
+        className="object-cover"
+        loading="eager"
+      />
+    </motion.div>
+  );
 };

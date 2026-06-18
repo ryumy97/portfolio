@@ -8,15 +8,15 @@ import { useGLTF } from "@react-three/drei";
 const HEAD_MODEL_URL = "/models/head.glb";
 
 export function Head(props) {
-	const { nodes } = useGLTF(HEAD_MODEL_URL);
-	return (
-		<group {...props} dispose={null}>
-			<mesh
-				geometry={nodes.geometry_0.geometry}
-				material={nodes.geometry_0.material}
-			/>
-		</group>
-	);
+  const { nodes } = useGLTF(HEAD_MODEL_URL);
+  return (
+    <group {...props} dispose={null}>
+      <mesh
+        geometry={nodes.geometry_0.geometry}
+        material={nodes.geometry_0.material}
+      />
+    </group>
+  );
 }
 
 useGLTF.preload(HEAD_MODEL_URL);

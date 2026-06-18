@@ -6,44 +6,44 @@ import type { StaticImageData } from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { CanvasLoader } from "@/components/canvas-loader";
 import {
-	CANVAS_STYLE,
-	createFullscreenTriangleBuffer,
-	createProgram,
-	createScheduledDraw,
-	drawFullscreenTriangle,
-	FULLSCREEN_VS,
-	getCanvasPixelSize,
-	getScrollSegmentState,
-	getWebGLContext,
-	loadOptimizedImages,
-	observeCanvasPixelSize,
-	setResolutionUniform,
-	uploadTextureFromImage,
+  CANVAS_STYLE,
+  createFullscreenTriangleBuffer,
+  createProgram,
+  createScheduledDraw,
+  drawFullscreenTriangle,
+  FULLSCREEN_VS,
+  getCanvasPixelSize,
+  getScrollSegmentState,
+  getWebGLContext,
+  loadOptimizedImages,
+  observeCanvasPixelSize,
+  setResolutionUniform,
+  uploadTextureFromImage,
 } from "@/lib/webgl";
 
 export const WEBGL_NEIGHBOR_DEFAULTS = {
-	pixelSize: 20,
-	radius: 0.72,
-	quality: 75,
+  pixelSize: 20,
+  radius: 0.72,
+  quality: 75,
 } as const;
 
 export type WebGLNeighborCanvasProps = {
-	className?: string;
-	/** Images sampled as halftone textures (optimized to canvas size). */
-	images: StaticImageData[];
-	/** Global scroll progress from 0 to 1. */
-	progress: MotionValue<number>;
-	/** Size of each halftone cell in pixels. Defaults to 20. */
-	pixelSize?: number;
-	/** Dot radius as a fraction of cell size (0–1). Defaults to 0.72. */
-	radius?: number;
-	/** Quality passed to the Next.js image optimizer. Defaults to 75. */
-	quality?: number;
+  className?: string;
+  /** Images sampled as halftone textures (optimized to canvas size). */
+  images: StaticImageData[];
+  /** Global scroll progress from 0 to 1. */
+  progress: MotionValue<number>;
+  /** Size of each halftone cell in pixels. Defaults to 20. */
+  pixelSize?: number;
+  /** Dot radius as a fraction of cell size (0–1). Defaults to 0.72. */
+  radius?: number;
+  /** Quality passed to the Next.js image optimizer. Defaults to 75. */
+  quality?: number;
 };
 
 type NeighborConfig = {
-	pixelSize: number;
-	radius: number;
+  pixelSize: number;
+  radius: number;
 };
 
 const FS = `
@@ -108,155 +108,155 @@ void main() {
  * segment, `uTexture1`/`uTexture2` mix from image k to image k + 1.
  */
 export function WebGLNeighborCanvas({
-	className,
-	images,
-	progress,
-	pixelSize = WEBGL_NEIGHBOR_DEFAULTS.pixelSize,
-	radius = WEBGL_NEIGHBOR_DEFAULTS.radius,
-	quality = WEBGL_NEIGHBOR_DEFAULTS.quality,
+  className,
+  images,
+  progress,
+  pixelSize = WEBGL_NEIGHBOR_DEFAULTS.pixelSize,
+  radius = WEBGL_NEIGHBOR_DEFAULTS.radius,
+  quality = WEBGL_NEIGHBOR_DEFAULTS.quality,
 }: WebGLNeighborCanvasProps) {
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const drawRef = useRef<(() => void) | null>(null);
-	const scrollRef = useRef(progress.get());
-	const invalidate = useRef(createScheduledDraw(drawRef));
-	const configRef = useRef<NeighborConfig>({ pixelSize, radius });
-	const [isLoadingTextures, setIsLoadingTextures] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawRef = useRef<(() => void) | null>(null);
+  const scrollRef = useRef(progress.get());
+  const invalidate = useRef(createScheduledDraw(drawRef));
+  const configRef = useRef<NeighborConfig>({ pixelSize, radius });
+  const [isLoadingTextures, setIsLoadingTextures] = useState(false);
 
-	useEffect(() => {
-		configRef.current = { pixelSize, radius };
-		invalidate.current();
-	}, [pixelSize, radius]);
+  useEffect(() => {
+    configRef.current = { pixelSize, radius };
+    invalidate.current();
+  }, [pixelSize, radius]);
 
-	useEffect(() => {
-		const canvas = canvasRef.current;
-		if (!canvas || images.length === 0) return;
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || images.length === 0) return;
 
-		const segmentCount = Math.max(images.length - 1, 1);
+    const segmentCount = Math.max(images.length - 1, 1);
 
-		let cancelled = false;
-		let program: WebGLProgram | null = null;
-		let buf: WebGLBuffer | null = null;
-		const textures: WebGLTexture[] = [];
-		let textureLoadId = 0;
-		let loadedTextureSize = { w: 0, h: 0 };
+    let cancelled = false;
+    let program: WebGLProgram | null = null;
+    let buf: WebGLBuffer | null = null;
+    const textures: WebGLTexture[] = [];
+    let textureLoadId = 0;
+    let loadedTextureSize = { w: 0, h: 0 };
 
-		const gl = getWebGLContext(canvas);
-		if (!gl) return;
+    const gl = getWebGLContext(canvas);
+    if (!gl) return;
 
-		gl.getExtension("OES_standard_derivatives");
+    gl.getExtension("OES_standard_derivatives");
 
-		const reloadTextures = async (w: number, h: number) => {
-			if (w <= 0 || h <= 0) return;
+    const reloadTextures = async (w: number, h: number) => {
+      if (w <= 0 || h <= 0) return;
 
-			const loadId = ++textureLoadId;
-			setIsLoadingTextures(true);
-			let imageElements: HTMLImageElement[];
-			try {
-				imageElements = await loadOptimizedImages(images, w, h, quality);
-			} finally {
-				// Only clear loading for the latest request (avoid flicker on resize).
-				if (!cancelled && loadId === textureLoadId) setIsLoadingTextures(false);
-			}
-			if (cancelled || loadId !== textureLoadId) return;
+      const loadId = ++textureLoadId;
+      setIsLoadingTextures(true);
+      let imageElements: HTMLImageElement[];
+      try {
+        imageElements = await loadOptimizedImages(images, w, h, quality);
+      } finally {
+        // Only clear loading for the latest request (avoid flicker on resize).
+        if (!cancelled && loadId === textureLoadId) setIsLoadingTextures(false);
+      }
+      if (cancelled || loadId !== textureLoadId) return;
 
-			for (const tex of textures) gl.deleteTexture(tex);
-			textures.length = 0;
+      for (const tex of textures) gl.deleteTexture(tex);
+      textures.length = 0;
 
-			for (const imageElement of imageElements) {
-				const tex = uploadTextureFromImage(gl, imageElement);
-				if (tex) textures.push(tex);
-			}
+      for (const imageElement of imageElements) {
+        const tex = uploadTextureFromImage(gl, imageElement);
+        if (tex) textures.push(tex);
+      }
 
-			loadedTextureSize = { w, h };
-			invalidate.current();
-		};
+      loadedTextureSize = { w, h };
+      invalidate.current();
+    };
 
-		program = createProgram(gl, FULLSCREEN_VS, FS);
-		if (!program) return;
+    program = createProgram(gl, FULLSCREEN_VS, FS);
+    if (!program) return;
 
-		const uResolution = gl.getUniformLocation(program, "uResolution");
-		const uPixelSizeLoc = gl.getUniformLocation(program, "uPixelSize");
-		const uRadiusLoc = gl.getUniformLocation(program, "uRadius");
-		const uProgressLoc = gl.getUniformLocation(program, "uProgress");
-		const uTexture1Loc = gl.getUniformLocation(program, "uTexture1");
-		const uTexture2Loc = gl.getUniformLocation(program, "uTexture2");
+    const uResolution = gl.getUniformLocation(program, "uResolution");
+    const uPixelSizeLoc = gl.getUniformLocation(program, "uPixelSize");
+    const uRadiusLoc = gl.getUniformLocation(program, "uRadius");
+    const uProgressLoc = gl.getUniformLocation(program, "uProgress");
+    const uTexture1Loc = gl.getUniformLocation(program, "uTexture1");
+    const uTexture2Loc = gl.getUniformLocation(program, "uTexture2");
 
-		buf = createFullscreenTriangleBuffer(gl);
-		if (!buf) {
-			gl.deleteProgram(program);
-			return;
-		}
+    buf = createFullscreenTriangleBuffer(gl);
+    if (!buf) {
+      gl.deleteProgram(program);
+      return;
+    }
 
-		const draw = () => {
-			if (textures.length === 0) return;
+    const draw = () => {
+      if (textures.length === 0) return;
 
-			const config = configRef.current;
-			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-			gl.clearColor(0, 0, 0, 1);
-			gl.clear(gl.COLOR_BUFFER_BIT);
-			// biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-			gl.useProgram(program);
+      const config = configRef.current;
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
+      gl.useProgram(program);
 
-			const { segment, mix } = getScrollSegmentState(
-				scrollRef.current,
-				segmentCount,
-			);
-			const from = textures[segment];
-			const to = textures[Math.min(segment + 1, textures.length - 1)];
+      const { segment, mix } = getScrollSegmentState(
+        scrollRef.current,
+        segmentCount,
+      );
+      const from = textures[segment];
+      const to = textures[Math.min(segment + 1, textures.length - 1)];
 
-			setResolutionUniform(gl, uResolution);
-			if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, config.pixelSize);
-			if (uRadiusLoc) gl.uniform1f(uRadiusLoc, config.radius);
-			if (uProgressLoc) gl.uniform1f(uProgressLoc, mix);
+      setResolutionUniform(gl, uResolution);
+      if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, config.pixelSize);
+      if (uRadiusLoc) gl.uniform1f(uRadiusLoc, config.radius);
+      if (uProgressLoc) gl.uniform1f(uProgressLoc, mix);
 
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, from);
-			if (uTexture1Loc) gl.uniform1i(uTexture1Loc, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, from);
+      if (uTexture1Loc) gl.uniform1i(uTexture1Loc, 0);
 
-			gl.activeTexture(gl.TEXTURE1);
-			gl.bindTexture(gl.TEXTURE_2D, to);
-			if (uTexture2Loc) gl.uniform1i(uTexture2Loc, 1);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, to);
+      if (uTexture2Loc) gl.uniform1i(uTexture2Loc, 1);
 
-			drawFullscreenTriangle(gl, program, buf);
-		};
+      drawFullscreenTriangle(gl, program, buf);
+    };
 
-		drawRef.current = draw;
+    drawRef.current = draw;
 
-		const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
-			const sizeChanged =
-				size.w !== loadedTextureSize.w || size.h !== loadedTextureSize.h;
+    const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
+      const sizeChanged =
+        size.w !== loadedTextureSize.w || size.h !== loadedTextureSize.h;
 
-			if (sizeChanged) {
-				reloadTextures(size.w, size.h);
-			} else {
-				invalidate.current();
-			}
-		});
+      if (sizeChanged) {
+        reloadTextures(size.w, size.h);
+      } else {
+        invalidate.current();
+      }
+    });
 
-		const { w, h } = getCanvasPixelSize(canvas);
-		if (w > 0 && h > 0) reloadTextures(w, h);
+    const { w, h } = getCanvasPixelSize(canvas);
+    if (w > 0 && h > 0) reloadTextures(w, h);
 
-		return () => {
-			cancelled = true;
-			// Avoid leaving the overlay up if we unmount during a load.
-			setIsLoadingTextures(false);
-			disconnectResize();
-			drawRef.current = null;
-			if (buf) gl.deleteBuffer(buf);
-			for (const tex of textures) gl.deleteTexture(tex);
-			if (program) gl.deleteProgram(program);
-		};
-	}, [images, quality]);
+    return () => {
+      cancelled = true;
+      // Avoid leaving the overlay up if we unmount during a load.
+      setIsLoadingTextures(false);
+      disconnectResize();
+      drawRef.current = null;
+      if (buf) gl.deleteBuffer(buf);
+      for (const tex of textures) gl.deleteTexture(tex);
+      if (program) gl.deleteProgram(program);
+    };
+  }, [images, quality]);
 
-	useMotionValueEvent(progress, "change", (value) => {
-		scrollRef.current = value;
-		invalidate.current();
-	});
+  useMotionValueEvent(progress, "change", (value) => {
+    scrollRef.current = value;
+    invalidate.current();
+  });
 
-	return (
-		<div className="relative h-full w-full">
-			<canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />
-			<CanvasLoader active={isLoadingTextures} />
-		</div>
-	);
+  return (
+    <div className="relative h-full w-full">
+      <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />
+      <CanvasLoader active={isLoadingTextures} />
+    </div>
+  );
 }

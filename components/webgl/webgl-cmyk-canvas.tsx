@@ -4,74 +4,74 @@ import type { StaticImageData } from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { CanvasLoader } from "@/components/canvas-loader";
 import {
-	CANVAS_STYLE,
-	createFullscreenTriangleBuffer,
-	createProgram,
-	createScheduledDraw,
-	drawFullscreenTriangle,
-	FULLSCREEN_VS,
-	getCanvasPixelSize,
-	getOptimizedImageSrc,
-	getWebGLContext,
-	loadImage,
-	observeCanvasPixelSize,
-	setResolutionUniform,
-	uploadTextureFromImage,
+  CANVAS_STYLE,
+  createFullscreenTriangleBuffer,
+  createProgram,
+  createScheduledDraw,
+  drawFullscreenTriangle,
+  FULLSCREEN_VS,
+  getCanvasPixelSize,
+  getOptimizedImageSrc,
+  getWebGLContext,
+  loadImage,
+  observeCanvasPixelSize,
+  setResolutionUniform,
+  uploadTextureFromImage,
 } from "@/lib/webgl";
 
 export const WEBGL_CMYK_DEFAULTS = {
-	pixelSize: 24,
-	dotSize: 0.25,
-	cyanStrength: 0.95,
-	magentaStrength: 0.95,
-	yellowStrength: 0.95,
-	blackStrength: 1.1,
-	angleC: 15,
-	angleM: 45,
-	angleY: 0,
-	angleK: 75,
-	quality: 75,
+  pixelSize: 24,
+  dotSize: 0.25,
+  cyanStrength: 0.95,
+  magentaStrength: 0.95,
+  yellowStrength: 0.95,
+  blackStrength: 1.1,
+  angleC: 15,
+  angleM: 45,
+  angleY: 0,
+  angleK: 75,
+  quality: 75,
 } as const;
 
 export type WebGLCmykCanvasProps = {
-	className?: string;
-	/** Source image converted to CMYK halftone. */
-	image: StaticImageData;
-	/** Halftone cell size in screen pixels. Defaults to 8. */
-	pixelSize?: number;
-	/** Max dot radius within each cell (0–1). Defaults to 0.5. */
-	dotSize?: number;
-	/** Cyan channel dot strength. Defaults to 0.95. */
-	cyanStrength?: number;
-	/** Magenta channel dot strength. Defaults to 0.95. */
-	magentaStrength?: number;
-	/** Yellow channel dot strength. Defaults to 0.95. */
-	yellowStrength?: number;
-	/** Black channel dot strength. Defaults to 1.1. */
-	blackStrength?: number;
-	/** Cyan screen angle in degrees. Defaults to 15. */
-	angleC?: number;
-	/** Magenta screen angle in degrees. Defaults to 45. */
-	angleM?: number;
-	/** Yellow screen angle in degrees. Defaults to 0. */
-	angleY?: number;
-	/** Black screen angle in degrees. Defaults to 75. */
-	angleK?: number;
-	/** Quality passed to the Next.js image optimizer. Defaults to 75. */
-	quality?: number;
+  className?: string;
+  /** Source image converted to CMYK halftone. */
+  image: StaticImageData;
+  /** Halftone cell size in screen pixels. Defaults to 8. */
+  pixelSize?: number;
+  /** Max dot radius within each cell (0–1). Defaults to 0.5. */
+  dotSize?: number;
+  /** Cyan channel dot strength. Defaults to 0.95. */
+  cyanStrength?: number;
+  /** Magenta channel dot strength. Defaults to 0.95. */
+  magentaStrength?: number;
+  /** Yellow channel dot strength. Defaults to 0.95. */
+  yellowStrength?: number;
+  /** Black channel dot strength. Defaults to 1.1. */
+  blackStrength?: number;
+  /** Cyan screen angle in degrees. Defaults to 15. */
+  angleC?: number;
+  /** Magenta screen angle in degrees. Defaults to 45. */
+  angleM?: number;
+  /** Yellow screen angle in degrees. Defaults to 0. */
+  angleY?: number;
+  /** Black screen angle in degrees. Defaults to 75. */
+  angleK?: number;
+  /** Quality passed to the Next.js image optimizer. Defaults to 75. */
+  quality?: number;
 };
 
 type CmykConfig = {
-	pixelSize: number;
-	dotSize: number;
-	cyanStrength: number;
-	magentaStrength: number;
-	yellowStrength: number;
-	blackStrength: number;
-	angleC: number;
-	angleM: number;
-	angleY: number;
-	angleK: number;
+  pixelSize: number;
+  dotSize: number;
+  cyanStrength: number;
+  magentaStrength: number;
+  yellowStrength: number;
+  blackStrength: number;
+  angleC: number;
+  angleM: number;
+  angleY: number;
+  angleK: number;
 };
 
 const FS = `
@@ -166,192 +166,192 @@ void main() {
  * CMYK halftone print effect with per-channel screen angles.
  */
 export function WebGLCmykCanvas({
-	className,
-	image,
-	pixelSize = WEBGL_CMYK_DEFAULTS.pixelSize,
-	dotSize = WEBGL_CMYK_DEFAULTS.dotSize,
-	cyanStrength = WEBGL_CMYK_DEFAULTS.cyanStrength,
-	magentaStrength = WEBGL_CMYK_DEFAULTS.magentaStrength,
-	yellowStrength = WEBGL_CMYK_DEFAULTS.yellowStrength,
-	blackStrength = WEBGL_CMYK_DEFAULTS.blackStrength,
-	angleC = WEBGL_CMYK_DEFAULTS.angleC,
-	angleM = WEBGL_CMYK_DEFAULTS.angleM,
-	angleY = WEBGL_CMYK_DEFAULTS.angleY,
-	angleK = WEBGL_CMYK_DEFAULTS.angleK,
-	quality = WEBGL_CMYK_DEFAULTS.quality,
+  className,
+  image,
+  pixelSize = WEBGL_CMYK_DEFAULTS.pixelSize,
+  dotSize = WEBGL_CMYK_DEFAULTS.dotSize,
+  cyanStrength = WEBGL_CMYK_DEFAULTS.cyanStrength,
+  magentaStrength = WEBGL_CMYK_DEFAULTS.magentaStrength,
+  yellowStrength = WEBGL_CMYK_DEFAULTS.yellowStrength,
+  blackStrength = WEBGL_CMYK_DEFAULTS.blackStrength,
+  angleC = WEBGL_CMYK_DEFAULTS.angleC,
+  angleM = WEBGL_CMYK_DEFAULTS.angleM,
+  angleY = WEBGL_CMYK_DEFAULTS.angleY,
+  angleK = WEBGL_CMYK_DEFAULTS.angleK,
+  quality = WEBGL_CMYK_DEFAULTS.quality,
 }: WebGLCmykCanvasProps) {
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const drawRef = useRef<(() => void) | null>(null);
-	const invalidate = useRef(createScheduledDraw(drawRef));
-	const [isLoadingTexture, setIsLoadingTexture] = useState(false);
-	const configRef = useRef<CmykConfig>({
-		pixelSize,
-		dotSize,
-		cyanStrength,
-		magentaStrength,
-		yellowStrength,
-		blackStrength,
-		angleC,
-		angleM,
-		angleY,
-		angleK,
-	});
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawRef = useRef<(() => void) | null>(null);
+  const invalidate = useRef(createScheduledDraw(drawRef));
+  const [isLoadingTexture, setIsLoadingTexture] = useState(false);
+  const configRef = useRef<CmykConfig>({
+    pixelSize,
+    dotSize,
+    cyanStrength,
+    magentaStrength,
+    yellowStrength,
+    blackStrength,
+    angleC,
+    angleM,
+    angleY,
+    angleK,
+  });
 
-	useEffect(() => {
-		configRef.current = {
-			pixelSize,
-			dotSize,
-			cyanStrength,
-			magentaStrength,
-			yellowStrength,
-			blackStrength,
-			angleC,
-			angleM,
-			angleY,
-			angleK,
-		};
+  useEffect(() => {
+    configRef.current = {
+      pixelSize,
+      dotSize,
+      cyanStrength,
+      magentaStrength,
+      yellowStrength,
+      blackStrength,
+      angleC,
+      angleM,
+      angleY,
+      angleK,
+    };
 
-		invalidate.current();
-	}, [
-		pixelSize,
-		dotSize,
-		cyanStrength,
-		magentaStrength,
-		yellowStrength,
-		blackStrength,
-		angleC,
-		angleM,
-		angleY,
-		angleK,
-	]);
+    invalidate.current();
+  }, [
+    pixelSize,
+    dotSize,
+    cyanStrength,
+    magentaStrength,
+    yellowStrength,
+    blackStrength,
+    angleC,
+    angleM,
+    angleY,
+    angleK,
+  ]);
 
-	useEffect(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-		let cancelled = false;
-		let program: WebGLProgram | null = null;
-		let buf: WebGLBuffer | null = null;
-		let texture: WebGLTexture | null = null;
-		let textureLoadId = 0;
-		let loadedTextureSize = { w: 0, h: 0 };
+    let cancelled = false;
+    let program: WebGLProgram | null = null;
+    let buf: WebGLBuffer | null = null;
+    let texture: WebGLTexture | null = null;
+    let textureLoadId = 0;
+    let loadedTextureSize = { w: 0, h: 0 };
 
-		const gl = getWebGLContext(canvas);
-		if (!gl) return;
+    const gl = getWebGLContext(canvas);
+    if (!gl) return;
 
-		gl.getExtension("OES_standard_derivatives");
+    gl.getExtension("OES_standard_derivatives");
 
-		const reloadTexture = async (w: number, h: number) => {
-			if (w <= 0 || h <= 0) return;
+    const reloadTexture = async (w: number, h: number) => {
+      if (w <= 0 || h <= 0) return;
 
-			const loadId = ++textureLoadId;
-			setIsLoadingTexture(true);
-			const src = getOptimizedImageSrc(image, w, h, quality);
-			let imageElement: HTMLImageElement;
-			try {
-				imageElement = await loadImage(src);
-			} finally {
-				// Only clear loading for the latest request (avoid flicker on resize).
-				if (!cancelled && loadId === textureLoadId) setIsLoadingTexture(false);
-			}
-			if (cancelled || loadId !== textureLoadId) return;
+      const loadId = ++textureLoadId;
+      setIsLoadingTexture(true);
+      const src = getOptimizedImageSrc(image, w, h, quality);
+      let imageElement: HTMLImageElement;
+      try {
+        imageElement = await loadImage(src);
+      } finally {
+        // Only clear loading for the latest request (avoid flicker on resize).
+        if (!cancelled && loadId === textureLoadId) setIsLoadingTexture(false);
+      }
+      if (cancelled || loadId !== textureLoadId) return;
 
-			if (texture) gl.deleteTexture(texture);
-			texture = uploadTextureFromImage(gl, imageElement);
-			loadedTextureSize = { w, h };
-			invalidate.current();
-		};
+      if (texture) gl.deleteTexture(texture);
+      texture = uploadTextureFromImage(gl, imageElement);
+      loadedTextureSize = { w, h };
+      invalidate.current();
+    };
 
-		program = createProgram(gl, FULLSCREEN_VS, FS);
-		if (!program) return;
+    program = createProgram(gl, FULLSCREEN_VS, FS);
+    if (!program) return;
 
-		const uResolution = gl.getUniformLocation(program, "uResolution");
-		const uPixelSizeLoc = gl.getUniformLocation(program, "uPixelSize");
-		const uDotSizeLoc = gl.getUniformLocation(program, "uDotSize");
-		const uCyanStrengthLoc = gl.getUniformLocation(program, "uCyanStrength");
-		const uMagentaStrengthLoc = gl.getUniformLocation(
-			program,
-			"uMagentaStrength",
-		);
-		const uYellowStrengthLoc = gl.getUniformLocation(
-			program,
-			"uYellowStrength",
-		);
-		const uBlackStrengthLoc = gl.getUniformLocation(program, "uBlackStrength");
-		const uAngleCLoc = gl.getUniformLocation(program, "uAngleC");
-		const uAngleMLoc = gl.getUniformLocation(program, "uAngleM");
-		const uAngleYLoc = gl.getUniformLocation(program, "uAngleY");
-		const uAngleKLoc = gl.getUniformLocation(program, "uAngleK");
-		const uTextureLoc = gl.getUniformLocation(program, "uTexture");
+    const uResolution = gl.getUniformLocation(program, "uResolution");
+    const uPixelSizeLoc = gl.getUniformLocation(program, "uPixelSize");
+    const uDotSizeLoc = gl.getUniformLocation(program, "uDotSize");
+    const uCyanStrengthLoc = gl.getUniformLocation(program, "uCyanStrength");
+    const uMagentaStrengthLoc = gl.getUniformLocation(
+      program,
+      "uMagentaStrength",
+    );
+    const uYellowStrengthLoc = gl.getUniformLocation(
+      program,
+      "uYellowStrength",
+    );
+    const uBlackStrengthLoc = gl.getUniformLocation(program, "uBlackStrength");
+    const uAngleCLoc = gl.getUniformLocation(program, "uAngleC");
+    const uAngleMLoc = gl.getUniformLocation(program, "uAngleM");
+    const uAngleYLoc = gl.getUniformLocation(program, "uAngleY");
+    const uAngleKLoc = gl.getUniformLocation(program, "uAngleK");
+    const uTextureLoc = gl.getUniformLocation(program, "uTexture");
 
-		buf = createFullscreenTriangleBuffer(gl);
-		if (!buf) {
-			gl.deleteProgram(program);
-			return;
-		}
+    buf = createFullscreenTriangleBuffer(gl);
+    if (!buf) {
+      gl.deleteProgram(program);
+      return;
+    }
 
-		const draw = () => {
-			if (!texture) return;
+    const draw = () => {
+      if (!texture) return;
 
-			const config = configRef.current;
-			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-			gl.clearColor(1, 1, 1, 1);
-			gl.clear(gl.COLOR_BUFFER_BIT);
-			// biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-			gl.useProgram(program);
-			setResolutionUniform(gl, uResolution);
-			if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, config.pixelSize);
-			if (uDotSizeLoc) gl.uniform1f(uDotSizeLoc, config.dotSize);
-			if (uCyanStrengthLoc) gl.uniform1f(uCyanStrengthLoc, config.cyanStrength);
-			if (uMagentaStrengthLoc)
-				gl.uniform1f(uMagentaStrengthLoc, config.magentaStrength);
-			if (uYellowStrengthLoc)
-				gl.uniform1f(uYellowStrengthLoc, config.yellowStrength);
-			if (uBlackStrengthLoc)
-				gl.uniform1f(uBlackStrengthLoc, config.blackStrength);
-			if (uAngleCLoc) gl.uniform1f(uAngleCLoc, config.angleC);
-			if (uAngleMLoc) gl.uniform1f(uAngleMLoc, config.angleM);
-			if (uAngleYLoc) gl.uniform1f(uAngleYLoc, config.angleY);
-			if (uAngleKLoc) gl.uniform1f(uAngleKLoc, config.angleK);
+      const config = configRef.current;
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+      gl.clearColor(1, 1, 1, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
+      gl.useProgram(program);
+      setResolutionUniform(gl, uResolution);
+      if (uPixelSizeLoc) gl.uniform1f(uPixelSizeLoc, config.pixelSize);
+      if (uDotSizeLoc) gl.uniform1f(uDotSizeLoc, config.dotSize);
+      if (uCyanStrengthLoc) gl.uniform1f(uCyanStrengthLoc, config.cyanStrength);
+      if (uMagentaStrengthLoc)
+        gl.uniform1f(uMagentaStrengthLoc, config.magentaStrength);
+      if (uYellowStrengthLoc)
+        gl.uniform1f(uYellowStrengthLoc, config.yellowStrength);
+      if (uBlackStrengthLoc)
+        gl.uniform1f(uBlackStrengthLoc, config.blackStrength);
+      if (uAngleCLoc) gl.uniform1f(uAngleCLoc, config.angleC);
+      if (uAngleMLoc) gl.uniform1f(uAngleMLoc, config.angleM);
+      if (uAngleYLoc) gl.uniform1f(uAngleYLoc, config.angleY);
+      if (uAngleKLoc) gl.uniform1f(uAngleKLoc, config.angleK);
 
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			if (uTextureLoc) gl.uniform1i(uTextureLoc, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      if (uTextureLoc) gl.uniform1i(uTextureLoc, 0);
 
-			drawFullscreenTriangle(gl, program, buf);
-		};
+      drawFullscreenTriangle(gl, program, buf);
+    };
 
-		drawRef.current = draw;
+    drawRef.current = draw;
 
-		const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
-			const sizeChanged =
-				size.w !== loadedTextureSize.w || size.h !== loadedTextureSize.h;
+    const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
+      const sizeChanged =
+        size.w !== loadedTextureSize.w || size.h !== loadedTextureSize.h;
 
-			if (sizeChanged) {
-				reloadTexture(size.w, size.h);
-			} else {
-				invalidate.current();
-			}
-		});
+      if (sizeChanged) {
+        reloadTexture(size.w, size.h);
+      } else {
+        invalidate.current();
+      }
+    });
 
-		const { w, h } = getCanvasPixelSize(canvas);
-		if (w > 0 && h > 0) reloadTexture(w, h);
+    const { w, h } = getCanvasPixelSize(canvas);
+    if (w > 0 && h > 0) reloadTexture(w, h);
 
-		return () => {
-			cancelled = true;
-			setIsLoadingTexture(false);
-			disconnectResize();
-			drawRef.current = null;
-			if (buf) gl.deleteBuffer(buf);
-			if (texture) gl.deleteTexture(texture);
-			if (program) gl.deleteProgram(program);
-		};
-	}, [image, quality]);
+    return () => {
+      cancelled = true;
+      setIsLoadingTexture(false);
+      disconnectResize();
+      drawRef.current = null;
+      if (buf) gl.deleteBuffer(buf);
+      if (texture) gl.deleteTexture(texture);
+      if (program) gl.deleteProgram(program);
+    };
+  }, [image, quality]);
 
-	return (
-		<div className="relative h-full w-full">
-			<canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />
-			<CanvasLoader active={isLoadingTexture} />
-		</div>
-	);
+  return (
+    <div className="relative h-full w-full">
+      <canvas ref={canvasRef} className={className} style={CANVAS_STYLE} />
+      <CanvasLoader active={isLoadingTexture} />
+    </div>
+  );
 }
