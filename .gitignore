@@ -43,3 +43,5 @@ next-env.d.ts
 # prefer yarn lock
 package-lock.json
 certificates
+
+local

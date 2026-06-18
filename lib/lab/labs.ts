@@ -21,6 +21,7 @@ export const LAB_CATEGORIES = [
 			{
 				title: "Scene",
 				labs: [
+					{ href: "/lab/hand-tracking", title: "Hand Tracking" },
 					{
 						href: "/lab/particle-morphing/image",
 						title: "Particles - Image Morph",
@@ -30,6 +31,7 @@ export const LAB_CATEGORIES = [
 						title: "Particles - Surface Morph",
 					},
 					{ href: "/lab/clip-surface", title: "Clip Surface" },
+					{ href: "/lab/gaussian-splat", title: "Gaussian Splat" },
 				],
 			},
 			{
