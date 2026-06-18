@@ -60,6 +60,7 @@ export class GaussianViewer {
 	private pointerElement: HTMLElement | null = null;
 	private vortex: VortexController | null = null;
 	private vortexSettings: VortexSettings = { ...VORTEX_DEFAULTS };
+	private vortexRevealStarted = false;
 
 	constructor(options: ViewerOptions) {
 		this.options = options;
@@ -152,8 +153,18 @@ export class GaussianViewer {
 		this.animationFrameId = requestAnimationFrame(this.animate);
 		this.updatePointerRotation();
 		this.vortex?.tick();
+		this.updateVortexReveal();
 		this.renderer.render(this.scene, this.camera);
 	};
+
+	private updateVortexReveal(): void {
+		if (!this.vortexRevealStarted || !this.vortex) return;
+
+		const clockTime = this.spark.clock.getElapsedTime();
+		if (this.vortex.isRevealComplete(clockTime)) {
+			this.vortexRevealStarted = false;
+		}
+	}
 
 	private startVortex(): void {
 		if (!this.splatMesh) return;
@@ -162,12 +173,15 @@ export class GaussianViewer {
 			camera: this.camera,
 			...this.vortexSettings,
 		});
+		this.vortex.startReveal(this.spark.clock.getElapsedTime());
+		this.vortexRevealStarted = true;
 		this.splatMesh.visible = true;
 	}
 
 	private stopVortex(): void {
 		this.vortex?.detach();
 		this.vortex = null;
+		this.vortexRevealStarted = false;
 	}
 
 	private clearSplatMesh(): void {
