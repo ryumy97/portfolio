@@ -1,29 +1,29 @@
 "use client";
 
+import dotAlphaMap from "@/app/lab/particle-morphing/image/assets/dot.png";
+import {
+	type ImageParticlePointer,
+	type ImageParticlePointerParams,
+	integrateImageParticlePositions,
+} from "@/app/lab/particle-morphing/image/model/image-particle-pointer";
+import {
+	createPaddedImageParticleTargets,
+	getMaxImageParticleCount,
+	IMAGE_PARTICLE_TRANSITION_DURATION_S,
+} from "@/app/lab/particle-morphing/image/model/image-particle-targets";
+import {
+	computeImageParticleWaveOffsets,
+	createImageParticleWaveFactors,
+	type ImageParticleWaveParams,
+} from "@/app/lab/particle-morphing/image/model/image-particle-wave";
+import { createImageParticlesMaterial } from "@/app/lab/particle-morphing/image/view/image-particles-material";
+import { lerpPositionSets } from "@/lib/three/sample-geometry-surface";
+import type { ImageParticleSample } from "@/lib/three/sample-image-particles";
 import { useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { animate, cubicBezier, useMotionValue } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import dotAlphaMap from "@/app/lab/particle-morphing/assets/dot.png";
-import {
-	type ImageParticlePointer,
-	type ImageParticlePointerParams,
-	integrateImageParticlePositions,
-} from "@/app/lab/particle-morphing/model/image-particle-pointer";
-import {
-	createPaddedImageParticleTargets,
-	getMaxImageParticleCount,
-	IMAGE_PARTICLE_TRANSITION_DURATION_S,
-} from "@/app/lab/particle-morphing/model/image-particle-targets";
-import {
-	computeImageParticleWaveOffsets,
-	createImageParticleWaveFactors,
-	type ImageParticleWaveParams,
-} from "@/app/lab/particle-morphing/model/image-particle-wave";
-import { createImageParticlesMaterial } from "@/app/lab/particle-morphing/view/image-particles-material";
-import { lerpPositionSets } from "@/lib/three/sample-geometry-surface";
-import type { ImageParticleSample } from "@/lib/three/sample-image-particles";
 
 export type ImageParticlesViewProps = {
 	samples: ImageParticleSample[];

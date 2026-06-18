@@ -21,8 +21,14 @@ export const LAB_CATEGORIES = [
       {
         title: "Scene",
         labs: [
-          { href: "/lab/particle-morphing", title: "Particle Morphing" },
-          { href: "/lab/shape-shift", title: "Shape Shift" },
+          {
+            href: "/lab/particle-morphing/image",
+            title: "Particles - Image Morph",
+          },
+          {
+            href: "/lab/particle-morphing/surface",
+            title: "Particles - Surface Morph",
+          },
           { href: "/lab/clip-surface", title: "Clip Surface" },
         ],
       },

@@ -16,8 +16,8 @@ export default function ShapeShiftPage() {
 
 	return (
 		<LabPageLayout
-			title="Shape Shift"
-			description="Particles sample the surfaces of eye, hand, head, and phone models, morphing between them in a loop. Orbit the scene to inspect each shape."
+			title="Surface Morph"
+			description="3D model surfaces sampled into particles, morphing between forms in a loop. Orbit to inspect each shape."
 			sidebar={
 				<>
 					<LabNumericControls

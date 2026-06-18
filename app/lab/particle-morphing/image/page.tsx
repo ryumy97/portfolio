@@ -51,7 +51,9 @@ const WAVE_CONTROLS = [
 type AppearanceKey = (typeof APPEARANCE_CONTROLS)[number]["key"];
 type WaveControlKey = (typeof WAVE_CONTROLS)[number]["key"];
 
-function toWaveParams(values: Record<WaveControlKey, number>): ImageParticleWaveParams {
+function toWaveParams(
+	values: Record<WaveControlKey, number>,
+): ImageParticleWaveParams {
 	return {
 		...IMAGE_PARTICLE_WAVE_DEFAULTS,
 		amplitudeX: values.amplitude,
@@ -102,8 +104,8 @@ export default function ParticleMorphingPage() {
 
 	return (
 		<LabPageLayout
-			title="Particle Morphing"
-			description="Image pixels sampled into a Three.js particle field, morphing between them in a loop."
+			title="Image Morph"
+			description="Image pixels sampled into particles, morphing in a loop. Move the pointer to disturb the field."
 			sidebar={
 				<div className="flex flex-col gap-6">
 					<LabControlsGroup
