@@ -2,7 +2,7 @@
 /**
  * Process images under public/ and app/ (or extra paths):
  * - Resize PNGs wider than MAX_WIDTH (default 3840)
- * - Convert JPEG/JPG to PNG (EXIF orientation baked in), then resize PNG if needed
+ * - Convert JPEG/JPG and HEIC/HEIF to PNG (EXIF orientation baked in), then resize PNG if needed
  * - Resize dimensions use displayed pixel size (meta.autoOrient), not raw EXIF buffer size
  *
  * Usage:
@@ -11,16 +11,21 @@
  *   MAX_WIDTH=1920 node scripts/resize-public-pngs.mjs
  */
 
+import { execFile } from "node:child_process";
 import { readdir, rename, stat, unlink } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+
+const execFileAsync = promisify(execFile);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const DEFAULT_DIRS = ["public", "app"];
 const SKIP_DIR_NAMES = new Set(["node_modules", ".next", ".git"]);
-const IMAGE_EXT = /\.(png|jpe?g)$/i;
+const IMAGE_EXT = /\.(png|jpe?g|heic|heif)$/i;
+const CONVERTIBLE_EXT = /\.(jpe?g|heic|heif)$/i;
 
 const MAX_WIDTH = Number.parseInt(process.env.MAX_WIDTH ?? "3840", 10);
 const dryRun = process.argv.includes("--dry-run");
@@ -36,13 +41,16 @@ const targetDirs =
 		? extraDirs.map((dir) => path.resolve(process.cwd(), dir))
 		: DEFAULT_DIRS.map((dir) => path.join(PROJECT_ROOT, dir));
 
-function isJpeg(filePath) {
-	const ext = path.extname(filePath).toLowerCase();
-	return ext === ".jpg" || ext === ".jpeg";
+function isConvertibleToPng(filePath) {
+	return CONVERTIBLE_EXT.test(filePath);
+}
+
+function isHeic(filePath) {
+	return /\.(heic|heif)$/i.test(filePath);
 }
 
 function pngPathFor(filePath) {
-	return filePath.replace(/\.jpe?g$/i, ".png");
+	return filePath.replace(/\.(jpe?g|heic|heif)$/i, ".png");
 }
 
 async function* walkImages(dir) {
@@ -90,6 +98,39 @@ function resizeTarget(meta) {
 		: height;
 
 	return { needsResize, nextWidth, nextHeight };
+}
+
+async function convertHeicToPng(sourcePath, outPath) {
+	const tempPath = `${outPath}.convert-tmp.png`;
+
+	try {
+		if (process.platform !== "darwin") {
+			await openImage(sourcePath, { applyExifOrientation: true })
+				.withMetadata({ orientation: 1 })
+				.png({ compressionLevel: 9 })
+				.toFile(outPath);
+			return;
+		}
+
+		await execFileAsync("sips", [
+			"-s",
+			"format",
+			"png",
+			sourcePath,
+			"--out",
+			tempPath,
+		]);
+
+		await openImage(tempPath)
+			.withMetadata({ orientation: 1 })
+			.png({ compressionLevel: 9 })
+			.toFile(outPath);
+	} catch (error) {
+		await unlink(outPath).catch(() => {});
+		throw error;
+	} finally {
+		await unlink(tempPath).catch(() => {});
+	}
 }
 
 async function convertToPng(
@@ -176,7 +217,7 @@ async function processPng(filePath) {
 	};
 }
 
-async function processJpeg(filePath) {
+async function processConvertible(filePath) {
 	const beforeStat = await stat(filePath);
 	const meta = await openImage(filePath, {
 		applyExifOrientation: true,
@@ -206,7 +247,11 @@ async function processJpeg(filePath) {
 		};
 	}
 
-	await convertToPng(filePath, outPath, { applyExifOrientation: true });
+	if (isHeic(filePath)) {
+		await convertHeicToPng(filePath, outPath);
+	} else {
+		await convertToPng(filePath, outPath, { applyExifOrientation: true });
+	}
 	await unlink(filePath);
 
 	if (needsResize) {
@@ -232,7 +277,7 @@ async function processJpeg(filePath) {
 }
 
 async function processImage(filePath) {
-	if (isJpeg(filePath)) return processJpeg(filePath);
+	if (isConvertibleToPng(filePath)) return processConvertible(filePath);
 	return processPng(filePath);
 }
 
@@ -298,7 +343,7 @@ async function main() {
 		.join(", ");
 
 	console.log(
-		`${dryRun ? "[dry-run] " : ""}Scanning ${label} (PNG resize + JPEG→PNG, max width ${MAX_WIDTH}px)\n`,
+		`${dryRun ? "[dry-run] " : ""}Scanning ${label} (PNG resize + JPEG/HEIC→PNG, max width ${MAX_WIDTH}px)\n`,
 	);
 
 	let skipped = 0;
