@@ -90,7 +90,8 @@ export default function Labs() {
           <div className="col-span-full md:col-start-2 md:col-end-10">
             <Title className="text-primary">Lab</Title>
             <PageDescription>
-              Experiments in Three.js, WebGL shaders, and canvas.
+              Experiments in Gaussian Splatting, Three.js, WebGL shaders, and
+              canvas.
             </PageDescription>
           </div>
           <SubGrid className="col-span-full md:col-start-2 md:col-end-10 mt-12 gap-y-14 content-start">
