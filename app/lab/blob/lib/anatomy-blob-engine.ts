@@ -2,16 +2,41 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 type Vec2 = { x: number; y: number };
 
-const SIMULATION_SUBSTEPS = 8;
 const SIMULATION_DELTA = 1 / 120;
-const GRAVITY_FORCE = 1.4;
-const POINTER_BALL_RADIUS = 72;
-const POINTER_LERP = 0.18;
-const POINTER_BALL_RESTITUTION = 0.38;
 const POINTER_BALL_PUSH_PASSES = 3;
-const POINTER_BALL_PUSH_STRENGTH = 1.08;
-const POINTER_BALL_VELOCITY_TRANSFER = 0.62;
-const BLOB_POINT_COUNT = 56;
+const POINTER_BALL_RESTITUTION = 0.38;
+
+export type AnatomyBlobConfig = {
+  gravity: number;
+  substeps: number;
+  springStrength: number;
+  damping: number;
+  blobMass: number;
+  wallBounce: number;
+  blobSize: number;
+  pointCount: number;
+  springNeighbors: number;
+  pointerRadius: number;
+  pointerLerp: number;
+  pointerPush: number;
+  pointerTransfer: number;
+};
+
+export const ANATOMY_BLOB_DEFAULTS: AnatomyBlobConfig = {
+  gravity: 1.4,
+  substeps: 8,
+  springStrength: 1,
+  damping: 1,
+  blobMass: 0.1,
+  wallBounce: 1,
+  blobSize: 3,
+  pointCount: 80,
+  springNeighbors: 8,
+  pointerRadius: 72,
+  pointerLerp: 0.18,
+  pointerPush: 1.08,
+  pointerTransfer: 0.62,
+};
 
 export class AnatomyParticle {
   pos: Vec2;
@@ -27,13 +52,7 @@ export class AnatomyParticle {
   prev: AnatomyParticle | null = null;
   isStatic = false;
 
-  constructor(
-    x: number,
-    y: number,
-    radius = 5,
-    mass = 0.1,
-    damping = 1,
-  ) {
+  constructor(x: number, y: number, radius = 5, mass = 0.1, damping = 1) {
     this.pos = { x, y };
     this.prevPos = { x, y };
     this.collider = { x, y };
@@ -104,14 +123,15 @@ export class AnatomySpring {
     this.stiffness = stiffness;
   }
 
-  update() {
+  update(strengthMultiplier = 1) {
     const dx = this.p2.pos.x - this.p1.pos.x;
     const dy = this.p2.pos.y - this.p1.pos.y;
     const distSq = dx * dx + dy * dy;
     if (distSq === 0) return;
 
     const dist = Math.sqrt(distSq);
-    const diff = ((dist - this.restLength) / dist) * 0.5 * this.stiffness;
+    const diff =
+      ((dist - this.restLength) / dist) * 0.5 * this.stiffness * strengthMultiplier;
     const offsetX = dx * diff;
     const offsetY = dy * diff;
 
@@ -170,10 +190,16 @@ function circlePoints(
   });
 }
 
+function getNeighborSpringStiffness(offset: number) {
+  if (offset === 1) return 0.75;
+  return Math.max(0.04, 0.45 / offset ** 1.4);
+}
+
 function makeLoop(
   indices: number[],
   points: Vec2[],
-  mass = 0.1,
+  mass: number,
+  springNeighbors: number,
 ): [AnatomyParticle[], AnatomySpring[]] {
   const particles = indices.map((pointIndex, i, allPoints) => {
     const p = points[pointIndex];
@@ -191,6 +217,7 @@ function makeLoop(
 
   const constraints: AnatomySpring[] = [];
   const l = particles.length;
+  const neighborCount = Math.max(1, Math.min(Math.round(springNeighbors), l - 1));
 
   for (let i = 0; i < l; i++) {
     const p0 = particles[i % l];
@@ -200,12 +227,15 @@ function makeLoop(
     p1.prev = p0;
     p1.next = p2;
 
-    const springCount = Math.max(6, Math.floor(l ** 0.45));
-    for (let j = 1; j < springCount; j++) {
-      const nextI = Math.floor(j ** 2.25);
-      const pj = particles[(i + nextI) % l];
+    for (let offset = 1; offset <= neighborCount; offset++) {
+      const pj = particles[(i + offset) % l];
       constraints.push(
-        new AnatomySpring(p0, pj, getDistance(p0.pos, pj.pos), Math.max(0, 1 / j ** 3.5)),
+        new AnatomySpring(
+          p0,
+          pj,
+          getDistance(p0.pos, pj.pos),
+          getNeighborSpringStiffness(offset),
+        ),
       );
     }
   }
@@ -213,10 +243,22 @@ function makeLoop(
   return [particles, constraints];
 }
 
-function makeBlobShape(centerX: number, centerY: number, radius: number) {
-  const points = circlePoints(centerX, centerY, radius, BLOB_POINT_COUNT);
+function makeBlobShape(
+  centerX: number,
+  centerY: number,
+  radius: number,
+  pointCount: number,
+  mass: number,
+  springNeighbors: number,
+) {
+  const points = circlePoints(centerX, centerY, radius, pointCount);
   const indices = points.map((_, index) => index);
-  const [outline, constraints] = makeLoop(indices, points, 0.1);
+  const [outline, constraints] = makeLoop(
+    indices,
+    points,
+    mass,
+    springNeighbors,
+  );
 
   return {
     outline,
@@ -286,9 +328,7 @@ function constrainParticle(
 }
 
 function detectCircleCollisions(circles: AnatomyParticle[]) {
-  circles.sort(
-    (a, b) => a.collider.y - a.radius - (b.collider.y - b.radius),
-  );
+  circles.sort((a, b) => a.collider.y - a.radius - (b.collider.y - b.radius));
 
   const collisions: [AnatomyParticle, AnatomyParticle][] = [];
 
@@ -324,11 +364,15 @@ function addBlobToScene(
   centerY: number,
   radius: number,
   imageIndex: number,
+  config: AnatomyBlobConfig,
 ) {
   const { outline, contours, constraints } = makeBlobShape(
     centerX,
     centerY,
     radius,
+    config.pointCount,
+    config.blobMass,
+    config.springNeighbors,
   );
 
   scene.allParticles.push(...outline);
@@ -354,9 +398,16 @@ function getSceneScaler(width: number, height: number) {
   return minSize / 900;
 }
 
+const BLOB_SPAWN_LAYOUTS = [
+  { x: 0.22, y: 0.2, imageIndex: 0 },
+  { x: 0.78, y: 0.2, imageIndex: 1 },
+  { x: 0.5, y: 0.78, imageIndex: 2 },
+] as const;
+
 export function createAnatomyBlobScene(
   width: number,
   height: number,
+  config: AnatomyBlobConfig = ANATOMY_BLOB_DEFAULTS,
 ): AnatomyBlobScene {
   const scene: AnatomyBlobScene = {
     loops: [],
@@ -368,25 +419,21 @@ export function createAnatomyBlobScene(
       y: height / 2,
       vx: 0,
       vy: 0,
-      radius: POINTER_BALL_RADIUS,
+      radius: config.pointerRadius,
     },
   };
 
   const scaler = getSceneScaler(width, height);
-  const layouts = [
-    { x: 0.72, y: 0.24, size: 0.52, imageIndex: 0 },
-    { x: 0.28, y: 0.38, size: 0.46, imageIndex: 1 },
-    { x: 0.5, y: 0.56, size: 0.5, imageIndex: 2 },
-  ] as const;
+  const baseRadius = 0.5 * 130 * scaler * config.blobSize;
 
-  for (const layout of layouts) {
-    const radius = layout.size * 130 * scaler;
+  for (const layout of BLOB_SPAWN_LAYOUTS) {
     addBlobToScene(
       scene,
-      width * layout.x + (Math.random() - 0.5) * 30,
+      width * layout.x,
       height * layout.y,
-      radius,
+      baseRadius,
       layout.imageIndex,
+      config,
     );
   }
 
@@ -397,7 +444,11 @@ export function createAnatomyBlobScene(
   return scene;
 }
 
-function constrainPointerBall(ball: PointerBall, width: number, height: number) {
+function constrainPointerBall(
+  ball: PointerBall,
+  width: number,
+  height: number,
+) {
   const r = ball.radius;
 
   if (ball.x < r) {
@@ -417,6 +468,16 @@ function constrainPointerBall(ball: PointerBall, width: number, height: number) 
   }
 }
 
+function applyRuntimeConfig(scene: AnatomyBlobScene, config: AnatomyBlobConfig) {
+  scene.pointerBall.radius = config.pointerRadius;
+
+  for (const particle of scene.allParticles) {
+    particle.damping = config.damping;
+    particle.mass = config.blobMass;
+    particle.invMass = 1 / config.blobMass;
+  }
+}
+
 function stepPointerBall(
   ball: PointerBall,
   targetX: number,
@@ -424,13 +485,14 @@ function stepPointerBall(
   active: boolean,
   width: number,
   height: number,
+  config: AnatomyBlobConfig,
 ) {
   const prevX = ball.x;
   const prevY = ball.y;
 
   if (active) {
-    ball.x = lerp(ball.x, targetX, POINTER_LERP);
-    ball.y = lerp(ball.y, targetY, POINTER_LERP);
+    ball.x = lerp(ball.x, targetX, config.pointerLerp);
+    ball.y = lerp(ball.y, targetY, config.pointerLerp);
   }
 
   constrainPointerBall(ball, width, height);
@@ -444,6 +506,7 @@ function pushParticlesFromRigidBall(
   ball: PointerBall,
   ballVx: number,
   ballVy: number,
+  config: AnatomyBlobConfig,
 ) {
   for (let pass = 0; pass < POINTER_BALL_PUSH_PASSES; pass++) {
     for (const particle of particles) {
@@ -457,14 +520,14 @@ function pushParticlesFromRigidBall(
       const overlap = combined - dist;
       const nx = diffx / dist;
       const ny = diffy / dist;
-      const pushX = nx * overlap * POINTER_BALL_PUSH_STRENGTH;
-      const pushY = ny * overlap * POINTER_BALL_PUSH_STRENGTH;
+      const pushX = nx * overlap * config.pointerPush;
+      const pushY = ny * overlap * config.pointerPush;
 
       particle.move(pushX, pushY);
       particle.prevPos.x =
-        particle.pos.x - ballVx * POINTER_BALL_VELOCITY_TRANSFER - pushX * 0.2;
+        particle.pos.x - ballVx * config.pointerTransfer - pushX * 0.2;
       particle.prevPos.y =
-        particle.pos.y - ballVy * POINTER_BALL_VELOCITY_TRANSFER - pushY * 0.2;
+        particle.pos.y - ballVy * config.pointerTransfer - pushY * 0.2;
     }
   }
 }
@@ -474,26 +537,34 @@ function simulateAnatomyScene(
   width: number,
   height: number,
   ballActive: boolean,
+  config: AnatomyBlobConfig,
 ) {
   const margin = width * 0.025;
   const { pointerBall } = scene;
   const ballVx = pointerBall.vx;
   const ballVy = pointerBall.vy;
+  const substeps = Math.max(1, Math.round(config.substeps));
 
-  for (let step = 0; step < SIMULATION_SUBSTEPS; step++) {
+  for (let step = 0; step < substeps; step++) {
     for (const particle of scene.allParticles) {
       if (particle.pos.y > 0) {
-        particle.applyForce(0, GRAVITY_FORCE);
+        particle.applyForce(0, config.gravity);
       }
       particle.update(SIMULATION_DELTA);
     }
 
     for (const constraint of scene.allConstraints) {
-      constraint.update();
+      constraint.update(config.springStrength);
     }
 
     if (ballActive) {
-      pushParticlesFromRigidBall(scene.allParticles, pointerBall, ballVx, ballVy);
+      pushParticlesFromRigidBall(
+        scene.allParticles,
+        pointerBall,
+        ballVx,
+        ballVy,
+        config,
+      );
     }
 
     const collisions = detectCircleCollisions(scene.collisionLookup);
@@ -509,7 +580,7 @@ function simulateAnatomyScene(
         width - margin,
         keepInTop ? margin : -99999,
         height - margin,
-        1,
+        config.wallBounce,
       );
     }
   }
@@ -522,7 +593,10 @@ export function stepAnatomyBlobScene(
   pointerX: number,
   pointerY: number,
   pointerActive: boolean,
+  config: AnatomyBlobConfig = ANATOMY_BLOB_DEFAULTS,
 ) {
+  applyRuntimeConfig(scene, config);
+
   stepPointerBall(
     scene.pointerBall,
     pointerX,
@@ -530,9 +604,10 @@ export function stepAnatomyBlobScene(
     pointerActive,
     width,
     height,
+    config,
   );
 
-  simulateAnatomyScene(scene, width, height, pointerActive);
+  simulateAnatomyScene(scene, width, height, pointerActive, config);
 }
 
 export function drawClosedLoopCurve(
@@ -679,7 +754,13 @@ export function drawAnatomyBlobSceneDebug(
       ctx.strokeStyle = "rgba(0, 0, 0, 0.25)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(particle.collider.x, particle.collider.y, particle.radius, 0, Math.PI * 2);
+      ctx.arc(
+        particle.collider.x,
+        particle.collider.y,
+        particle.radius,
+        0,
+        Math.PI * 2,
+      );
       ctx.stroke();
     }
   }
@@ -721,8 +802,9 @@ export function addBlobAtPointer(
   width: number,
   height: number,
   imageIndex: number,
+  config: AnatomyBlobConfig = ANATOMY_BLOB_DEFAULTS,
 ) {
   const scaler = getSceneScaler(width, height);
-  const radius = (Math.random() * 0.35 + 0.45) * 110 * scaler;
-  addBlobToScene(scene, x, y, radius, imageIndex);
+  const radius = (Math.random() * 0.35 + 0.45) * 110 * scaler * config.blobSize;
+  addBlobToScene(scene, x, y, radius, imageIndex, config);
 }

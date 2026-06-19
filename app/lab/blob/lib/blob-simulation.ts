@@ -82,11 +82,7 @@ export class BlobPoint {
     if (diffMag < combinedRadius) {
       const forceMag = diffMag - combinedRadius;
       const invMag = 1 / diffMag;
-      this.addForce(
-        diffx * invMag * forceMag,
-        diffy * invMag * forceMag,
-        true,
-      );
+      this.addForce(diffx * invMag * forceMag, diffy * invMag * forceMag, true);
     }
   }
 
@@ -454,7 +450,11 @@ function pushBlobPointsFromRigidBall(
   blob.vy += ballVy * POINTER_BALL_BLOB_TRANSFER + centerPushY * 0.05;
 }
 
-function constrainPointerBall(ball: PointerBall, width: number, height: number) {
+function constrainPointerBall(
+  ball: PointerBall,
+  width: number,
+  height: number,
+) {
   const r = ball.radius;
 
   if (ball.x < r) {
@@ -506,11 +506,7 @@ function stepBlobPointIntegration(
   }
 }
 
-function applyBlobGravity(
-  blob: BlobSimulation,
-  hw: number,
-  hh: number,
-) {
+function applyBlobGravity(blob: BlobSimulation, hw: number, hh: number) {
   blob.vy += GRAVITY;
   blob.x += blob.vx;
   blob.y += blob.vy;
@@ -583,14 +579,7 @@ export function stepBlobScene(
 
   for (const blob of scene.blobs) {
     stepBlobPointForces(blob);
-    pushBlobPointsFromRigidBall(
-      blob,
-      pointerBall,
-      ballVx,
-      ballVy,
-      hw,
-      hh,
-    );
+    pushBlobPointsFromRigidBall(blob, pointerBall, ballVx, ballVy, hw, hh);
     stepBlobPointIntegration(blob, {
       left: -hw - blob.x,
       top: -hh - blob.y,
@@ -643,10 +632,7 @@ export function clipToCircle(
   ctx.clip();
 }
 
-export function clipToBlob(
-  ctx: CanvasRenderingContext2D,
-  points: BlobPoint[],
-) {
+export function clipToBlob(ctx: CanvasRenderingContext2D, points: BlobPoint[]) {
   drawClosedBlobCurve(ctx, points);
   ctx.clip();
 }

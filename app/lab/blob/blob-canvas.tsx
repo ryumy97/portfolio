@@ -2,8 +2,11 @@
 
 import { useAnimationFrame } from "motion/react";
 import type { StaticImageData } from "next/image";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
+  type AnatomyBlobConfig,
+  type AnatomyBlobScene,
+  ANATOMY_BLOB_DEFAULTS,
   clipToCircle,
   clipToLoop,
   createAnatomyBlobScene,
@@ -11,12 +14,12 @@ import {
   drawClosedLoopCurve,
   drawCoverImage,
   stepAnatomyBlobScene,
-  type AnatomyBlobScene,
 } from "./lib/anatomy-blob-engine";
 
 type Props = {
   images: StaticImageData[];
   pointerImage: StaticImageData;
+  config?: AnatomyBlobConfig;
   isDebug?: boolean;
   resetKey?: number;
 };
@@ -32,6 +35,7 @@ const loadImage = (src: string) =>
 export default function BlobCanvas({
   images,
   pointerImage,
+  config = ANATOMY_BLOB_DEFAULTS,
   isDebug = false,
   resetKey = 0,
 }: Props) {
@@ -43,6 +47,18 @@ export default function BlobCanvas({
   const sizeRef = useRef({ width: 0, height: 0 });
   const loadedImagesRef = useRef<HTMLImageElement[]>([]);
   const pointerImageRef = useRef<HTMLImageElement | null>(null);
+  const configRef = useRef(config);
+  configRef.current = config;
+
+  const createScene = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    sceneRef.current = createAnatomyBlobScene(
+      container.clientWidth,
+      container.clientHeight,
+      configRef.current,
+    );
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,10 +108,7 @@ export default function BlobCanvas({
         height: container.clientHeight,
       };
 
-      sceneRef.current = createAnatomyBlobScene(
-        container.clientWidth,
-        container.clientHeight,
-      );
+      createScene();
     };
 
     const handlePointerMove = (e: PointerEvent) => {
@@ -117,20 +130,14 @@ export default function BlobCanvas({
       container.removeEventListener("pointermove", handlePointerMove);
       container.removeEventListener("pointerleave", handlePointerLeave);
     };
-  }, []);
+  }, [createScene]);
 
   useEffect(() => {
     if (resetKey === 0) return;
 
-    const container = containerRef.current;
-    if (!container) return;
-
-    sceneRef.current = createAnatomyBlobScene(
-      container.clientWidth,
-      container.clientHeight,
-    );
+    createScene();
     pointerRef.current.active = false;
-  }, [resetKey]);
+  }, [resetKey, createScene]);
 
   useAnimationFrame(() => {
     const canvas = canvasRef.current;
@@ -146,6 +153,7 @@ export default function BlobCanvas({
     const loadedImages = loadedImagesRef.current;
     const pointerBallImage = pointerImageRef.current;
     const { pointerBall } = scene;
+    const currentConfig = configRef.current;
 
     stepAnatomyBlobScene(
       scene,
@@ -154,6 +162,7 @@ export default function BlobCanvas({
       pointer.x,
       pointer.y,
       pointer.active,
+      currentConfig,
     );
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
