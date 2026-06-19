@@ -4,9 +4,9 @@ import { useAnimationFrame } from "motion/react";
 import type { StaticImageData } from "next/image";
 import { useCallback, useEffect, useRef } from "react";
 import {
+  ANATOMY_BLOB_DEFAULTS,
   type AnatomyBlobConfig,
   type AnatomyBlobScene,
-  ANATOMY_BLOB_DEFAULTS,
   clipToCircle,
   clipToLoop,
   createAnatomyBlobScene,

@@ -131,7 +131,10 @@ export class AnatomySpring {
 
     const dist = Math.sqrt(distSq);
     const diff =
-      ((dist - this.restLength) / dist) * 0.5 * this.stiffness * strengthMultiplier;
+      ((dist - this.restLength) / dist) *
+      0.5 *
+      this.stiffness *
+      strengthMultiplier;
     const offsetX = dx * diff;
     const offsetY = dy * diff;
 
@@ -217,7 +220,10 @@ function makeLoop(
 
   const constraints: AnatomySpring[] = [];
   const l = particles.length;
-  const neighborCount = Math.max(1, Math.min(Math.round(springNeighbors), l - 1));
+  const neighborCount = Math.max(
+    1,
+    Math.min(Math.round(springNeighbors), l - 1),
+  );
 
   for (let i = 0; i < l; i++) {
     const p0 = particles[i % l];
@@ -468,7 +474,10 @@ function constrainPointerBall(
   }
 }
 
-function applyRuntimeConfig(scene: AnatomyBlobScene, config: AnatomyBlobConfig) {
+function applyRuntimeConfig(
+  scene: AnatomyBlobScene,
+  config: AnatomyBlobConfig,
+) {
   scene.pointerBall.radius = config.pointerRadius;
 
   for (const particle of scene.allParticles) {

@@ -11,15 +11,21 @@ import pointerImage from "../neighbor/neighbor1.png";
 import image1 from "../neighbor/neighbor1.png";
 import image2 from "../neighbor/neighbor2.png";
 import image3 from "../neighbor/neighbor3.png";
-import { ANATOMY_BLOB_DEFAULTS } from "./lib/anatomy-blob-engine";
 import BlobCanvas from "./blob-canvas";
+import { ANATOMY_BLOB_DEFAULTS } from "./lib/anatomy-blob-engine";
 
 const BLOB_IMAGES = [image1, image2, image3];
 
 const SIMULATION_CONTROLS = [
   { key: "gravity", label: "Gravity", min: 0, max: 10, step: 0.05 },
   { key: "substeps", label: "Substeps", min: 1, max: 24, step: 1 },
-  { key: "springStrength", label: "Spring strength", min: 0, max: 1, step: 0.01 },
+  {
+    key: "springStrength",
+    label: "Spring strength",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
   { key: "damping", label: "Damping", min: 0.5, max: 1, step: 0.01 },
   { key: "blobMass", label: "Blob mass", min: 0.01, max: 2, step: 0.01 },
   { key: "wallBounce", label: "Wall bounce", min: 0, max: 2, step: 0.05 },
@@ -28,7 +34,13 @@ const SIMULATION_CONTROLS = [
 const BLOB_CONTROLS = [
   { key: "blobSize", label: "Blob size", min: 0.1, max: 3, step: 0.05 },
   { key: "pointCount", label: "Point count", min: 12, max: 120, step: 4 },
-  { key: "springNeighbors", label: "Spring neighbors", min: 1, max: 8, step: 1 },
+  {
+    key: "springNeighbors",
+    label: "Spring neighbors",
+    min: 1,
+    max: 8,
+    step: 1,
+  },
 ] as const satisfies readonly LabNumericControlDef[];
 
 const POINTER_CONTROLS = [
@@ -75,10 +87,12 @@ export default function BlobPage() {
       sidebar={
         <div className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
-            Tune simulation and pointer ball live. Change blob size, points,
-            or spring neighbors then press Reset to rebuild the scene.
+            Tune simulation and pointer ball live. Change blob size, points, or
+            spring neighbors then press Reset to rebuild the scene.
           </p>
-          <CVSubHeading className="text-muted-foreground">Simulation</CVSubHeading>
+          <CVSubHeading className="text-muted-foreground">
+            Simulation
+          </CVSubHeading>
           <LabNumericControls
             controls={SIMULATION_CONTROLS}
             values={values}
@@ -94,7 +108,9 @@ export default function BlobPage() {
               setValues((current) => ({ ...current, [key]: value }))
             }
           />
-          <CVSubHeading className="text-muted-foreground">Pointer ball</CVSubHeading>
+          <CVSubHeading className="text-muted-foreground">
+            Pointer ball
+          </CVSubHeading>
           <LabNumericControls
             controls={POINTER_CONTROLS}
             values={values}
