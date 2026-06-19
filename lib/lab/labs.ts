@@ -61,6 +61,9 @@ export const LAB_CATEGORIES = [
   },
   {
     title: "2D canvas",
-    labs: [{ href: "/lab/sticky-note", title: "Sticky Note" }],
+    labs: [
+      { href: "/lab/blob", title: "Blob" },
+      { href: "/lab/sticky-note", title: "Sticky Note" },
+    ],
   },
 ] as const satisfies readonly LabCategory[];
