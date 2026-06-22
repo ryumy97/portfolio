@@ -2,17 +2,17 @@
 
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { LabNumericControls } from "@/app/lab/lab-numeric-controls";
-import { LabPageLayout } from "../lab-page-layout";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { CVSubHeading } from "@/components/ui/typography";
 import type { LabNumericControlDef } from "@/lib/lab/controls";
-import ImageBubbleCanvas from "./canvas";
-import { IMAGE_BUBBLE_DEFAULTS } from "./lib/settings";
+import { LabPageLayout } from "../lab-page-layout";
 import blobImage1 from "../neighbor/neighbor1.png";
+import pointerImage from "../neighbor/neighbor1.png";
 import blobImage2 from "../neighbor/neighbor2.png";
 import blobImage3 from "../neighbor/neighbor3.png";
-import pointerImage from "../neighbor/neighbor1.png";
+import ImageBubbleCanvas from "./canvas";
+import { IMAGE_BUBBLE_DEFAULTS } from "./lib/settings";
 
 const BLOB_IMAGES = [blobImage1, blobImage2, blobImage3];
 

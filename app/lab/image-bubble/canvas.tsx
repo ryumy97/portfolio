@@ -4,8 +4,8 @@ import { useAnimationFrame } from "motion/react";
 import type { StaticImageData } from "next/image";
 import { useEffect, useRef } from "react";
 import { loadOptimizedImages } from "@/lib/webgl";
-import { createScene, type Scene, type SceneImages } from "./lib/scene";
 import { DEFAULT_POINTER, type PointerInput } from "./lib/pointer";
+import { createScene, type Scene, type SceneImages } from "./lib/scene";
 import {
   IMAGE_BUBBLE_DEFAULTS,
   type ImageBubbleSettings,

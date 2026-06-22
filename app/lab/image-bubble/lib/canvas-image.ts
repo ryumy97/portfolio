@@ -1,5 +1,5 @@
-import { traceSmoothBlobOutline } from "./render-path";
 import type { Particle } from "./particle";
+import { traceSmoothBlobOutline } from "./render-path";
 
 export function drawCoverImage(
   ctx: CanvasRenderingContext2D,

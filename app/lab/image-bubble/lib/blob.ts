@@ -1,10 +1,10 @@
-import {
-  type BlobJointConfigs,
-  type JointKind,
-  type RangeSpringConfig,
+import { clipToBlobOutline, drawCoverImage } from "./canvas-image";
+import type {
+  BlobJointConfigs,
+  JointKind,
+  RangeSpringConfig,
 } from "./joint-config";
 import { Particle } from "./particle";
-import { clipToBlobOutline, drawCoverImage } from "./canvas-image";
 import { traceSmoothBlobOutline } from "./render-path";
 
 function getUniformBridgeSteps(count: number) {
