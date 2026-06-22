@@ -62,7 +62,7 @@ export const LAB_CATEGORIES = [
   {
     title: "2D canvas",
     labs: [
-      { href: "/lab/blob", title: "Blob" },
+      { href: "/lab/image-bubble", title: "Image Bubble" },
       { href: "/lab/sticky-note", title: "Sticky Note" },
     ],
   },
