@@ -38,6 +38,7 @@ export const LAB_CATEGORIES = [
           },
           { href: "/lab/clip-surface", title: "Clip Surface" },
           { href: "/lab/flower-tunnel", title: "Flower Tunnel" },
+          { href: "/lab/disc-carousel", title: "Disc Carousel" },
         ],
       },
       {
