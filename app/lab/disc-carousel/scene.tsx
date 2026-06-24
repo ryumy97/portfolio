@@ -2,7 +2,7 @@
 
 import { Line, PerspectiveCamera, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { lerp } from "@/lib/math";
 import { CAROUSEL_IMAGE_SRCS, CAROUSEL_IMAGES } from "./images";
@@ -26,6 +26,14 @@ const LINES_END = CAROUSEL_RADIUS * 2 + IMAGE_WIDTH + LINE_LENGTH;
 const ITEM_COUNT = CAROUSEL_IMAGE_SRCS.length;
 const STEP_ANGLE = (Math.PI * 2) / ITEM_COUNT;
 export const LINES_RATIO = LINES_START / LINES_END;
+
+function shortestIndexDelta(from: number, to: number, count: number) {
+  const half = count / 2;
+  let delta = to - from;
+  if (delta > half) delta -= count;
+  else if (delta < -half) delta += count;
+  return delta;
+}
 
 function formatRotationDegrees(radians: number) {
   let degrees = THREE.MathUtils.radToDeg(radians) % 360;
@@ -52,28 +60,43 @@ function CarouselImage({
   width,
   radius,
   active,
+  index,
+  onSelect,
 }: {
   texture: THREE.Texture;
   angle: number;
   width: number;
   radius: number;
   active: boolean;
+  index: number;
+  onSelect: (index: number) => void;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const pivotRef = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
+  const { gl } = useThree();
 
   useFrame(() => {
-    const scale = active ? 1.2 : 1;
+    const targetScale = active ? (hovered ? 1.25 : 1.2) : hovered ? 1.1 : 1;
+    const targetPositionOffsetX = active && hovered ? -0.3 : 0;
+    const targetPositionOffsetY = active && hovered ? 0.3 : 0;
 
-    const x = meshRef.current?.scale.x;
-    const y = meshRef.current?.scale.y;
-    const z = meshRef.current?.scale.z;
+    const scaleX = pivotRef.current?.scale.x;
+    const scaleY = pivotRef.current?.scale.y;
+    const scaleZ = pivotRef.current?.scale.z;
+    const positionX = pivotRef.current?.position.x;
+    const positionY = pivotRef.current?.position.y;
 
-    if (!x || !y || !z) return;
+    if (!scaleX || !scaleY || !scaleZ || !positionX || !positionY) return;
 
-    meshRef.current?.scale.set(
-      lerp(x, scale, 0.2),
-      lerp(y, scale, 0.2),
-      lerp(z, scale, 0.2),
+    pivotRef.current?.scale.set(
+      lerp(scaleX, targetScale, 0.2),
+      lerp(scaleY, targetScale, 0.2),
+      lerp(scaleZ, targetScale, 0.2),
+    );
+    pivotRef.current?.position.set(
+      lerp(positionX, width / 2 + targetPositionOffsetX, 0.2),
+      lerp(positionY, -height / 2 + targetPositionOffsetY, 0.2),
+      0,
     );
   });
 
@@ -84,18 +107,39 @@ function CarouselImage({
   const z = Math.cos(angle) * radius;
 
   return (
-    <mesh
-      position={[x, height / 2, z]}
-      rotation={[0, angle + Math.PI / 2, 0]}
-      ref={meshRef}
-    >
-      <planeGeometry args={[width, height]} />
-      <meshBasicMaterial
-        map={texture}
-        toneMapped={false}
-        side={THREE.DoubleSide}
-      />
-    </mesh>
+    <group position={[x, height / 2, z]} rotation={[0, angle + Math.PI / 2, 0]}>
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: R3F raycast events bubble from child mesh */}
+      <group
+        position={[width / 2, -height / 2, 0]}
+        ref={pivotRef}
+        onPointerEnter={(event) => {
+          event.stopPropagation();
+          setHovered(true);
+          gl.domElement.style.cursor = "pointer";
+        }}
+        onPointerLeave={(event) => {
+          event.stopPropagation();
+          setHovered(false);
+          gl.domElement.style.cursor = "auto";
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (!active) {
+            onSelect(index);
+            return;
+          }
+        }}
+      >
+        <mesh position={[-width / 2, height / 2, 0]}>
+          <planeGeometry args={[width, height]} />
+          <meshBasicMaterial
+            map={texture}
+            toneMapped={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </group>
+    </group>
   );
 }
 
@@ -204,6 +248,25 @@ export function DiscCarouselScene() {
   );
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const syncActiveIndex = useCallback(() => {
+    const index =
+      ((Math.round(activeIndexRef.current) % ITEM_COUNT) + ITEM_COUNT) %
+      ITEM_COUNT;
+    setActiveIndex(index);
+  }, []);
+
+  const selectIndex = useCallback(
+    (index: number) => {
+      activeIndexRef.current += shortestIndexDelta(
+        activeIndexRef.current,
+        index,
+        ITEM_COUNT,
+      );
+      syncActiveIndex();
+    },
+    [syncActiveIndex],
+  );
+
   useEffect(() => {
     const texture = createRadialLinesTexture(CAROUSEL_IMAGES);
     setLineTexture(texture);
@@ -215,14 +278,6 @@ export function DiscCarouselScene() {
 
   useEffect(() => {
     const canvas = gl.domElement;
-
-    const syncActiveIndex = () => {
-      // index can be negetive
-      const index =
-        ((Math.round(activeIndexRef.current) % ITEM_COUNT) + ITEM_COUNT) %
-        ITEM_COUNT;
-      setActiveIndex(index);
-    };
 
     const handlePointerDown = (event: PointerEvent) => {
       isDraggingRef.current = true;
@@ -271,7 +326,7 @@ export function DiscCarouselScene() {
       canvas.removeEventListener("pointermove", handlePointerMove);
       canvas.removeEventListener("wheel", handleWheel);
     };
-  }, [gl]);
+  }, [gl, syncActiveIndex]);
 
   useFrame((_, delta) => {
     camera.lookAt(new THREE.Vector3());
@@ -302,6 +357,8 @@ export function DiscCarouselScene() {
               width={IMAGE_WIDTH}
               radius={CAROUSEL_RADIUS}
               active={index === activeIndex}
+              index={index}
+              onSelect={selectIndex}
             />
           ))}
           {lineTexture && <CarouselLines lineTexture={lineTexture} />}
