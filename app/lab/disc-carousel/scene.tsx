@@ -4,13 +4,13 @@ import { Line, PerspectiveCamera, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { CAROUSEL_IMAGES, CAROUSEL_IMAGE_SRCS } from "./images";
+import { lerp } from "@/lib/math";
+import { CAROUSEL_IMAGE_SRCS, CAROUSEL_IMAGES } from "./images";
 import {
   createAngleLabelTexture,
   drawAngleLabel,
 } from "./lib/angle-label-texture";
 import { createRadialLinesTexture } from "./lib/line-texture";
-import { lerp } from "@/lib/math";
 
 const ANGLE_LABEL_WIDTH = 0.44;
 const ANGLE_LABEL_HEIGHT = 0.22;
@@ -62,7 +62,7 @@ function CarouselImage({
   const meshRef = useRef<THREE.Mesh>(null);
 
   useFrame(() => {
-    const scale = active ? 1.1 : 1;
+    const scale = active ? 1.2 : 1;
 
     const x = meshRef.current?.scale.x;
     const y = meshRef.current?.scale.y;

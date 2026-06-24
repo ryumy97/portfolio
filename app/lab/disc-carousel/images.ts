@@ -58,4 +58,6 @@ export const CAROUSEL_IMAGES = Array.from(
   () => TYPOGRAPHY_CAROUSEL_ITEMS,
 ).flat() as CarouselImageItem[];
 
-export const CAROUSEL_IMAGE_SRCS = CAROUSEL_IMAGES.map((item) => item.image.src);
+export const CAROUSEL_IMAGE_SRCS = CAROUSEL_IMAGES.map(
+  (item) => item.image.src,
+);

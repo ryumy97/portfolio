@@ -8,7 +8,7 @@ export default function DiscCarouselPage() {
     <LabPageLayout
       title="Disc Carousel"
       description="Typography stills on planes revolving around the Y axis."
-      sidebar={<></>}
+      sidebar={null}
     >
       <DiscCarouselCanvas />
     </LabPageLayout>
