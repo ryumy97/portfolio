@@ -10,6 +10,7 @@ import {
   drawAngleLabel,
 } from "./lib/angle-label-texture";
 import { createRadialLinesTexture } from "./lib/line-texture";
+import { lerp } from "@/lib/math";
 
 const ANGLE_LABEL_WIDTH = 0.44;
 const ANGLE_LABEL_HEIGHT = 0.22;
@@ -50,12 +51,32 @@ function CarouselImage({
   angle,
   width,
   radius,
+  active,
 }: {
   texture: THREE.Texture;
   angle: number;
   width: number;
   radius: number;
+  active: boolean;
 }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  useFrame(() => {
+    const scale = active ? 1.1 : 1;
+
+    const x = meshRef.current?.scale.x;
+    const y = meshRef.current?.scale.y;
+    const z = meshRef.current?.scale.z;
+
+    if (!x || !y || !z) return;
+
+    meshRef.current?.scale.set(
+      lerp(x, scale, 0.2),
+      lerp(y, scale, 0.2),
+      lerp(z, scale, 0.2),
+    );
+  });
+
   const image = texture.image as HTMLImageElement;
   const aspect = image.width / image.height;
   const height = width * aspect;
@@ -63,7 +84,11 @@ function CarouselImage({
   const z = Math.cos(angle) * radius;
 
   return (
-    <mesh position={[x, height / 2, z]} rotation={[0, angle + Math.PI / 2, 0]}>
+    <mesh
+      position={[x, height / 2, z]}
+      rotation={[0, angle + Math.PI / 2, 0]}
+      ref={meshRef}
+    >
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial
         map={texture}
@@ -166,6 +191,7 @@ export function DiscCarouselScene() {
   const activeIndexRef = useRef(0);
   const realIndexRef = useRef(0);
   const pointerIndexAccumRef = useRef(0);
+
   const { gl, camera } = useThree();
   const textures = useTexture(CAROUSEL_IMAGE_SRCS, (textures) => {
     textures.forEach((texture) => {
@@ -176,6 +202,7 @@ export function DiscCarouselScene() {
   const [lineTexture, setLineTexture] = useState<THREE.CanvasTexture | null>(
     null,
   );
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const texture = createRadialLinesTexture(CAROUSEL_IMAGES);
@@ -188,6 +215,14 @@ export function DiscCarouselScene() {
 
   useEffect(() => {
     const canvas = gl.domElement;
+
+    const syncActiveIndex = () => {
+      // index can be negetive
+      const index =
+        ((Math.round(activeIndexRef.current) % ITEM_COUNT) + ITEM_COUNT) %
+        ITEM_COUNT;
+      setActiveIndex(index);
+    };
 
     const handlePointerDown = (event: PointerEvent) => {
       isDraggingRef.current = true;
@@ -212,12 +247,15 @@ export function DiscCarouselScene() {
 
       activeIndexRef.current += stepped;
       pointerIndexAccumRef.current -= stepped;
+
+      syncActiveIndex();
     };
 
     const handleWheel = (event: WheelEvent) => {
       activeIndexRef.current -= Math.trunc(
         (event.deltaY * DRAG_SENSITIVITY) / STEP_ANGLE,
       );
+      syncActiveIndex();
     };
 
     canvas.addEventListener("pointerdown", handlePointerDown);
@@ -263,6 +301,7 @@ export function DiscCarouselScene() {
               angle={(index / textures.length) * Math.PI * 2}
               width={IMAGE_WIDTH}
               radius={CAROUSEL_RADIUS}
+              active={index === activeIndex}
             />
           ))}
           {lineTexture && <CarouselLines lineTexture={lineTexture} />}
