@@ -7,7 +7,7 @@ export default function DiscCarouselPage() {
   return (
     <LabPageLayout
       title="Disc Carousel"
-      description="Typography stills on planes revolving around the Y axis."
+      description="Portfolio project stills on planes revolving around the Y axis."
       sidebar={null}
     >
       <DiscCarouselCanvas />

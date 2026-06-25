@@ -20,12 +20,83 @@ const IMAGE_WIDTH = 1.6;
 const CAROUSEL_RADIUS = 2.5;
 const DRAG_SENSITIVITY = 0.005;
 const INDEX_LERP_SPEED = 10;
+const MOTION_LERP_SPEED = 10;
 const LINE_LENGTH = 4;
 const LINES_START = CAROUSEL_RADIUS * 2 - IMAGE_WIDTH;
 const LINES_END = CAROUSEL_RADIUS * 2 + IMAGE_WIDTH + LINE_LENGTH;
 const ITEM_COUNT = CAROUSEL_IMAGE_SRCS.length;
 const STEP_ANGLE = (Math.PI * 2) / ITEM_COUNT;
+const ENLARGED_CAMERA_DISTANCE = 5;
+const DETACH_THRESHOLD = 0.02;
 export const LINES_RATIO = LINES_START / LINES_END;
+
+const _targetWorld = new THREE.Vector3();
+const _cameraDirection = new THREE.Vector3();
+const _restWorldPosition = new THREE.Vector3();
+const _restWorldQuaternion = new THREE.Quaternion();
+const _restLocalMatrix = new THREE.Matrix4();
+const _restLocalQuaternion = new THREE.Quaternion();
+const _restLocalScale = new THREE.Vector3();
+const _lookAtHelper = new THREE.Object3D();
+const _targetQuaternion = new THREE.Quaternion();
+const _slerpTargetQuaternion = new THREE.Quaternion();
+const _zeroVector = new THREE.Vector3();
+
+type OriginalTransform = {
+  slot: {
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    scale: THREE.Vector3;
+  };
+  pivot: {
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    scale: THREE.Vector3;
+  };
+  mesh: {
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    scale: THREE.Vector3;
+  };
+};
+
+function expLerpFactor(speed: number, delta: number) {
+  return 1 - Math.exp(-speed * delta);
+}
+
+function getRestWorldTransform(
+  parent: THREE.Object3D,
+  localPosition: THREE.Vector3,
+  localRotation: THREE.Euler,
+  targetPosition: THREE.Vector3,
+  targetQuaternion: THREE.Quaternion,
+) {
+  _restLocalQuaternion.setFromEuler(localRotation);
+  _restLocalScale.set(1, 1, 1);
+  _restLocalMatrix.compose(
+    localPosition,
+    _restLocalQuaternion,
+    _restLocalScale,
+  );
+  _restLocalMatrix.premultiply(parent.matrixWorld);
+  targetPosition.setFromMatrixPosition(_restLocalMatrix);
+  targetQuaternion.setFromRotationMatrix(_restLocalMatrix);
+}
+
+function getCameraFrontTransform(
+  camera: THREE.Camera,
+  targetPosition: THREE.Vector3,
+  targetQuaternion: THREE.Quaternion,
+) {
+  camera.getWorldDirection(_cameraDirection);
+  targetPosition
+    .copy(camera.position)
+    .addScaledVector(_cameraDirection, ENLARGED_CAMERA_DISTANCE);
+
+  _lookAtHelper.position.copy(targetPosition);
+  _lookAtHelper.lookAt(camera.position);
+  targetQuaternion.copy(_lookAtHelper.quaternion);
+}
 
 function shortestIndexDelta(from: number, to: number, count: number) {
   const half = count / 2;
@@ -33,6 +104,27 @@ function shortestIndexDelta(from: number, to: number, count: number) {
   if (delta > half) delta -= count;
   else if (delta < -half) delta += count;
   return delta;
+}
+
+function lerpAngleShortest(from: number, to: number, t: number) {
+  let delta = to - from;
+  delta = (((delta % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+  return from + delta * t;
+}
+
+function slerpQuaternionShortest(
+  from: THREE.Quaternion,
+  to: THREE.Quaternion,
+  t: number,
+  out: THREE.Quaternion,
+) {
+  if (from.dot(to) < 0) {
+    _slerpTargetQuaternion.set(-to.x, -to.y, -to.z, -to.w);
+    out.copy(from).slerp(_slerpTargetQuaternion, t);
+    return;
+  }
+
+  out.copy(from).slerp(to, t);
 }
 
 function formatRotationDegrees(radians: number) {
@@ -62,6 +154,7 @@ function CarouselImage({
   active,
   index,
   onSelect,
+  enlarged,
 }: {
   texture: THREE.Texture;
   angle: number;
@@ -70,48 +163,218 @@ function CarouselImage({
   active: boolean;
   index: number;
   onSelect: (index: number) => void;
+  enlarged: boolean;
 }) {
-  const pivotRef = useRef<THREE.Group>(null);
-  const [hovered, setHovered] = useState(false);
-  const { gl } = useThree();
+  const image = texture.image as HTMLImageElement;
+  const imageWidth = image.naturalWidth || image.width || 1;
+  const imageHeight = image.naturalHeight || image.height || 1;
+  const height = width * (imageHeight / imageWidth);
 
-  useFrame(() => {
+  const x = Math.sin(angle) * radius;
+  const z = Math.cos(angle) * radius;
+
+  const slotRef = useRef<THREE.Group>(null);
+  const pivotRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const carouselParentRef = useRef<THREE.Object3D | null>(null);
+  const originalRef = useRef<OriginalTransform>({
+    slot: {
+      position: new THREE.Vector3(x, height / 2, z),
+      rotation: new THREE.Euler(0, angle + Math.PI / 2, 0),
+      scale: new THREE.Vector3(1, 1, 1),
+    },
+    pivot: {
+      position: new THREE.Vector3(width / 2 - 0.3, -height / 2 + 0.3, 0),
+      rotation: new THREE.Euler(0, 0, 0),
+      scale: new THREE.Vector3(1.25, 1.25, 1.25),
+    },
+    mesh: {
+      position: new THREE.Vector3(-width / 2, height / 2, 0),
+      rotation: new THREE.Euler(0, 0, 0),
+      scale: new THREE.Vector3(1, 1, 1),
+    },
+  });
+  const isDetachedRef = useRef(false);
+  const [hovered, setHovered] = useState(false);
+  const { gl, camera, scene } = useThree();
+
+  const restPosition = useRef(new THREE.Vector3(x, height / 2, z));
+  const restRotation = useRef(new THREE.Euler(0, angle + Math.PI / 2, 0));
+
+  restPosition.current.set(x, height / 2, z);
+  restRotation.current.set(0, angle + Math.PI / 2, 0);
+
+  useEffect(() => {
+    const slot = slotRef.current;
+    const pivot = pivotRef.current;
+    const mesh = meshRef.current;
+    if (!slot || !pivot || !mesh || !enlarged || isDetachedRef.current) return;
+
+    carouselParentRef.current = slot.parent;
+
+    // originalRef.current.slot.rotation.set(0, angle + Math.PI / 2, 0);
+
+    scene.attach(slot);
+    isDetachedRef.current = true;
+  }, [enlarged, scene]);
+
+  useFrame((_, delta) => {
+    const slot = slotRef.current;
+    const pivot = pivotRef.current;
+    const mesh = meshRef.current;
+    if (!slot || !pivot || !mesh) return;
+
+    const t = expLerpFactor(MOTION_LERP_SPEED, delta);
+    const pivotRestX = width / 2;
+    const pivotRestY = -height / 2;
+
+    if (isDetachedRef.current) {
+      const carouselParent = carouselParentRef.current;
+      const original = originalRef.current;
+      if (!carouselParent || !original) return;
+
+      carouselParent.updateWorldMatrix(true, false);
+      getRestWorldTransform(
+        carouselParent,
+        original.slot.position,
+        original.slot.rotation,
+        _restWorldPosition,
+        _restWorldQuaternion,
+      );
+      getCameraFrontTransform(camera, _targetWorld, _targetQuaternion);
+
+      const targetPosition = enlarged ? _targetWorld : _restWorldPosition;
+      const targetQuaternion = enlarged
+        ? _targetQuaternion
+        : _restWorldQuaternion;
+      const targetPivotPosition = enlarged
+        ? _zeroVector
+        : original.pivot.position;
+      const targetPivotScale = enlarged ? 1 : original.pivot.scale.x;
+      const targetMeshPosition = enlarged
+        ? _zeroVector
+        : original.mesh.position;
+
+      slot.position.lerp(targetPosition, t);
+      slerpQuaternionShortest(
+        slot.quaternion,
+        targetQuaternion,
+        t,
+        slot.quaternion,
+      );
+      slot.renderOrder = enlarged ? 1 : 0;
+
+      pivot.scale.set(
+        lerp(pivot.scale.x, targetPivotScale, t),
+        lerp(pivot.scale.y, targetPivotScale, t),
+        lerp(pivot.scale.z, targetPivotScale, t),
+      );
+      pivot.position.set(
+        lerp(pivot.position.x, targetPivotPosition.x, t),
+        lerp(pivot.position.y, targetPivotPosition.y, t),
+        lerp(pivot.position.z, targetPivotPosition.z, t),
+      );
+      pivot.rotation.x = lerpAngleShortest(
+        pivot.rotation.x,
+        enlarged ? 0 : original.pivot.rotation.x,
+        t,
+      );
+      pivot.rotation.y = lerpAngleShortest(
+        pivot.rotation.y,
+        enlarged ? 0 : original.pivot.rotation.y,
+        t,
+      );
+      pivot.rotation.z = lerpAngleShortest(
+        pivot.rotation.z,
+        enlarged ? 0 : original.pivot.rotation.z,
+        t,
+      );
+      mesh.position.set(
+        lerp(mesh.position.x, targetMeshPosition.x, t),
+        lerp(mesh.position.y, targetMeshPosition.y, t),
+        lerp(mesh.position.z, targetMeshPosition.z, t),
+      );
+      mesh.rotation.x = lerpAngleShortest(
+        mesh.rotation.x,
+        enlarged ? 0 : original.mesh.rotation.x,
+        t,
+      );
+      mesh.rotation.y = lerpAngleShortest(
+        mesh.rotation.y,
+        enlarged ? 0 : original.mesh.rotation.y,
+        t,
+      );
+      mesh.rotation.z = lerpAngleShortest(
+        mesh.rotation.z,
+        enlarged ? 0 : original.mesh.rotation.z,
+        t,
+      );
+
+      if (
+        !enlarged &&
+        slot.position.distanceTo(_restWorldPosition) < DETACH_THRESHOLD
+      ) {
+        carouselParent.attach(slot);
+        slot.position.copy(original.slot.position);
+        slot.rotation.copy(original.slot.rotation);
+        slot.scale.copy(original.slot.scale);
+        pivot.position.copy(original.pivot.position);
+        pivot.rotation.copy(original.pivot.rotation);
+        pivot.scale.copy(original.pivot.scale);
+        mesh.position.copy(original.mesh.position);
+        mesh.rotation.copy(original.mesh.rotation);
+        mesh.scale.copy(original.mesh.scale);
+        isDetachedRef.current = false;
+      }
+
+      return;
+    }
+
+    slot.renderOrder = 0;
+
     const targetScale = active ? (hovered ? 1.25 : 1.2) : hovered ? 1.1 : 1;
     const targetPositionOffsetX = active && hovered ? -0.3 : 0;
     const targetPositionOffsetY = active && hovered ? 0.3 : 0;
 
-    const scaleX = pivotRef.current?.scale.x;
-    const scaleY = pivotRef.current?.scale.y;
-    const scaleZ = pivotRef.current?.scale.z;
-    const positionX = pivotRef.current?.position.x;
-    const positionY = pivotRef.current?.position.y;
-
-    if (!scaleX || !scaleY || !scaleZ || !positionX || !positionY) return;
-
-    pivotRef.current?.scale.set(
-      lerp(scaleX, targetScale, 0.2),
-      lerp(scaleY, targetScale, 0.2),
-      lerp(scaleZ, targetScale, 0.2),
+    slot.position.lerp(restPosition.current, t);
+    slot.rotation.x = lerpAngleShortest(
+      slot.rotation.x,
+      restRotation.current.x,
+      t,
     );
-    pivotRef.current?.position.set(
-      lerp(positionX, width / 2 + targetPositionOffsetX, 0.2),
-      lerp(positionY, -height / 2 + targetPositionOffsetY, 0.2),
+    slot.rotation.y = lerpAngleShortest(
+      slot.rotation.y,
+      restRotation.current.y,
+      t,
+    );
+    slot.rotation.z = lerpAngleShortest(
+      slot.rotation.z,
+      restRotation.current.z,
+      t,
+    );
+
+    pivot.scale.set(
+      lerp(pivot.scale.x, targetScale, t),
+      lerp(pivot.scale.y, targetScale, t),
+      lerp(pivot.scale.z, targetScale, t),
+    );
+    pivot.position.set(
+      lerp(pivot.position.x, pivotRestX + targetPositionOffsetX, t),
+      lerp(pivot.position.y, pivotRestY + targetPositionOffsetY, t),
       0,
     );
   });
 
-  const image = texture.image as HTMLImageElement;
-  const aspect = image.width / image.height;
-  const height = width * aspect;
-  const x = Math.sin(angle) * radius;
-  const z = Math.cos(angle) * radius;
-
   return (
-    <group position={[x, height / 2, z]} rotation={[0, angle + Math.PI / 2, 0]}>
+    <group
+      ref={slotRef}
+      position={[x, height / 2, z]}
+      rotation={[0, angle + Math.PI / 2, 0]}
+    >
       {/* biome-ignore lint/a11y/noStaticElementInteractions: R3F raycast events bubble from child mesh */}
       <group
-        position={[width / 2, -height / 2, 0]}
         ref={pivotRef}
+        position={[width / 2, -height / 2, 0]}
         onPointerEnter={(event) => {
           event.stopPropagation();
           setHovered(true);
@@ -124,13 +387,14 @@ function CarouselImage({
         }}
         onClick={(event) => {
           event.stopPropagation();
-          if (!active) {
-            onSelect(index);
-            return;
-          }
+          onSelect(index);
         }}
       >
-        <mesh position={[-width / 2, height / 2, 0]}>
+        <mesh
+          ref={meshRef}
+          position={[-width / 2, height / 2, 0]}
+          renderOrder={enlarged ? 1 : 0}
+        >
           <planeGeometry args={[width, height]} />
           <meshBasicMaterial
             map={texture}
@@ -228,7 +492,11 @@ function ReferenceLine({
   );
 }
 
-export function DiscCarouselScene() {
+export function DiscCarouselScene({
+  onRegisterUnselect,
+}: {
+  onRegisterUnselect?: (unselect: (() => void) | null) => void;
+} = {}) {
   const groupRef = useRef<THREE.Group>(null);
   const isDraggingRef = useRef(false);
   const lastPointerXRef = useRef(0);
@@ -247,6 +515,9 @@ export function DiscCarouselScene() {
     null,
   );
   const [activeIndex, setActiveIndex] = useState(0);
+  const [enlargedIndex, setEnlargedIndex] = useState<number | null>(null);
+  const enlargedIndexRef = useRef<number | null>(null);
+  enlargedIndexRef.current = enlargedIndex;
 
   const syncActiveIndex = useCallback(() => {
     const index =
@@ -255,17 +526,32 @@ export function DiscCarouselScene() {
     setActiveIndex(index);
   }, []);
 
+  const unselect = useCallback(() => {
+    setEnlargedIndex(null);
+  }, []);
+
   const selectIndex = useCallback(
     (index: number) => {
+      if (enlargedIndexRef.current === index) {
+        unselect();
+        return;
+      }
+
       activeIndexRef.current += shortestIndexDelta(
         activeIndexRef.current,
         index,
         ITEM_COUNT,
       );
       syncActiveIndex();
+      setEnlargedIndex(index);
     },
-    [syncActiveIndex],
+    [syncActiveIndex, unselect],
   );
+
+  useEffect(() => {
+    onRegisterUnselect?.(unselect);
+    return () => onRegisterUnselect?.(null);
+  }, [onRegisterUnselect, unselect]);
 
   useEffect(() => {
     const texture = createRadialLinesTexture(CAROUSEL_IMAGES);
@@ -300,6 +586,7 @@ export function DiscCarouselScene() {
       const stepped = Math.trunc(pointerIndexAccumRef.current);
       if (stepped === 0) return;
 
+      if (enlargedIndexRef.current !== null) unselect();
       activeIndexRef.current += stepped;
       pointerIndexAccumRef.current -= stepped;
 
@@ -307,6 +594,7 @@ export function DiscCarouselScene() {
     };
 
     const handleWheel = (event: WheelEvent) => {
+      if (enlargedIndexRef.current !== null) unselect();
       activeIndexRef.current -= Math.trunc(
         (event.deltaY * DRAG_SENSITIVITY) / STEP_ANGLE,
       );
@@ -326,7 +614,7 @@ export function DiscCarouselScene() {
       canvas.removeEventListener("pointermove", handlePointerMove);
       canvas.removeEventListener("wheel", handleWheel);
     };
-  }, [gl, syncActiveIndex]);
+  }, [gl, syncActiveIndex, unselect]);
 
   useFrame((_, delta) => {
     camera.lookAt(new THREE.Vector3());
@@ -359,6 +647,7 @@ export function DiscCarouselScene() {
               active={index === activeIndex}
               index={index}
               onSelect={selectIndex}
+              enlarged={index === enlargedIndex}
             />
           ))}
           {lineTexture && <CarouselLines lineTexture={lineTexture} />}

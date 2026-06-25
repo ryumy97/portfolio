@@ -1,4 +1,5 @@
 import { Canvas } from "@react-three/fiber";
+import { useRef } from "react";
 import { DiscCarouselScene } from "./scene";
 
 const DebugCanvasTexture = () => {
@@ -11,13 +12,20 @@ const DebugCanvasTexture = () => {
 };
 
 const DiscCarouselCanvas = () => {
+  const unselectRef = useRef<(() => void) | null>(null);
+
   return (
     <>
       <Canvas
         className="absolute inset-0 h-full w-full touch-none"
         frameloop="always"
+        onPointerMissed={() => unselectRef.current?.()}
       >
-        <DiscCarouselScene />
+        <DiscCarouselScene
+          onRegisterUnselect={(unselect) => {
+            unselectRef.current = unselect;
+          }}
+        />
       </Canvas>
       <DebugCanvasTexture />
     </>
