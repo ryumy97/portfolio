@@ -35,7 +35,7 @@ function LabList({ labs }: { labs: readonly LabEntry[] }) {
   return (
     <SubGrid className="col-span-full gap-y-4">
       {labs.map((lab) => (
-        <div key={lab.href} className="col-span-1 pr-[1vw] mt-2">
+        <div key={lab.href} className="col-span-5 md:col-span-1 pr-[1vw] mt-2">
           <LabLink {...lab} />
         </div>
       ))}
