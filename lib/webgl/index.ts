@@ -13,6 +13,13 @@ export {
 } from "./constants";
 export { getWebGLContext } from "./context";
 export {
+  bindFramebuffer,
+  createFramebuffer,
+  deleteFramebuffer,
+  type FramebufferTarget,
+  resizeFramebuffer,
+} from "./framebuffer";
+export {
   buildCellQuadVerts,
   type CellRect,
   createFullscreenTriangleBuffer,
@@ -30,6 +37,8 @@ export {
   getOptimizedImageSrc,
   loadImage,
   loadOptimizedImages,
+  updateTextureFromCanvas,
+  uploadTextureFromCanvas,
   uploadTextureFromImage,
 } from "./texture";
 export { setResolutionUniform } from "./uniforms";

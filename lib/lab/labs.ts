@@ -53,6 +53,7 @@ export const LAB_CATEGORIES = [
   {
     title: "WebGL shaders",
     labs: [
+      { href: "/lab/thermal-blur", title: "Thermal Blur" },
       { href: "/lab/cmyk", title: "CMYK" },
       { href: "/lab/neighbor", title: "Neighbor" },
       { href: "/lab/ripple-dots", title: "Ripple Dots" },
