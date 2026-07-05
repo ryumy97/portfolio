@@ -66,6 +66,7 @@ export const LAB_CATEGORIES = [
     labs: [
       { href: "/lab/image-bubble", title: "Image Bubble" },
       { href: "/lab/sticky-note", title: "Sticky Note" },
+      { href: "/lab/net", title: "Net" },
     ],
   },
 ] as const satisfies readonly LabCategory[];
