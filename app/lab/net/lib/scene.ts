@@ -1,10 +1,10 @@
 import {
+  type BoundaryLines,
   boundaryFromMargins,
   computeGridDimensions,
   diamondNodePosition,
   drawBoundary,
   Line,
-  type BoundaryLines,
 } from "./boundary";
 import { LINE_HANDLES, type LineHandle } from "./line-handle";
 import { Link } from "./link";

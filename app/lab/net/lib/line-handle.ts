@@ -1,6 +1,5 @@
 import type { BoundaryLines } from "./boundary";
-import type { Line } from "./line";
-import type { Point } from "./line";
+import type { Line, Point } from "./line";
 
 export type BoundaryEdge = keyof BoundaryLines;
 export type LineHandleKind = "start" | "end" | "control1" | "control2";

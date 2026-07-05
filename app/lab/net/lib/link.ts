@@ -16,15 +16,9 @@ const distanceToSegment = (a: Point, b: Point, point: Point) => {
 
   const t = Math.max(
     0,
-    Math.min(
-      1,
-      ((point.x - a.x) * dx + (point.y - a.y) * dy) / lenSq,
-    ),
+    Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / lenSq),
   );
-  return distance(
-    { x: a.x + dx * t, y: a.y + dy * t },
-    point,
-  );
+  return distance({ x: a.x + dx * t, y: a.y + dy * t }, point);
 };
 
 function solveBetween(
@@ -160,19 +154,10 @@ export class Link {
       const t = index / samples;
       const u = 1 - t;
       const point = {
-        x:
-          u * u * this.a.x +
-          2 * u * t * this.mx +
-          t * t * this.b.x,
-        y:
-          u * u * this.a.y +
-          2 * u * t * this.my +
-          t * t * this.b.y,
+        x: u * u * this.a.x + 2 * u * t * this.mx + t * t * this.b.x,
+        y: u * u * this.a.y + 2 * u * t * this.my + t * t * this.b.y,
       };
-      minDist = Math.min(
-        minDist,
-        distanceToSegment(previous, point, { x, y }),
-      );
+      minDist = Math.min(minDist, distanceToSegment(previous, point, { x, y }));
       previous = point;
     }
 
