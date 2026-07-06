@@ -141,7 +141,7 @@ export class Link {
     ctx.beginPath();
     ctx.moveTo(this.a.x, this.a.y);
     ctx.quadraticCurveTo(this.mx, this.my, this.b.x, this.b.y);
-    ctx.strokeStyle = "#ffffff";
+    ctx.strokeStyle = "#1e1e1e";
     ctx.lineWidth = 1;
     ctx.stroke();
   }

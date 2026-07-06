@@ -12,11 +12,11 @@ import {
   advanceOrbitingParticles,
   buildTrajectoryTailGeometry,
   getRotationAxis,
-  sampleAngularSpeedFactors,
-  sampleSphereSurface,
   SPHERE_VORTEX_BACKGROUND,
   SPHERE_VORTEX_DEFAULTS,
   type SphereVortexConfig,
+  sampleAngularSpeedFactors,
+  sampleSphereSurface,
 } from "./lib/sphere-particles";
 
 const CAMERA_ROTATION: [number, number, number] = [0, 0, 0];

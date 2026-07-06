@@ -1,6 +1,6 @@
+import { transform } from "motion";
 import * as THREE from "three";
 import { sampleGeometrySurface } from "@/lib/three/sample-geometry-surface";
-import { transform } from "motion";
 
 export const SPHERE_VORTEX_DEFAULTS = {
   count: 50,

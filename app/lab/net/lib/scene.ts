@@ -282,7 +282,7 @@ export class Scene {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = "#f9f8f5";
     ctx.fillRect(0, 0, this.width, this.height);
 
     for (const link of this.links) {
