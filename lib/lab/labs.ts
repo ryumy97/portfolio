@@ -28,6 +28,7 @@ export const LAB_CATEGORIES = [
       {
         title: "Scene",
         labs: [
+          { href: "/lab/sphere-vortex", title: "Sphere Vortex" },
           {
             href: "/lab/particle-morphing/image",
             title: "Particles - Image Morph",
