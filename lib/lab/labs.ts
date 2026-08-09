@@ -60,6 +60,7 @@ export const LAB_CATEGORIES = [
       { href: "/lab/ripple-dots", title: "Ripple Dots" },
       { href: "/lab/ripple-gradient", title: "Ripple Gradient" },
       { href: "/lab/pixelation", title: "Pixelation" },
+      { href: "/lab/pixel-stretch", title: "Pixel Stretch" },
     ],
   },
   {
