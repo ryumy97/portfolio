@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { CanvasLoader } from "@/components/canvas-loader";
+import { cn } from "@/lib/utils";
 import {
   CANVAS_STYLE,
   createFullscreenTriangleBuffer,
@@ -24,7 +25,6 @@ import {
   setResolutionUniform,
   uploadTextureFromImage,
 } from "@/lib/webgl";
-import { cn } from "@/lib/utils";
 
 export type StretchPoint = { x: number; y: number };
 
