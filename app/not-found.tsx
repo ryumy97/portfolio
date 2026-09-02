@@ -7,7 +7,7 @@ import Foreground from "./notfound/foreground";
 export default function NotFoundPage() {
   return (
     <PageTunnelIn>
-      <Grid className="min-h-screen pt-20">
+      <Grid className="min-h-svh pt-20">
         <Background />
         <Foreground />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

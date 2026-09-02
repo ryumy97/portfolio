@@ -153,7 +153,7 @@ const Header = () => {
             exit={"hidden"}
             variants={{
               hidden: { height: 0 },
-              visible: { height: "100vh" },
+              visible: { height: "100svh" },
             }}
             transition={{ duration: 0.6, ease: cubicBezier(0.3, 0, 0, 1) }}
           >

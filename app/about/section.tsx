@@ -4,23 +4,27 @@ import { PointerEventHandler } from "@/components/pointer";
 import { CVHeading, CVLink, CVSubHeading } from "@/components/ui/typography";
 
 type Props = {
-  subtitle: string;
+  subtitle?: string;
   title: React.ReactNode;
-  link: string;
+  link?: string;
 } & React.PropsWithChildren;
 
 const Section: React.FC<Props> = ({ subtitle, title, link, children }) => {
   return (
     <div className="max-w-[100vw] md:max-w-[30vw] w-full">
-      <CVSubHeading className="text-primary">{subtitle}</CVSubHeading>
+      {subtitle ? (
+        <CVSubHeading className="text-primary">{subtitle}</CVSubHeading>
+      ) : null}
       <CVHeading>{title}</CVHeading>
-      <PointerEventHandler asChild type="underline">
-        <CVLink asChild>
-          <Link href={link} target="_blank">
-            {link}
-          </Link>
-        </CVLink>
-      </PointerEventHandler>
+      {link ? (
+        <PointerEventHandler asChild type="underline">
+          <CVLink asChild>
+            <Link href={link} target="_blank">
+              {link}
+            </Link>
+          </CVLink>
+        </PointerEventHandler>
+      ) : null}
       {children}
     </div>
   );

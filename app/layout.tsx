@@ -34,7 +34,7 @@ export default function RootLayout({
       lang="en"
       className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased`}
     >
-      <body className="min-h-screen bg-background overflow-hidden pointer-events-auto">
+      <body className="min-h-svh bg-background overflow-hidden pointer-events-auto">
         {children}
         <Header />
         <PageTunnelOut />

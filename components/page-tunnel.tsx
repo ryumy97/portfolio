@@ -16,7 +16,7 @@ export const PageTunnelIn = ({ children }: { children: React.ReactNode }) => {
     <PageTunnel.In>
       <motion.div
         key={pathname}
-        className="absolute inset-0 bg-background h-screen w-full overflow-hidden origin-bottom"
+        className="absolute inset-0 bg-background h-svh w-full overflow-hidden origin-bottom"
         initial={
           state === "end"
             ? {

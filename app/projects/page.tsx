@@ -2,9 +2,11 @@ import { ArrowRightIcon } from "lucide-react";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, Title } from "@/components/ui/typography";
+import aimhigh from "./aimhigh/assets/main.png";
 import feastMode from "./feast-mode/assets/main.png";
 import fola from "./fola/assets/cards.png";
 import greenprint from "./greenprint/assets/vw.png";
+import heritage from "./heritage-new-zealand/assets/hero.png";
 import kiwi from "./kiwi/assets/main.png";
 import realWatergate from "./real-watergate/assets/ocean.png";
 import reflct from "./reflct/assets/main.png";
@@ -19,7 +21,7 @@ export default function Page2() {
           Scroll this way{" "}
           <ArrowRightIcon className="w-[min(max(2vw,16px),24px)]" />
         </PageDescription>
-        <main className="flex min-h-screen w-max items-center gap-[10vw] md:gap-[5vw] px-8">
+        <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
           <div className="md:max-w-[30vw] max-w-[100vw] w-screen">
             <Title className="">
               <div className="text-primary">Projects</div>
@@ -39,7 +41,12 @@ export default function Page2() {
           />
           {/* Kiwi */}
           <ListItemSection title="Kiwi" image={kiwi} link="/projects/kiwi" />
-          {/* Vault? */}
+          {/* Aim High */}
+          <ListItemSection
+            title="Aim High"
+            image={aimhigh}
+            link="/projects/aimhigh"
+          />
           {/* Fola */}
           <ListItemSection title="Fola" image={fola} link="/projects/fola" />
           {/* Greenprint */}
@@ -53,6 +60,12 @@ export default function Page2() {
             title="Real Watergate"
             image={realWatergate}
             link="/projects/real-watergate"
+          />
+          {/* Heritage New Zealand */}
+          <ListItemSection
+            title="Heritage NZ"
+            image={heritage}
+            link="/projects/heritage-new-zealand"
           />
           {/* Feast mode */}
           <ListItemSection

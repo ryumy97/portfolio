@@ -1,5 +1,5 @@
-import { Slot } from "radix-ui";
 import { cn } from "@/lib/utils";
+import { Slot } from "radix-ui";
 
 type Props = {
   className?: string;
@@ -153,7 +153,7 @@ export const CVHeading: React.FC<Props> = ({
   return (
     <Comp
       className={cn(
-        "text-[min(max(2vw,18px),20px)] leading-[1.25em] font-heading",
+        "text-[min(max(2vw,18px),20px)] leading-[1.25em] font-heading font-bold tracking-[-0.02em]",
         className,
       )}
     >
@@ -188,6 +188,25 @@ export const CVLink: React.FC<Props> = ({ children, className, asChild }) => {
     <Comp
       className={cn(
         "text-[min(max(1vw,12px),13px)] leading-[1.25em] italic text-secondary",
+        className,
+      )}
+    >
+      {children}
+    </Comp>
+  );
+};
+
+export const CVDescription: React.FC<Props> = ({
+  children,
+  className,
+  asChild,
+}) => {
+  const Comp = asChild ? Slot.Root : "p";
+
+  return (
+    <Comp
+      className={cn(
+        "text-[min(max(1vw,12px),13px)] leading-[1.5em]",
         className,
       )}
     >

@@ -17,7 +17,7 @@ export default async function Page() {
           <ArrowRightIcon className="w-[min(max(2vw,16px),24px)]" />
         </PageDescription>
 
-        <main className="flex min-h-screen w-max items-center gap-[10vw] md:gap-[5vw] px-8">
+        <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
           <div className="md:max-w-[30vw] max-w-[100vw] w-screen">
             <Title className="">
               <div className="text-primary">Gallery</div>

@@ -1,15 +1,12 @@
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
 import { PageTunnelIn } from "@/components/page-tunnel";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { PageDescription, PageLink, Title } from "@/components/ui/typography";
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 import { ImageSection, TextSection } from "../section";
-import kiwiHome from "./assets/image-1.png";
-import kiwiCorner from "./assets/image-2.png";
-import themeFruit from "./assets/image-3.png";
-import about from "./assets/image-4.png";
-import main from "./assets/main.png";
+import main from "./assets/aimhigh.png";
+import logo from "./assets/main.png";
 
 export default function Page() {
   return (
@@ -23,35 +20,30 @@ export default function Page() {
         <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
           <div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
             <Title className="">
-              <div className="">Kiwi</div>
-              <div className="text-primary mt-[0.3em]">- Personal · 2021</div>
+              <div className="">Aim High</div>
+              <div className="text-primary mt-[0.3em]">
+                Charitable Trust · 2020
+              </div>
             </Title>
             <PageLink className="w-full mt-[1em]">
               <PointerEventHandler asChild type="underline">
                 <Link
-                  href="https://kiwi.ryumy.com/"
+                  href="https://www.aimhightrust.co.nz/"
                   target="_blank"
                   className="text-secondary italic"
                 >
-                  https://kiwi.ryumy.com/
+                  https://www.aimhightrust.co.nz/
                 </Link>
               </PointerEventHandler>
             </PageLink>
           </div>
 
-          <TextSection text="A simple interactive environment built without any external libraries — vanilla JS, CSS, and a bit of physics." />
+          <TextSection text="A content website for a charity. The aim of this project was for non-developers to maintain the website." />
 
-          <ImageSection image={main} />
+          <ImageSection image={logo} type="default" />
+          <ImageSection image={main} type="desktop" />
 
-          <TextSection text="The kiwi is a circle you can grab and throw around. Colour palettes and patterns re-skin the same shape — as a bird or a fruit." />
-
-          <ImageSection image={kiwiHome} />
-          <ImageSection image={kiwiCorner} />
-          <ImageSection image={themeFruit} />
-
-          <TextSection text="Kiwi is an interesting word — a bird or a fruit. The project holds that ambiguity in one playful container you can move through a simple physical space." />
-
-          <ImageSection image={about} />
+          <TextSection text="Using WordPress CMS, staff can update pages, and post blog posts without a developer in the loop." />
 
           <div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
             <Title className="">
@@ -61,22 +53,11 @@ export default function Page() {
             <PageLink className="w-full mt-[2em]">
               <PointerEventHandler asChild type="underline">
                 <Link
-                  href="https://kiwi.ryumy.com/"
+                  href="https://www.aimhightrust.co.nz/"
                   target="_blank"
                   className="text-secondary italic"
                 >
-                  https://kiwi.ryumy.com/
-                </Link>
-              </PointerEventHandler>
-            </PageLink>
-            <PageLink className="w-full mt-[0.5em]">
-              <PointerEventHandler asChild type="underline">
-                <Link
-                  href="https://github.com/ryumy97/kiwi"
-                  target="_blank"
-                  className="text-secondary italic"
-                >
-                  https://github.com/ryumy97/kiwi
+                  https://www.aimhightrust.co.nz/
                 </Link>
               </PointerEventHandler>
             </PageLink>
