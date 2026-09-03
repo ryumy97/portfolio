@@ -1,8 +1,8 @@
 "use client";
 
 import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
 import { PointerEventHandler } from "@/components/pointer";
+import Link from "@/components/transition-link";
 import { Button } from "@/components/ui/button";
 import { SubGrid } from "@/components/ui/grid";
 

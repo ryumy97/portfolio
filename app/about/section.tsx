@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { PropsWithChildren } from "react";
 import { PointerEventHandler } from "@/components/pointer";
+import Link from "@/components/transition-link";
 import { CVHeading, CVLink, CVSubHeading } from "@/components/ui/typography";
 
 type Props = {

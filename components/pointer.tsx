@@ -244,7 +244,7 @@ const Pointer = () => {
     <div
       ref={ref}
       className={cn(
-        "pointer-events-none fixed -top-4 -left-4 bg-primary rounded-full w-3 h-3 z-0 max-md:hidden",
+        "pointer-events-none fixed -top-4 -left-4 bg-primary rounded-full w-3 h-3 z-[60] max-md:hidden",
       )}
     />
   );

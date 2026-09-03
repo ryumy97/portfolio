@@ -209,13 +209,13 @@ components:
 
 Extracted from the live portfolio at [ryumy.com](https://www.ryumy.com/) (In Ha Ryu). YAML tokens are normative. Prose explains atmosphere, roles, and application. Use the descriptive name in prompts; keep the hex for precision.
 
-**Dials:** Creativity `9` (editorial serif, 3D hotspots, kinetic type). Density `4` (gallery-airy frames; 3D scenes carry the weight). Variance `8` (10-column offset, horizontal catalogs, no centered hero). Motion Intent `8` (intro wipe, infinite marquee, morphing cursor, clip-reveals, page tunnels).
+**Dials:** Creativity `9` (editorial serif, kinetic type). Density `4` (gallery-airy frames; lab 3D scenes carry the weight). Variance `8` (10-column offset, horizontal catalogs, no centered hero). Motion Intent `8` (infinite marquee, morphing cursor, clip-reveals).
 
 ## Overview
 
 A **warm, editorial gallery** — closer to a well-lit sculpture hall than a product dashboard. The canvas is Gallery Ivory (`#F9F8F5`). Type is Gallery Ink (`#1E1E1E`). The only brand pulse is **Coral Signal** (`#F75D5D`): the custom cursor, active nav, page titles, CV dates, hero punctuation, and the full-bleed footer. **Cobalt Link** (`#1255CB`) is reserved for hyperlinks and 8px project bullets — never for primary fills.
 
-The site is a Next.js portfolio with shadcn **radix-nova** chrome, but the personality is not Nova-neutral. Headlines are **Playfair Display Bold**, body is **Lato**. Layout is a strict **10-column CSS Grid** with subgrid nesting. Home is a vertical Lenis scroll: a full-viewport kinetic “Cogito, ergo sum.” over Rodin’s *The Thinker*, then a 3D figure whose parts are hotspots (About / Gallery / Projects / Lab). About, Projects, and Gallery are **horizontal** catalogs. Lab is a vertical index that opens into full-bleed WebGL experiments.
+The site is a Next.js portfolio with shadcn **radix-nova** chrome, but the personality is not Nova-neutral. Headlines are **Playfair Display Bold**, body is **Lato**. Layout is a strict **10-column CSS Grid** with subgrid nesting. Home is currently an empty ivory field (header only). About, Projects, and Gallery are **horizontal** catalogs. Lab is a vertical index that opens into full-bleed WebGL experiments.
 
 Depth comes from **WebGL and Three.js**, not drop shadows. UI chrome stays flush: hairline rings, a 12px coral pointer that morphs into underlines and pills, and a black intro overlay that wipes away through a gradient canvas.
 
@@ -229,7 +229,7 @@ Depth comes from **WebGL and Three.js**, not drop shadows. UI chrome stays flush
 - Horizontal scroll for catalogs; vertical scroll for Home and Lab
 - 3D as spatial punctuation, not a background wallpaper
 
-**Motion (implement in code; static mocks will not animate):** Default ease is `cubic-bezier(0.3, 0, 0, 1)` (`ease-default`). Intro loader holds a black field with a tabular `%` in Gallery Ivory, then a 2s gradient wipe. Hero type rises with `circOut` (0.5s delay, 1s duration) then marquee-scrolls forever. The pointer lerps toward its target with a ~0.1s time constant. Project images clip-reveal from center and parallax on the scroll axis. Mobile menu expands to full viewport in 0.6s; items stagger in 0.2–0.6s. Buttons press 1px downward. Animate `transform` and `opacity` only.
+**Motion (implement in code; static mocks will not animate):** Default ease is `cubic-bezier(0.3, 0, 0, 1)` (`ease-default`). Hero type rises with `circOut` (0.5s delay, 1s duration) then marquee-scrolls forever. The pointer lerps toward its target with a ~0.1s time constant. Project images clip-reveal from center and parallax on the scroll axis. Mobile menu expands to full viewport in 0.6s; items stagger in 0.2–0.6s. Buttons press 1px downward. Animate `transform` and `opacity` only.
 
 ## Colors
 
@@ -265,11 +265,11 @@ Two families, loaded from Google Fonts: **Playfair Display** (variable 400–900
 
 Fluid sizes use `min(max({vw}, {px-min}), {px-max})`. YAML stores the desktop max (or the characteristic size). Scale down on small viewports; never drop reading body below 14px.
 
-- **Display (`headline-display`):** Playfair Bold, ~15vw mobile / 7vw desktop, leading 0.8, tracking −0.03em. Home marquee: “Cogito, ergo sum.” with coral punctuation on selected lines. 404 uses the same family at 30vw, Coral Signal, leading-none.
+- **Display (`headline-display`):** Playfair Bold, ~15vw mobile / 7vw desktop, leading 0.8, tracking −0.03em. 404 uses the same family at 30vw, Coral Signal, leading-none.
 - **Project titles (`headline-lg`):** Playfair Bold, 32–80px, leading 1.25, tracking −0.03em. Sit over images on a translucent ivory wash (`bg-white/80`).
 - **Page titles (`headline-md`):** Playfair Bold, 18–32px, leading 0.8, tracking −0.03em. The first line is often Coral Signal (“About”, “Projects”, “Gallery”, “Lab”); the second line, if any, is Ink (“In Ha Ryu”).
 - **Section titles (`headline-sm`):** Playfair Bold, ~20–28px. CV headings, lab category titles (coral), lab experiment titles (28px Ink).
-- **Lead (`body-lg`):** Lato Regular, 14–24px, leading 1.25. Page descriptions and the “Scroll this way” hint.
+- **Lead (`body-lg`):** Lato Regular, 14–24px, leading 1.25. Page descriptions.
 - **Body (`body-md`):** Lato Regular, 16px, leading 1.25. Default reading.
 - **Compact lists (`body-sm`):** Lato Regular, 12–13px, leading 1.5. CV bullets.
 - **Nav / buttons (`label-lg`, `label-md`):** Lato Medium, 14px. Nav is `text-[max(min(1.1vw,10px),14px)]` — effectively 14px. Buttons are 0.875rem.
@@ -283,12 +283,12 @@ Fluid sizes use `min(max({vw}, {px-min}), {px-max})`. YAML stores the desktop ma
 A **fixed 10-column grid** (`grid-cols-10`), full viewport, equal tracks. Nested regions use CSS **subgrid** (`grid-cols-subgrid col-span-full`). No 12-column bootstrap, no `max-w-6xl` marketing column. Home content pads 8px (`px-2`); catalogs pad 32px (`px-8`). Body is `overflow-hidden`; scrolling is Lenis.
 
 - **Header:** Fixed, `z-50`, 8px padding, 10 columns. Logo in column 1. Desktop links right-weighted: About col 7, Projects col 8, Gallery col 9, Lab col 10. Mobile: Menu in col 10; a full-viewport ivory overlay with Playfair 8vw links.
-- **Home hero:** `h-[calc(100svh-24px)]` (video aspect on `md`). Kinetic type occupies cols 3–10 on small screens, cols 2–8 on desktop. The Rodin canvas is an absolute overlay, `pointer-events-none`. Use `svh`, never `h-screen` / `100vh`.
-- **Home figure:** Portrait 9/16 on small screens, landscape video on `md`. Labels are vw-positioned over mesh parts; they fade in on hover (desktop) and stay visible (mobile).
+- **Home:** Empty ivory field. Header is the wayfinding. Use `svh`, never `h-screen` / `100vh`.
+- **Background canvas:** Root layout. Always a foreground WebGL overlay (`fixed`, `h-svh`, `z-40`, `pointer-events-none`). Header `z-50`, pointer `z-[60]`, content `z-10`. The document `body` holds the page field color. First paint is Gallery Ink (`#1E1E1E`). Each route has one color (`usePageColor` `current`; `previous` is the field you are leaving): Home Ivory (`#F9F8F5`), About Cobalt (`#1255CB`), Projects Coral, Gallery Ink, Lab Cobalt. Discs fly in using the destination color over the `body` field (the canvas itself is unfilled). When they finish, discs are cleared, `body` becomes the destination color, and the page shows through the transparent canvas. `prefers-reduced-motion` skips the animation and reveals immediately.
 - **Catalogs (About / Projects / Gallery):** Horizontal Lenis. A row of `w-max` items, vertically centered, gap 10vw mobile / 5vw desktop. About intro is ~20–50vw; CV cards ~30vw. Project stills 80vw / 30vw with 40vw / 30vw trailing margin so images can sit behind titles.
 - **Lab index:** Vertical Lenis. Content in cols 2–10. Category titles coral Playfair; experiment names Ink Playfair in a 5-col (mobile) / 1-col-per-item (desktop) subgrid.
 - **Lab experiment:** Sidebar cols 1–3 (Back, title, description, controls) with a right hairline; canvas cols 3–11. On small screens the sidebar is an overlay that translates in; a coral Menu button toggles it.
-- **Footer:** Full-viewport coral field. At scroll end it eases to 10% coral and a kiwi mark rolls in (2s rotate/translate).
+- **Footer:** Catalogs have no site footer. The coral kiwi field is retired until a new home treatment needs it.
 - **Touch:** Collapse the 10-col header to logo + Menu below 768px. Catalogs stay horizontal — they are the mobile pattern, not a failure. Minimum tap targets 44px on Menu and lab chrome; nav text can stay compact because the coral pointer expands the hit on desktop.
 
 **Responsive:** `md` = 768px. Multi-column lab lists collapse. No accidental horizontal overflow on Home/Lab. Headlines scale with vw; body stays ≥14px. Images use `sizes` (`50vw` / `30vw` list; `120vw` / `60vw` desktop stills; `60vw` / `20vw` mobile stills).
@@ -302,7 +302,7 @@ The page is **flat**. Hierarchy is scale, coral, and 3D occupancy.
 - Project titles: translucent ivory (`bg-white/80`) so type stays readable on photography.
 - Intro: Night Stage (`#000000`) at `z-50`, then a WebGL gradient canvas wipes it. Percentage type uses `drop-shadow-md` while loading.
 - Custom cursor: 12px Coral Signal circle, `z-0`, offset `-top-4 -left-4`. On hover it morphs — **bg** (pill behind the target +16px), **underline** (1px rule under type), **bullet** (12px circle), **hide** (sliders). Touch pointers (`pointer: touch`) get no cursor.
-- Toasts / sheets are Nova leftovers; the live IA does not rely on them. Prefer the pointer and page tunnels for feedback.
+- Toasts / sheets are Nova leftovers; the live IA does not rely on them. Prefer the pointer for feedback.
 
 ## Shapes
 
@@ -344,11 +344,11 @@ Fixed 10-col header. Identity: “Ryumy” as a nav button, coral when on `/`. R
 
 ### Feedback
 
-Intro loader is the primary pending state: Night Stage, ivory `%`, then a 2s gradient wipe. Lab canvases may show their own WebGL. Skeletons are not the voice of this site. Empty states should be composed (type + one recovery), not “No data found”. 404: 30vw coral Playfair over a 3D field.
+Lab canvases may show their own WebGL. Skeletons are not the voice of this site. Empty states should be composed (type + one recovery), not “No data found”. 404: 30vw coral Playfair with a recovery link.
 
 ### Data and media
 
-Photography is full-bleed, object-cover, blur placeholders, eager where it is the catalog hero. 3D (Rodin, figure parts, Gaussian splats, particle labs) sits in demand-framed canvases. Do not put 3D in a card with a drop shadow.
+Photography is full-bleed, object-cover, blur placeholders, eager where it is the catalog hero. 3D (Gaussian splats, particle labs) sits in demand-framed canvases in Lab. Do not put 3D in a card with a drop shadow.
 
 ## Do's and Don'ts
 

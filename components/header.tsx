@@ -2,11 +2,12 @@
 
 import { AnimatePresence, cubicBezier, motion } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type Ref, useEffect, useRef, useState } from "react";
+import Link from "@/components/transition-link";
 import { cn } from "@/lib/utils";
 import favicon from "@/public/favicon.png";
+import { usePageTransition } from "@/stores/page-transition";
 import { PointerEventHandler, usePointerEvent } from "./pointer";
 import { Button } from "./ui/button";
 import { Grid } from "./ui/grid";
@@ -69,6 +70,7 @@ const Logo = () => {
 
 const Header = () => {
   const pathname = usePathname();
+  const pendingPath = usePageTransition((state) => state.pendingPath);
 
   const [isOpen, setIsOpen] = useState(false);
   const previousPathname = useRef(pathname);
@@ -78,6 +80,10 @@ const Header = () => {
     previousPathname.current = pathname;
     setIsOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (pendingPath) setIsOpen(false);
+  }, [pendingPath]);
 
   return (
     <>

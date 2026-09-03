@@ -5,7 +5,6 @@ import { Lenis as LenisComponent, type LenisRef, useLenis } from "lenis/react";
 import { cancelFrame, frame } from "motion";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { useIntroStore } from "@/stores/intro";
 
 type Props = {
   horizontal?: boolean;
@@ -17,16 +16,7 @@ function SmoothScrollController({
   onScroll,
   children,
 }: Pick<Props, "onScroll" | "children">) {
-  const state = useIntroStore((store) => store.state);
-  const lenis = useLenis(onScroll, onScroll ? [onScroll] : []);
-
-  useEffect(() => {
-    if (state !== "start") {
-      lenis?.start();
-    } else {
-      lenis?.stop();
-    }
-  }, [state, lenis]);
+  useLenis(onScroll, onScroll ? [onScroll] : []);
 
   return children;
 }

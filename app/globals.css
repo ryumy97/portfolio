@@ -125,10 +125,12 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: #1e1e1e;
   }
   html {
     @apply font-sans;
+    background-color: #1e1e1e;
   }
   a {
     @apply max-md:underline;

@@ -8,17 +8,15 @@ import {
   useMotionValue,
 } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
+import Link from "@/components/transition-link";
 import { ProjectTitle } from "@/components/ui/typography";
 import { lerp } from "@/lib/math";
 import { cn } from "@/lib/utils";
-import { useIntroStore } from "@/stores/intro";
 
 const useRevealMotionValues = () => {
-  const state = useIntroStore((store) => store.state);
   const ref = useRef<HTMLDivElement>(null);
 
   const dataRef = useRef({
@@ -77,8 +75,6 @@ const useRevealMotionValues = () => {
   }, []);
 
   useAnimationFrame((_, delta) => {
-    if (state === "start") return;
-
     const t = delta / 1000 / 0.2;
 
     dataRef.current.current.y = lerp(
