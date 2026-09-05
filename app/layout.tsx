@@ -1,9 +1,11 @@
-import HomeBackgroundCanvas from "@/app/home/background-canvas";
-import Header from "@/components/header";
-import PageTransitionDriver from "@/components/page-transition-driver";
-import Pointer from "@/components/pointer";
 import type { Metadata } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
+import Header from "@/components/header";
+import PageTransitionDriver from "@/components/page-transition-driver";
+import ParticleDebugHud from "@/components/particle-debug-hud";
+import Pointer from "@/components/pointer";
+import BackgroundCanvas from "./background-canvas";
+import ForegroundCanvas from "./foreground-canvas";
 import "./globals.css";
 
 // Heading
@@ -35,11 +37,12 @@ export default function RootLayout({
       className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased`}
     >
       <body className="min-h-svh overflow-hidden pointer-events-auto">
-        <PageTransitionDriver />
-        <div className="relative z-10">{children}</div>
-        <HomeBackgroundCanvas />
+        <BackgroundCanvas />
+        <PageTransitionDriver>{children}</PageTransitionDriver>
+        <ForegroundCanvas />
         <Header />
         <Pointer />
+        <ParticleDebugHud />
       </body>
     </html>
   );

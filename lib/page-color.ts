@@ -20,6 +20,16 @@ export function colorForPath(path: string): Rgb {
   return PAGE_COLOR.ivory;
 }
 
+/** Home 1, About 2, Projects 3, Gallery 4, Lab 5. */
+export function pageOrder(path: string): number {
+  const route = normalizePath(path);
+  if (route.startsWith("/about")) return 2;
+  if (route.startsWith("/projects")) return 3;
+  if (route.startsWith("/gallery")) return 4;
+  if (route.startsWith("/lab")) return 5;
+  return 1;
+}
+
 export function rgbToCss(rgb: Rgb) {
   return `rgb(${Math.round(rgb[0] * 255)} ${Math.round(rgb[1] * 255)} ${Math.round(rgb[2] * 255)})`;
 }

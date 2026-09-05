@@ -1,41 +1,52 @@
 import { create } from "zustand";
-import { colorForPath } from "@/lib/page-color";
-import { normalizePath } from "@/lib/page-href";
-import { usePageColor } from "@/stores/page-color";
+import {
+  type GatherSide,
+  oppositeGather,
+  type ParticleField,
+  type ParticleOrigin,
+} from "@/lib/page-particle-field";
+
+type Phase = "idle" | "collecting" | "covering";
 
 type PageTransitionState = {
-  layer: "back" | "front";
-  generation: number;
-  pendingPath: string | null;
+  covering: boolean;
   covered: boolean;
-  begin: (path: string) => void;
+  generation: number;
+  phase: Phase;
+  gatherSide: GatherSide;
+  entryFrom: ParticleOrigin;
+  particleField: ParticleField | null;
+  startCover: (gatherSide: GatherSide) => void;
+  markCollected: () => void;
   markCovered: () => void;
   markRevealed: () => void;
+  commitParticleField: (field: ParticleField) => void;
 };
 
 export const usePageTransition = create<PageTransitionState>((set, get) => ({
-  layer: "front",
-  generation: 0,
-  pendingPath: null,
+  covering: false,
   covered: false,
-  begin: (path) => {
-    const next = normalizePath(path);
-    const nextColor = colorForPath(next);
-    const { layer, pendingPath } = get();
-    if (layer === "front") {
-      if (pendingPath === next) return;
-      usePageColor.getState().retarget(nextColor);
-      set({ pendingPath: next });
-      return;
-    }
-    usePageColor.getState().advance(nextColor);
+  generation: 0,
+  phase: "idle",
+  gatherSide: "left",
+  entryFrom: "all",
+  particleField: null,
+  startCover: (gatherSide) => {
+    const hasField = get().particleField !== null;
     set({
-      layer: "front",
+      covering: true,
       covered: false,
-      pendingPath: next,
+      gatherSide,
+      entryFrom: hasField ? oppositeGather(gatherSide) : "all",
       generation: get().generation + 1,
+      phase: hasField ? "collecting" : "covering",
     });
   },
+  markCollected: () => {
+    if (get().phase !== "collecting") return;
+    set({ phase: "covering" });
+  },
   markCovered: () => set({ covered: true }),
-  markRevealed: () => set({ layer: "back", pendingPath: null }),
+  markRevealed: () => set({ covering: false, phase: "idle" }),
+  commitParticleField: (field) => set({ particleField: field }),
 }));
