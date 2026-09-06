@@ -1,8 +1,8 @@
 "use client";
 
-import { type PageTheme, themeForPath } from "@/lib/page-color";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect, useState } from "react";
+import { type PageTheme, themeForPath } from "@/lib/page-color";
 
 export function headerForeground(theme: PageTheme) {
   return theme === "ivory" ? "#1e1e1e" : "#f9f8f5";

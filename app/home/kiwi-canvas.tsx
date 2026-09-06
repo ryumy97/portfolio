@@ -218,7 +218,9 @@ const KiwiCanvas = () => {
       body.vy *= 1.5;
       body.ay = height * 0.005;
       const point = localPoint(event.clientX, event.clientY);
-      canvas.style.cursor = hitTest(body, point.x, point.y) ? "grab" : "default";
+      canvas.style.cursor = hitTest(body, point.x, point.y)
+        ? "grab"
+        : "default";
       syncPointer();
     };
 

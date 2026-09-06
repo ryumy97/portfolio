@@ -1,6 +1,15 @@
 "use client";
 
 import {
+  AnimatePresence,
+  cubicBezier,
+  motion,
+  useReducedMotion,
+} from "motion/react";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
+import {
   applyDocumentBackground,
   colorForPath,
   PAGE_COLOR,
@@ -13,15 +22,6 @@ import { cn } from "@/lib/utils";
 import { usePageColor } from "@/stores/page-color";
 import { usePageLayers } from "@/stores/page-layers";
 import { usePageTransition } from "@/stores/page-transition";
-import {
-  AnimatePresence,
-  cubicBezier,
-  motion,
-  useReducedMotion,
-} from "motion/react";
-import { useTheme } from "next-themes";
-import { usePathname } from "next/navigation";
-import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 type Props = {
   children: ReactNode;
