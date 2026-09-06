@@ -16,10 +16,9 @@ export const PAGE_COLOR = {
 /** CSS class theme for each route. */
 export function themeForPath(path: string): PageTheme {
   const route = normalizePath(path);
-  if (route.startsWith("/about")) return "cobalt";
-  if (route.startsWith("/projects")) return "coral";
+  if (route.startsWith("/cv")) return "cobalt";
+  if (route.startsWith("/work")) return "coral";
   if (route.startsWith("/gallery")) return "ink";
-  if (route.startsWith("/lab")) return "cobalt";
   return "ivory";
 }
 
@@ -30,18 +29,17 @@ export function themeClassName(theme: PageTheme) {
 /** Settled field / particle color for each route. */
 export function colorForPath(path: string): Rgb {
   const route = normalizePath(path);
-  if (route.startsWith("/about")) return PAGE_COLOR.cobalt;
-  if (route.startsWith("/projects")) return PAGE_COLOR.coral;
+  if (route.startsWith("/cv")) return PAGE_COLOR.cobalt;
+  if (route.startsWith("/work")) return PAGE_COLOR.coral;
   if (route.startsWith("/gallery")) return PAGE_COLOR.ink;
-  if (route.startsWith("/lab")) return PAGE_COLOR.cobalt;
   return PAGE_COLOR.ivory;
 }
 
-/** Home 1, About 2, Projects 3, Gallery 4, Lab 5. */
+/** Home 1, CV 2, Work 3, Gallery 4, Lab 5. */
 export function pageOrder(path: string): number {
   const route = normalizePath(path);
-  if (route.startsWith("/about")) return 2;
-  if (route.startsWith("/projects")) return 3;
+  if (route.startsWith("/cv")) return 2;
+  if (route.startsWith("/work")) return 3;
   if (route.startsWith("/gallery")) return 4;
   if (route.startsWith("/lab")) return 5;
   return 1;

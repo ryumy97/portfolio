@@ -1,8 +1,5 @@
 "use client";
 
-import { MenuIcon } from "lucide-react";
-import { motion } from "motion/react";
-import { type ReactNode, useState } from "react";
 import PageLayer from "@/components/page-layer";
 import { PointerEventHandler } from "@/components/pointer";
 import Link from "@/components/transition-link";
@@ -10,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import { LabDescription } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
+import { MenuIcon } from "lucide-react";
+import { motion } from "motion/react";
+import { type ReactNode, useState } from "react";
 
 type LabPageLayoutProps = {
   title: string;
@@ -31,7 +31,7 @@ export function LabPageLayout({
       <Grid className="fixed inset-0 h-full w-full">
         <motion.div
           className={cn(
-            "absolute inset-0 md:col-start-1 md:col-end-3 border-r md:relative pt-10 pl-2 z-10 overflow-y-auto transition-transform duration-300 ease-default bg-background",
+            "absolute inset-0 md:col-start-1 md:col-end-3 border-r md:relative pt-20 pl-2 z-10 overflow-y-auto transition-transform duration-300 ease-default bg-background",
             {
               "max-md:translate-x-0": isOpen,
               "max-md:-translate-x-full": !isOpen,

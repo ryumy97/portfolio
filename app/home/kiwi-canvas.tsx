@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import kiwi from "@/app/projects/kiwi/assets/circle.png";
+import kiwi from "@/app/work/kiwi/assets/circle.png";
 import { CANVAS_STYLE, observeCanvasPixelSize } from "@/lib/webgl";
 import { pointer } from "@/stores/pointer";
 
@@ -99,7 +99,11 @@ const KiwiCanvas = () => {
       pointer.target.borderRadius = 9999;
     };
 
+    const TIME_SCALE = 0.45;
+
     const step = (ratio: number) => {
+      const t = ratio * TIME_SCALE;
+
       if (grabbing) {
         const xdiff = pointerX - body.x - grabDx;
         const ydiff = pointerY - body.y - grabDy;
@@ -109,8 +113,8 @@ const KiwiCanvas = () => {
         body.angularV *= 0.95 ** ratio;
       }
 
-      body.vy *= 1 - 0.01 * ratio;
-      body.vy += body.ay * ratio;
+      body.vy *= 1 - 0.01 * t;
+      body.vy += body.ay * t;
       body.y += body.vy;
 
       const floor = floorY();
@@ -126,10 +130,10 @@ const KiwiCanvas = () => {
       }
 
       if (onFloor) {
-        body.vx *= 1 - 0.05 * ratio;
+        body.vx *= 1 - 0.05 * t;
         body.angularV = body.vx / body.r;
       } else {
-        body.vx *= 1 - 0.025 * ratio;
+        body.vx *= 1 - 0.025 * t;
       }
 
       body.x += body.vx;

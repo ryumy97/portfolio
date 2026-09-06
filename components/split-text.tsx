@@ -1,5 +1,6 @@
 "use client";
 
+import { useScrollEvent } from "@/components/smooth-scroll";
 import { transform, useReducedMotion } from "motion/react";
 import {
   Children,
@@ -11,7 +12,6 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { useScrollEvent } from "@/components/smooth-scroll";
 
 type Mark = {
   italic?: boolean;
@@ -186,7 +186,7 @@ const SplitText = ({ children }: Props) => {
     const rect = el.getBoundingClientRect();
     const progress = transform(
       rect.top,
-      [window.innerHeight * 0.9, window.innerHeight * 0.4],
+      [window.innerHeight * 0.9, window.innerHeight * 0.6],
       [0, 1],
       { clamp: true },
     );

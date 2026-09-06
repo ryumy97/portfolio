@@ -148,12 +148,12 @@ export const CVHeading: React.FC<Props> = ({
   className,
   asChild,
 }) => {
-  const Comp = asChild ? Slot.Root : "p";
+  const Comp = asChild ? Slot.Root : "div";
 
   return (
     <Comp
       className={cn(
-        "text-[min(max(2vw,18px),20px)] leading-[1.25em] font-heading font-bold tracking-[-0.02em]",
+        "flex flex-wrap items-baseline gap-x-[0.35em] text-[min(max(2vw,18px),20px)] leading-[1.25em] font-heading font-bold tracking-[-0.02em] [&_a]:inline [&_i]:font-normal",
         className,
       )}
     >

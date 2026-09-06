@@ -4,6 +4,21 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/about",
+        destination: "/cv",
+        permanent: true,
+      },
+      {
+        source: "/projects",
+        destination: "/work",
+        permanent: true,
+      },
+      {
+        source: "/projects/:path*",
+        destination: "/work/:path*",
+        permanent: true,
+      },
+      {
         source: "/lab/particle-morphing",
         destination: "/lab/particle-morphing/image",
         permanent: true,

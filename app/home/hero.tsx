@@ -1,10 +1,14 @@
 import { Grid } from "@/components/ui/grid";
 import { PageDescription, Title } from "@/components/ui/typography";
+import HeroCanvas from "./hero-canvas";
 
 const Hero = () => {
   return (
-    <Grid className="h-svh w-full items-end px-2">
-      <div className="col-start-2 col-end-7 py-2 text-ink">
+    <Grid className="h-svh w-full items-end px-2 grid-rows-[1fr_auto]">
+      <div className="col-start-2 col-end-7 h-full">
+        <HeroCanvas />
+      </div>
+      <div className="col-start-2 col-end-7 py-2 text-ink mt-4">
         <Title>In Ha Ryu</Title>
         <PageDescription className="mt-4">
           <span>
@@ -16,6 +20,7 @@ const Hero = () => {
             <span className={"text-primary"}>.</span>
           </span>
         </PageDescription>
+        <hr className="mt-4 border-primary" />
       </div>
     </Grid>
   );

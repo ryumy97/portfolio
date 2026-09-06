@@ -116,11 +116,11 @@ const Header = () => {
           <div className="col-start-7 flex justify-end items-center max-md:hidden">
             <PointerEventHandler asChild>
               <Button
-                variant={pathname.startsWith("/about") ? "navActive" : "nav"}
+                variant={pathname.startsWith("/cv") ? "navActive" : "nav"}
                 size={"nav"}
                 asChild
               >
-                <Link href="/about">About</Link>
+                <Link href="/cv">CV</Link>
               </Button>
             </PointerEventHandler>
           </div>
@@ -128,11 +128,11 @@ const Header = () => {
           <div className="col-start-7 flex justify-end items-center max-md:hidden">
             <PointerEventHandler asChild>
               <Button
-                variant={pathname.startsWith("/projects") ? "navActive" : "nav"}
+                variant={pathname.startsWith("/work") ? "navActive" : "nav"}
                 size={"nav"}
                 asChild
               >
-                <Link href="/projects">Projects</Link>
+                <Link href="/work">Work</Link>
               </Button>
             </PointerEventHandler>
           </div>
@@ -221,12 +221,12 @@ const Header = () => {
               transition={{ duration: 0.3, ease: cubicBezier(0.3, 0, 0, 1) }}
             >
               <Link
-                href="/about"
+                href="/cv"
                 className={cn("w-full font-heading text-[8vw] no-underline", {
-                  "text-primary": pathname.startsWith("/about"),
+                  "text-primary": pathname.startsWith("/cv"),
                 })}
               >
-                About
+                CV
               </Link>
             </motion.div>
             <motion.div
@@ -246,12 +246,12 @@ const Header = () => {
               transition={{ duration: 0.3, ease: cubicBezier(0.3, 0, 0, 1) }}
             >
               <Link
-                href="/projects"
+                href="/work"
                 className={cn("w-full font-heading text-[8vw] no-underline", {
-                  "text-primary": pathname.startsWith("/projects"),
+                  "text-primary": pathname.startsWith("/work"),
                 })}
               >
-                Projects
+                Work
               </Link>
             </motion.div>
             <motion.div

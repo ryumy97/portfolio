@@ -4,7 +4,7 @@ import { PageDescription } from "@/components/ui/typography";
 
 const Intro = () => {
   return (
-    <Grid className="w-full items-center px-2 py-4">
+    <Grid className="w-full items-center px-2 py-8">
       <PageDescription className="col-start-2 col-end-7">
         <SplitText>
           Hi, I'm In Ha, a frontend developer based in Auckland, New Zealand.
@@ -17,8 +17,8 @@ const Intro = () => {
           make sure that the user feels the joy of using the product.
           <br />
           <br />
-          Therefore my learning lean towards building <i>3D</i>, <i>WebGL</i>{" "}
-          and
+          Therefore my learning lean towards building and crafting{" "}
+          <i>Animations</i>, <i>CSS</i> <i>3D</i>, <i>WebGL</i> and
           <i> shaders</i> - which I believe that are the future of web
           development.
           <br />

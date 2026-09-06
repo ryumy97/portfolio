@@ -11,7 +11,7 @@ type Props = {
 
 const Section: React.FC<Props> = ({ subtitle, title, link, children }) => {
   return (
-    <div className="max-w-[100vw] md:max-w-[30vw] w-full">
+    <div className="w-full">
       {subtitle ? (
         <CVSubHeading className="text-primary">{subtitle}</CVSubHeading>
       ) : null}
@@ -31,7 +31,7 @@ const Section: React.FC<Props> = ({ subtitle, title, link, children }) => {
 };
 
 export const SubSection: React.FC<PropsWithChildren> = ({ children }) => {
-  return <div className="max-w-[100vw] md:max-w-[30vw] w-full">{children}</div>;
+  return <div className="w-full">{children}</div>;
 };
 
 export const ProjectLink: React.FC<PropsWithChildren & { link: string }> = ({
@@ -40,7 +40,7 @@ export const ProjectLink: React.FC<PropsWithChildren & { link: string }> = ({
 }) => {
   return (
     <PointerEventHandler asChild type="bullet" offsetX={-8} offsetY={1}>
-      <Link href={link} className="relative">
+      <Link href={link} className="relative inline-flex items-baseline">
         <span className="absolute top-1/2 left-0 translate-x-[calc(-100%-4px)] -translate-y-[calc(50%-1px)] w-2 h-2 bg-secondary rounded-full"></span>
         {children}
       </Link>

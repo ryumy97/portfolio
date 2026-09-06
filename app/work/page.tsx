@@ -19,54 +19,54 @@ export default function Page2() {
         <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
           <div className="md:max-w-[30vw] max-w-[100vw] w-screen">
             <Title className="">
-              <div className="text-primary">Projects</div>
+              <div className="text-primary">Work</div>
             </Title>
           </div>
           {/* Reflct */}
           <ListItemSection
             title="Reflct"
             image={reflct}
-            link="/projects/reflct"
+            link="/work/reflct"
           />
           {/* Typography */}
           <ListItemSection
             title="Typography"
             image={typography}
-            link="/projects/typography"
+            link="/work/typography"
           />
           {/* Kiwi */}
-          <ListItemSection title="Kiwi" image={kiwi} link="/projects/kiwi" />
+          <ListItemSection title="Kiwi" image={kiwi} link="/work/kiwi" />
           {/* Aim High */}
           <ListItemSection
             title="Aim High"
             image={aimhigh}
-            link="/projects/aimhigh"
+            link="/work/aimhigh"
           />
           {/* Fola */}
-          <ListItemSection title="Fola" image={fola} link="/projects/fola" />
+          <ListItemSection title="Fola" image={fola} link="/work/fola" />
           {/* Greenprint */}
           <ListItemSection
             title="Greenprint"
             image={greenprint}
-            link="/projects/greenprint"
+            link="/work/greenprint"
           />
           {/* Real Watergate */}
           <ListItemSection
             title="Real Watergate"
             image={realWatergate}
-            link="/projects/real-watergate"
+            link="/work/real-watergate"
           />
           {/* Heritage New Zealand */}
           <ListItemSection
             title="Heritage NZ"
             image={heritage}
-            link="/projects/heritage-new-zealand"
+            link="/work/heritage-new-zealand"
           />
           {/* Feast mode */}
           <ListItemSection
             title="Feast Mode"
             image={feastMode}
-            link="/projects/feast-mode"
+            link="/work/feast-mode"
           />
         </main>
       </SmoothScroll>
