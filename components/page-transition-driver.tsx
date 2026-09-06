@@ -80,6 +80,12 @@ const PageTransitionDriver = ({ children }: Props) => {
 
   useLayoutEffect(() => {
     const path = normalizePath(pathname);
+    const { covering, covered } = usePageTransition.getState();
+    if (covering && !covered) {
+      startedFor.current = path;
+      usePageColor.getState().retarget(colorForPath(path));
+      return;
+    }
     if (startedFor.current === path) return;
     startedFor.current = path;
 

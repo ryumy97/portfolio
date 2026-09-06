@@ -1,6 +1,8 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import { lerp } from "@/lib/math";
+import type { Rgb } from "@/lib/page-color";
 import {
   buildParticleBuffer,
   createParticleFieldRenderer,
@@ -19,6 +21,14 @@ import {
 type FieldApi = {
   play: (from: ParticleOrigin) => void;
 };
+
+const COLOR_BLEND_SECONDS = 0.85;
+
+function copyRgb(to: [number, number, number], from: Rgb) {
+  to[0] = from[0];
+  to[1] = from[1];
+  to[2] = from[2];
+}
 
 type Props = {
   className?: string;
@@ -55,9 +65,42 @@ const ForegroundCanvas = ({ className }: Props) => {
     let notifiedCover = false;
     let playToken = 0;
     let fromSide: ParticleOrigin = "all";
+    const displayColor: [number, number, number] = [0, 0, 0];
+    const blendFrom: [number, number, number] = [0, 0, 0];
+    let blendTo: Rgb = displayColor;
+    let blendStartedAt = 0;
+    let blendDuration = 0;
 
     const colors = () => usePageColor.getState();
     const debug = () => useParticleDebug.getState().enabled;
+
+    const snapDisplayColor = (to: Rgb) => {
+      copyRgb(displayColor, to);
+      copyRgb(blendFrom, to);
+      blendTo = to;
+      blendDuration = 0;
+    };
+
+    const beginColorBlend = (to: Rgb) => {
+      copyRgb(blendFrom, displayColor);
+      blendTo = to;
+      blendStartedAt = performance.now() / 1000;
+      blendDuration = COLOR_BLEND_SECONDS;
+    };
+
+    const sampleDisplayColor = (): Rgb => {
+      if (blendDuration <= 0) return displayColor;
+      const t = (performance.now() / 1000 - blendStartedAt) / blendDuration;
+      if (t >= 1) {
+        snapDisplayColor(blendTo);
+        return displayColor;
+      }
+      const e = 1 - (1 - Math.min(1, Math.max(0, t))) ** 4;
+      displayColor[0] = lerp(blendFrom[0], blendTo[0], e);
+      displayColor[1] = lerp(blendFrom[1], blendTo[1], e);
+      displayColor[2] = lerp(blendFrom[2], blendTo[2], e);
+      return displayColor;
+    };
 
     const commitSettledField = () => {
       if (!fieldData || vertexCount === 0) return;
@@ -109,7 +152,7 @@ const ForegroundCanvas = ({ className }: Props) => {
         markCovered();
         return;
       }
-      renderer.draw(time, colors().current, debug());
+      renderer.draw(time, sampleDisplayColor(), debug());
       raf = requestAnimationFrame(() => loop(token));
     };
 
@@ -118,6 +161,9 @@ const ForegroundCanvas = ({ className }: Props) => {
       fromSide = from;
       notifiedCover = false;
       const token = ++playToken;
+      const target = colors().current;
+      if (blendDuration > 0) beginColorBlend(target);
+      else snapDisplayColor(target);
       if (reduceMotion) {
         filled = true;
         uploadParticles(true);
@@ -142,7 +188,16 @@ const ForegroundCanvas = ({ className }: Props) => {
       if (state.current === prev.current && state.previous === prev.previous) {
         return;
       }
-      if (filled || reduceMotion) renderer.drawIdle();
+      if (reduceMotion) {
+        if (filled) renderer.drawIdle();
+        return;
+      }
+      const { covering, covered } = usePageTransition.getState();
+      if (covering && !covered) {
+        beginColorBlend(state.current);
+        return;
+      }
+      if (filled) renderer.drawIdle();
     });
 
     const unsubDebug = useParticleDebug.subscribe((state, prev) => {
@@ -152,7 +207,7 @@ const ForegroundCanvas = ({ className }: Props) => {
         return;
       }
       const time = performance.now() / 1000 - startedAt;
-      renderer.draw(time, colors().current, state.enabled);
+      renderer.draw(time, sampleDisplayColor(), state.enabled);
     });
 
     const disconnectResize = observeCanvasPixelSize(canvas, () => {
@@ -162,7 +217,7 @@ const ForegroundCanvas = ({ className }: Props) => {
         renderer.drawIdle();
         return;
       }
-      renderer.draw(time, colors().current, debug());
+      renderer.draw(time, sampleDisplayColor(), debug());
     });
 
     return () => {

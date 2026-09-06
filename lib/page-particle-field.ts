@@ -14,12 +14,12 @@ import {
 } from "@/lib/webgl";
 
 /** CSS px. Circles overlap enough to cover every cell, including jitter. */
-const TARGET_CELL = 32;
+const TARGET_CELL = 128;
 const VERTS_PER_PARTICLE = 6;
 const FLOATS_PER_VERT = 9;
-const METABALL_RADIUS_SCALE = 1.35;
+const METABALL_RADIUS_SCALE = 3;
 const METABALL_THRESHOLD = 0.42;
-const METABALL_SOFTNESS = 0.1;
+const METABALL_SOFTNESS = 0.01;
 export const SETTLED_TIME = 1e6;
 
 const CORNERS: Array<[number, number]> = [
@@ -246,7 +246,7 @@ function startFromGather(side: GatherSide): [number, number] {
 function randomStart(): [number, number] {
   const side = Math.floor(Math.random() * 4);
   const along = (Math.random() * 2 - 1) * 1.5;
-  const out = 1.15 + Math.random() * 0.75;
+  const out = 2 + Math.random() * 0.75;
   if (side === 0) return [out, along];
   if (side === 1) return [-out, along];
   if (side === 2) return [along, out];
@@ -309,7 +309,7 @@ export function buildParticleBuffer(
       rests.push({
         x: (col + 0.5) * (2 / cols) - 1 + jitterX,
         y: (row + 0.5) * (2 / rows) - 1 + jitterY,
-        sizeScale: 1.45 + hash(col, row, 6.1) * 0.25,
+        sizeScale: 1.8 + hash(col, row, 6.1) * 0.4,
       });
     }
   }

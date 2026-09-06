@@ -32,7 +32,9 @@ export const usePageTransition = create<PageTransitionState>((set, get) => ({
   entryFrom: "all",
   particleField: null,
   startCover: (gatherSide) => {
-    const hasField = get().particleField !== null;
+    const { covering, covered, particleField } = get();
+    if (covering && !covered) return;
+    const hasField = particleField !== null;
     set({
       covering: true,
       covered: false,
