@@ -1,38 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { PointerEventHandler } from "@/components/pointer";
 import Link from "@/components/transition-link";
-import { CVHeading, CVLink, CVSubHeading } from "@/components/ui/typography";
-
-type Props = {
-  subtitle?: string;
-  title: React.ReactNode;
-  link?: string;
-} & React.PropsWithChildren;
-
-const Section: React.FC<Props> = ({ subtitle, title, link, children }) => {
-  return (
-    <div className="w-full">
-      {subtitle ? (
-        <CVSubHeading className="text-primary">{subtitle}</CVSubHeading>
-      ) : null}
-      <CVHeading>{title}</CVHeading>
-      {link ? (
-        <PointerEventHandler asChild type="underline">
-          <CVLink asChild>
-            <Link href={link} target="_blank">
-              {link}
-            </Link>
-          </CVLink>
-        </PointerEventHandler>
-      ) : null}
-      {children}
-    </div>
-  );
-};
-
-export const SubSection: React.FC<PropsWithChildren> = ({ children }) => {
-  return <div className="w-full">{children}</div>;
-};
 
 export const ProjectLink: React.FC<PropsWithChildren & { link: string }> = ({
   children,
@@ -47,5 +15,3 @@ export const ProjectLink: React.FC<PropsWithChildren & { link: string }> = ({
     </PointerEventHandler>
   );
 };
-
-export default Section;

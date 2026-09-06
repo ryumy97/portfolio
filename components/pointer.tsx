@@ -1,7 +1,6 @@
 "use client";
 
 import { cubicBezier, motion, useAnimationFrame } from "motion/react";
-import { Slot } from "radix-ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { lerp } from "@/lib/math";
 import { themeClassName } from "@/lib/page-color";
@@ -143,7 +142,7 @@ export const PointerEventHandler = ({
   asChild?: boolean;
   type?: PointerEventType;
 } & PointerEventProps) => {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLSpanElement | null>(null);
 
   const { onPointerEnter, onPointerLeave } = usePointerEvent({
     type,
@@ -155,8 +154,6 @@ export const PointerEventHandler = ({
     ref,
   });
 
-  const Comp = asChild ? Slot.Root : "div";
-
   // biome-ignore lint/correctness/useExhaustiveDependencies: force cleanup
   useEffect(() => {
     return () => {
@@ -165,15 +162,15 @@ export const PointerEventHandler = ({
   }, []);
 
   return (
-    <Comp
-      // @ts-expect-error
+    <span
       ref={ref}
+      className={asChild ? undefined : "block"}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
       {...props}
     >
       {children}
-    </Comp>
+    </span>
   );
 };
 

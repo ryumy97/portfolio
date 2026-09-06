@@ -1,25 +1,29 @@
 "use client";
 
-import { useScrollEvent } from "@/components/smooth-scroll";
 import { transform, useReducedMotion } from "motion/react";
 import {
   Children,
   type CSSProperties,
   isValidElement,
+  type ReactElement,
   type ReactNode,
   useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
 } from "react";
+import { PointerEventHandler } from "@/components/pointer";
+import { useScrollEvent } from "@/components/smooth-scroll";
 
 type Mark = {
   italic?: boolean;
-  href?: string;
-  className?: string;
 };
 
-type Token = Mark & { char: string; index: number };
+type Token = Mark & {
+  char: string;
+  index: number;
+  atom?: ReactElement;
+};
 
 type Word = {
   tokens: Token[];
@@ -28,10 +32,28 @@ type Word = {
   lineBreak: boolean;
 };
 
+function textOf(node: ReactNode): string {
+  return Children.toArray(node)
+    .map((child) => {
+      if (typeof child === "string" || typeof child === "number") {
+        return String(child);
+      }
+      if (isValidElement<{ children?: ReactNode }>(child)) {
+        return textOf(child.props.children);
+      }
+      return "";
+    })
+    .join("");
+}
+
+function isAtomType(type: unknown) {
+  return type === "a" || type === PointerEventHandler;
+}
+
 function flatten(
   node: ReactNode,
   mark: Mark = {},
-): Array<Mark & { char: string }> {
+): Array<Mark & { char: string; atom?: ReactElement }> {
   return Children.toArray(node).flatMap((child) => {
     if (typeof child === "number") {
       return flatten(String(child), mark);
@@ -45,8 +67,6 @@ function flatten(
     if (
       !isValidElement<{
         children?: ReactNode;
-        href?: string;
-        className?: string;
       }>(child)
     ) {
       return [];
@@ -55,12 +75,17 @@ function flatten(
     if (type === "br") {
       return [{ ...mark, char: "\n" }];
     }
+    if (isAtomType(type)) {
+      return [
+        {
+          ...mark,
+          char: textOf(child) || " ",
+          atom: child,
+        },
+      ];
+    }
     const next: Mark = { ...mark };
     if (type === "i" || type === "em") next.italic = true;
-    if (type === "a") {
-      next.href = child.props.href;
-      next.className = child.props.className;
-    }
     return flatten(child.props.children, next);
   });
 }
@@ -88,6 +113,10 @@ function groupWords(tokens: Token[]): Word[] {
       words.push({ tokens: [token], start: i, space: false, lineBreak: true });
       continue;
     }
+    if (token.atom) {
+      words.push({ tokens: [token], start: i, space: false, lineBreak: false });
+      continue;
+    }
     const space = token.char === " ";
     const prev = words.at(-1);
     if (prev && !prev.lineBreak && prev.space === space && !space) {
@@ -100,57 +129,50 @@ function groupWords(tokens: Token[]): Word[] {
 }
 
 function groupMarks(tokens: Token[]) {
-  const runs: Array<Mark & { tokens: Token[] }> = [];
+  const runs: Array<Mark & { tokens: Token[]; atom?: ReactElement }> = [];
   for (const token of tokens) {
+    if (token.atom) {
+      runs.push({ tokens: [token], italic: token.italic, atom: token.atom });
+      continue;
+    }
     const prev = runs.at(-1);
-    if (
-      prev &&
-      prev.italic === token.italic &&
-      prev.href === token.href &&
-      prev.className === token.className
-    ) {
+    if (prev && !prev.atom && prev.italic === token.italic) {
       prev.tokens.push(token);
       continue;
     }
     runs.push({
       tokens: [token],
       italic: token.italic,
-      href: token.href,
-      className: token.className,
     });
   }
   return runs;
 }
 
+function revealStyle(index: number): CSSProperties {
+  return {
+    "--i": index,
+    opacity:
+      "clamp(0, calc((var(--reveal) * (var(--count) + 1) - var(--i)) / 2), 1)",
+  };
+}
+
 function Char({ char, index }: { char: string; index: number }) {
-  return (
-    <span
-      style={
-        {
-          "--i": index,
-          opacity:
-            "clamp(0, calc((var(--reveal) * (var(--count) + 1) - var(--i)) / 2), 1)",
-        } as CSSProperties
-      }
-    >
-      {char}
-    </span>
-  );
+  return <span style={revealStyle(index)}>{char}</span>;
 }
 
 function MarkedChars({ tokens }: { tokens: Token[] }) {
   return groupMarks(tokens).map((run) => {
+    const key = run.tokens[0]?.index ?? 0;
+    if (run.atom) {
+      return (
+        <span key={key} className="inline-block" style={revealStyle(key)}>
+          {run.atom}
+        </span>
+      );
+    }
     const chars = run.tokens.map((token) => (
       <Char key={token.index} char={token.char} index={token.index} />
     ));
-    const key = run.tokens[0]?.index ?? 0;
-    if (run.href) {
-      return (
-        <a key={key} href={run.href} className={run.className}>
-          {chars}
-        </a>
-      );
-    }
     if (run.italic) {
       return <i key={key}>{chars}</i>;
     }

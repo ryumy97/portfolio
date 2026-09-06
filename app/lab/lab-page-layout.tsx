@@ -1,5 +1,8 @@
 "use client";
 
+import { MenuIcon } from "lucide-react";
+import { motion } from "motion/react";
+import { type ReactNode, useState } from "react";
 import PageLayer from "@/components/page-layer";
 import { PointerEventHandler } from "@/components/pointer";
 import Link from "@/components/transition-link";
@@ -7,9 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
 import { LabDescription } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
-import { MenuIcon } from "lucide-react";
-import { motion } from "motion/react";
-import { type ReactNode, useState } from "react";
 
 type LabPageLayoutProps = {
   title: string;

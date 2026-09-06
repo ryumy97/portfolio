@@ -5,6 +5,7 @@ import Link from "@/components/transition-link";
 import { Grid } from "@/components/ui/grid";
 import {
   CVDescription,
+  CVHeading,
   CVLink,
   CVList,
   CVListItem,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/typography";
 import GithubIcon from "./assets/github.svg";
 import LinkedinIcon from "./assets/linkedin.svg";
-import Section, { ProjectLink, SubSection } from "./section";
+import { ProjectLink } from "./section";
 import SectionHeader from "./section-header";
 
 export default function Page() {
@@ -60,7 +61,7 @@ export default function Page() {
                 </div>
                 <div className="mt-1">
                   <PointerEventHandler type="underline" asChild>
-                    <CVLink asChild>
+                    <CVLink>
                       <Link href={"tel:+642102831932"} target="_blank">
                         (+64) 21 028 31932
                       </Link>
@@ -69,7 +70,7 @@ export default function Page() {
                 </div>
                 <div>
                   <PointerEventHandler type="underline" asChild>
-                    <CVLink asChild>
+                    <CVLink>
                       <Link
                         href={"mailto:INHA.RYU.97@GMAIL.COM"}
                         target="_blank"
@@ -81,7 +82,7 @@ export default function Page() {
                 </div>
                 <div>
                   <PointerEventHandler type="underline" asChild>
-                    <CVLink asChild>
+                    <CVLink>
                       <Link href="/CV.pdf" target="_blank">
                         Download CV
                       </Link>
@@ -97,18 +98,24 @@ export default function Page() {
               <SectionHeader text="Personal" />
 
               {/* Reflct */}
-              <Section
-                subtitle="AUG 2024 - PRESENT"
-                title={
-                  <>
-                    <ProjectLink link="/work/reflct">
-                      <b>Reflct</b>
-                    </ProjectLink>
-                    <i>- Co founder & Developer</i>
-                  </>
-                }
-                link="https://www.reflct.app/"
-              >
+              <div className="w-full">
+                <CVSubHeading className="text-primary">
+                  AUG 2024 - PRESENT
+                </CVSubHeading>
+                <CVHeading>
+                  <ProjectLink link="/work/reflct">
+                    <b>Reflct</b>
+                  </ProjectLink>
+                  <i>- Co founder & Developer</i>
+                </CVHeading>
+                <PointerEventHandler asChild type="underline">
+                  <CVLink>
+                    <Link href={"https://www.reflct.app/"} target="_blank">
+                      {"https://www.reflct.app/"}
+                    </Link>
+                  </CVLink>
+                </PointerEventHandler>
+
                 <CVDescription>
                   Designed, built and launched a web platform featuring a 3D
                   Gaussian splat scene editor as well as a published npm package
@@ -133,7 +140,7 @@ export default function Page() {
                     <CVSubList>
                       <CVListItem>
                         <PointerEventHandler asChild type="underline">
-                          <CVLink asChild>
+                          <CVLink>
                             <Link
                               href="https://www.npmjs.com/package/@reflct/react"
                               target="_blank"
@@ -150,7 +157,7 @@ export default function Page() {
                     <CVSubList>
                       <CVListItem>
                         <PointerEventHandler asChild type="underline">
-                          <CVLink asChild>
+                          <CVLink>
                             <Link
                               href="https://github.com/Reflct"
                               target="_blank"
@@ -167,7 +174,7 @@ export default function Page() {
                     <CVSubList>
                       <CVListItem>
                         <PointerEventHandler asChild type="underline">
-                          <CVLink asChild>
+                          <CVLink>
                             <Link
                               href="https://www.youtube.com/channel/UCVVFVZrukfeW6yQ_Scx1Eeg"
                               target="_blank"
@@ -180,18 +187,27 @@ export default function Page() {
                     </CVSubList>
                   </CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Typography */}
-              <Section
-                subtitle="2022"
-                title={
+              <div className="w-full">
+                <CVSubHeading className="text-primary">2022</CVSubHeading>
+                <CVHeading>
                   <ProjectLink link="/work/typography">
                     <b>Typography</b>
                   </ProjectLink>
-                }
-                link="https://typography.ryumy.com/"
-              >
+                </CVHeading>
+                <PointerEventHandler asChild type="underline">
+                  <CVLink>
+                    <Link
+                      href={"https://typography.ryumy.com/"}
+                      target="_blank"
+                    >
+                      {"https://typography.ryumy.com/"}
+                    </Link>
+                  </CVLink>
+                </PointerEventHandler>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     Mini project holding a collection of interactive
@@ -205,7 +221,7 @@ export default function Page() {
                     <CVSubList>
                       <CVListItem>
                         <PointerEventHandler asChild type="underline">
-                          <CVLink asChild>
+                          <CVLink>
                             <Link
                               href="https://github.com/ryumy97/typography"
                               target="_blank"
@@ -218,18 +234,24 @@ export default function Page() {
                     </CVSubList>
                   </CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Kiwi */}
-              <Section
-                subtitle="2021"
-                title={
+              <div className="w-full">
+                <CVSubHeading className="text-primary">2021</CVSubHeading>
+                <CVHeading>
                   <ProjectLink link="/work/kiwi">
                     <b>Kiwi</b>
                   </ProjectLink>
-                }
-                link="https://kiwi.ryumy.com/"
-              >
+                </CVHeading>
+                <PointerEventHandler asChild type="underline">
+                  <CVLink>
+                    <Link href={"https://kiwi.ryumy.com/"} target="_blank">
+                      {"https://kiwi.ryumy.com/"}
+                    </Link>
+                  </CVLink>
+                </PointerEventHandler>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     A simple interactive environment without any external
@@ -241,7 +263,7 @@ export default function Page() {
                     <CVSubList>
                       <CVListItem>
                         <PointerEventHandler asChild type="underline">
-                          <CVLink asChild>
+                          <CVLink>
                             <Link
                               href="https://github.com/ryumy97/kiwi"
                               target="_blank"
@@ -254,18 +276,27 @@ export default function Page() {
                     </CVSubList>
                   </CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Aim High Charitable Trust */}
-              <Section
-                subtitle="2020"
-                title={
+              <div className="w-full">
+                <CVSubHeading className="text-primary">2020</CVSubHeading>
+                <CVHeading>
                   <ProjectLink link="/work/aimhigh">
                     <b>Aim High Charitable Trust</b>
                   </ProjectLink>
-                }
-                link="https://www.aimhightrust.co.nz/"
-              >
+                </CVHeading>
+                <PointerEventHandler asChild type="underline">
+                  <CVLink>
+                    <Link
+                      href={"https://www.aimhightrust.co.nz/"}
+                      target="_blank"
+                    >
+                      {"https://www.aimhightrust.co.nz/"}
+                    </Link>
+                  </CVLink>
+                </PointerEventHandler>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     A content website for a charity. The aim of this project was
@@ -273,14 +304,22 @@ export default function Page() {
                   </CVListItem>
                   <CVListItem>Wordpress, php.</CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Vault */}
-              <Section
-                subtitle="2025"
-                title={<b>Vault</b>}
-                link="https://vault.ryumy.com/"
-              >
+              <div className="w-full">
+                <CVSubHeading className="text-primary">2025</CVSubHeading>
+                <CVHeading>
+                  <b>Vault</b>
+                </CVHeading>
+                <PointerEventHandler asChild type="underline">
+                  <CVLink>
+                    <Link href={"https://vault.ryumy.com/"} target="_blank">
+                      {"https://vault.ryumy.com/"}
+                    </Link>
+                  </CVLink>
+                </PointerEventHandler>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     Personal storage for my photos. Upload and manage folder
@@ -290,23 +329,23 @@ export default function Page() {
                     Next.js, Drizzle, Cloudflare R2, PostgreSQL
                   </CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Experience */}
               <SectionHeader text="Experience" />
 
               {/* McCann */}
-              <Section
-                subtitle="JUL 2022 - PRESENT"
-                title={
-                  <>
-                    <b>
-                      McCann <i>(formerly DDB)</i>, Auckland
-                    </b>
-                    <i>- Senior Frontend Developer</i>
-                  </>
-                }
-              >
+              <div className="w-full">
+                <CVSubHeading className="text-primary">
+                  JUL 2022 - PRESENT
+                </CVSubHeading>
+                <CVHeading>
+                  <b>
+                    McCann <i>(formerly DDB)</i>, Auckland
+                  </b>
+                  <i>- Senior Frontend Developer</i>
+                </CVHeading>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     Responsible for mostly, but not limited to, frontend
@@ -329,38 +368,36 @@ export default function Page() {
                     CI/CD.
                   </CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
-              <SubSection>
+              <div className="w-full">
                 <CVSubHeading>
                   Participated in various award entries:
                 </CVSubHeading>
                 <CVList className="mt-2">
-                  <div className="w-fit">
-                    <PointerEventHandler type="bullet" asChild>
-                      <Link
-                        href="/work/fola"
-                        className="underline text-secondary"
-                      >
-                        <CVListItem>Festival of Live Art (F.O.L.A)</CVListItem>
-                      </Link>
-                    </PointerEventHandler>
-                  </div>
+                  <PointerEventHandler type="bullet" asChild>
+                    <Link
+                      href="/work/fola"
+                      className="underline text-secondary"
+                    >
+                      <CVListItem className="w-fit">
+                        Festival of Live Art (F.O.L.A)
+                      </CVListItem>
+                    </Link>
+                  </PointerEventHandler>
                   <CVSubList>
                     <CVListItem>
                       2025 Best Awards Small Scale Websites - Silver
                     </CVListItem>
                   </CVSubList>
-                  <div className="w-fit">
-                    <PointerEventHandler type="bullet" asChild>
-                      <Link
-                        href="/work/greenprint"
-                        className="underline text-secondary"
-                      >
-                        <CVListItem>VW Greenprint</CVListItem>
-                      </Link>
-                    </PointerEventHandler>
-                  </div>
+                  <PointerEventHandler type="bullet" asChild>
+                    <Link
+                      href="/work/greenprint"
+                      className="underline text-secondary"
+                    >
+                      <CVListItem className="w-fit">VW Greenprint</CVListItem>
+                    </Link>
+                  </PointerEventHandler>
                   <CVSubList>
                     <CVListItem>
                       2024 Best Awards Sustainable Industrial Design (SPD) -
@@ -377,16 +414,16 @@ export default function Page() {
                     </CVListItem>
                   </CVSubList>
 
-                  <div className="w-fit">
-                    <PointerEventHandler type="bullet" asChild>
-                      <Link
-                        href="/work/real-watergate"
-                        className="underline text-secondary"
-                      >
-                        <CVListItem>The Real Watergate</CVListItem>
-                      </Link>
-                    </PointerEventHandler>
-                  </div>
+                  <PointerEventHandler type="bullet" asChild>
+                    <Link
+                      href="/work/real-watergate"
+                      className="underline text-secondary"
+                    >
+                      <CVListItem className="w-fit">
+                        The Real Watergate
+                      </CVListItem>
+                    </Link>
+                  </PointerEventHandler>
                   <CVSubList>
                     <CVListItem>
                       2024 Best Awards Small Scale Websites - Silver
@@ -420,34 +457,30 @@ export default function Page() {
                       Bronze***
                     </CVListItem>
                   </CVSubList>
-                  <div className="w-fit">
-                    <PointerEventHandler type="bullet" asChild>
-                      <Link
-                        href="/work/heritage-new-zealand"
-                        className="underline text-secondary"
-                      >
-                        <CVListItem>
-                          Heritage New Zealand Pouhere Taonga
-                        </CVListItem>
-                      </Link>
-                    </PointerEventHandler>
-                  </div>
+                  <PointerEventHandler type="bullet" asChild>
+                    <Link
+                      href="/work/heritage-new-zealand"
+                      className="underline text-secondary"
+                    >
+                      <CVListItem className="w-fit">
+                        Heritage New Zealand Pouhere Taonga
+                      </CVListItem>
+                    </Link>
+                  </PointerEventHandler>
                   <CVSubList>
                     <CVListItem>
                       2023 Best Awards Large Scale Websites - Bronze
                     </CVListItem>
                   </CVSubList>
-                  <div className="w-fit">
-                    <PointerEventHandler type="bullet" asChild>
-                      <Link
-                        href="https://www.fantasyherd.co.nz/"
-                        target="_blank"
-                        className="underline text-secondary"
-                      >
-                        <CVListItem>Fantasy Herd</CVListItem>
-                      </Link>
-                    </PointerEventHandler>
-                  </div>
+                  <PointerEventHandler type="bullet" asChild>
+                    <Link
+                      href="https://www.fantasyherd.co.nz/"
+                      target="_blank"
+                      className="underline text-secondary"
+                    >
+                      <CVListItem className="w-fit">Fantasy Herd</CVListItem>
+                    </Link>
+                  </PointerEventHandler>
                   <CVSubList>
                     <CVListItem>
                       2026 Cannes Lion Creative Data Lions - Bronze****
@@ -460,18 +493,18 @@ export default function Page() {
                   <CVSubHeading>***Apac Effie 2024</CVSubHeading>
                   <CVSubHeading>****Cannes Lions 2026</CVSubHeading>
                 </div>
-              </SubSection>
+              </div>
 
               {/* Infosys */}
-              <Section
-                subtitle={"MAR 2021 - JUL 2022"}
-                title={
-                  <>
-                    <b>Infosys, Auckland</b>
-                    <i>- Associate Developer</i>
-                  </>
-                }
-              >
+              <div className="w-full">
+                <CVSubHeading className="text-primary">
+                  {"MAR 2021 - JUL 2022"}
+                </CVSubHeading>
+                <CVHeading>
+                  <b>Infosys, Auckland</b>
+                  <i>- Associate Developer</i>
+                </CVHeading>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     Contractor in Spark NZ, responsible with backend for
@@ -479,18 +512,18 @@ export default function Page() {
                   </CVListItem>
                   <CVListItem>Node.js Express</CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Perpetual Guardian */}
-              <Section
-                subtitle={"DEC 2018 - JUN 2019"}
-                title={
-                  <>
-                    <b>Perpetual Guardian, Auckland</b>
-                    <i>- Junior Analyst Programmer</i>
-                  </>
-                }
-              >
+              <div className="w-full">
+                <CVSubHeading className="text-primary">
+                  {"DEC 2018 - JUN 2019"}
+                </CVSubHeading>
+                <CVHeading>
+                  <b>Perpetual Guardian, Auckland</b>
+                  <i>- Junior Analyst Programmer</i>
+                </CVHeading>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     Responsible for development of Footprint web application and
@@ -498,7 +531,7 @@ export default function Page() {
                     <CVSubList>
                       <CVListItem>
                         <PointerEventHandler asChild type="underline">
-                          <CVLink asChild>
+                          <CVLink>
                             <Link
                               href="https://www.myfootprint.co.nz/"
                               target="_blank"
@@ -514,31 +547,35 @@ export default function Page() {
                   <CVListItem>Backend - .NET Framework, C#</CVListItem>
                   <CVListItem>Testing - Selenium C#</CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Education */}
               <SectionHeader text="Education" />
 
-              <Section
-                subtitle={"2016 - 2021"}
-                title={
-                  <>
-                    <b>University of Auckland, New Zealand</b>
-                    <i>- Bachelor of Engineering</i>
-                  </>
-                }
-              >
+              <div className="w-full">
+                <CVSubHeading className="text-primary">
+                  {"2016 - 2021"}
+                </CVSubHeading>
+                <CVHeading>
+                  <b>University of Auckland, New Zealand</b>
+                  <i>- Bachelor of Engineering</i>
+                </CVHeading>
+
                 <CVList className="mt-2">
                   <CVListItem>
                     Specialisation in Computer Systems Engineering.
                   </CVListItem>
                 </CVList>
-              </Section>
+              </div>
 
               {/* Skills */}
               <SectionHeader text="Skills" />
 
-              <Section title={<b>Frontend</b>}>
+              <div className="w-full">
+                <CVHeading>
+                  <b>Frontend</b>
+                </CVHeading>
+
                 <CVDescription className="mt-2">
                   Three.js, R3F, Theatre.js, WebGL, Pixi.JS, Playcanvas,
                   Spark.js, MediaPipe, D3, Next.js, React, Vue.js, Vite, Svelte,
@@ -546,27 +583,39 @@ export default function Page() {
                   motion (Framer Motion), GSAP, Razor, Alpine.js, Lit,
                   Wordpress, php, PWA.
                 </CVDescription>
-              </Section>
+              </div>
 
-              <Section title={<b>Backend</b>}>
+              <div className="w-full">
+                <CVHeading>
+                  <b>Backend</b>
+                </CVHeading>
+
                 <CVDescription className="mt-2">
                   C#, .NET, Umbraco, Sanity, Node.js, Express, Hono, PostgreSQL,
                   Drizzle, Prisma, Cloudflare R2, S3, Redis.
                 </CVDescription>
-              </Section>
+              </div>
 
-              <Section title={<b>Testing</b>}>
+              <div className="w-full">
+                <CVHeading>
+                  <b>Testing</b>
+                </CVHeading>
+
                 <CVDescription className="mt-2">
                   Playwright, Selenium C#, Jest.
                 </CVDescription>
-              </Section>
+              </div>
 
-              <Section title={<b>Others</b>}>
+              <div className="w-full">
+                <CVHeading>
+                  <b>Others</b>
+                </CVHeading>
+
                 <CVDescription className="mt-2">
                   CI/CD, Lerna, Docker, Git, FFmpeg, HuggingFace, Orval,
                   Swagger, Figma
                 </CVDescription>
-              </Section>
+              </div>
             </div>
           </Grid>
         </main>

@@ -23,11 +23,7 @@ export default function Page2() {
             </Title>
           </div>
           {/* Reflct */}
-          <ListItemSection
-            title="Reflct"
-            image={reflct}
-            link="/work/reflct"
-          />
+          <ListItemSection title="Reflct" image={reflct} link="/work/reflct" />
           {/* Typography */}
           <ListItemSection
             title="Typography"
