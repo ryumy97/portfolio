@@ -1,5 +1,6 @@
 "use client";
 
+import PageLayer from "@/components/page-layer";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import Link from "@/components/transition-link";
@@ -82,22 +83,24 @@ function LabCategorySection({ title, labs, subcategories }: LabCategory) {
 
 export default function Labs() {
   return (
-    <SmoothScroll>
-      <div className="mt-14" />
-      <Grid className="w-full max-md:p-4">
-        <div className="col-span-full md:col-start-2 md:col-end-10">
-          <Title className="text-primary">Lab</Title>
-          <PageDescription>
-            Experiments in Gaussian Splatting, Three.js, WebGL shaders, and
-            canvas.
-          </PageDescription>
-        </div>
-        <SubGrid className="col-span-full md:col-start-2 md:col-end-10 mt-12 gap-y-14 content-start">
-          {LAB_CATEGORIES.map((category) => (
-            <LabCategorySection key={category.title} {...category} />
-          ))}
-        </SubGrid>
-      </Grid>
-    </SmoothScroll>
+    <PageLayer>
+      <SmoothScroll>
+        <div className="mt-14" />
+        <Grid className="w-full max-md:p-4">
+          <div className="col-span-full md:col-start-2 md:col-end-10">
+            <Title className="text-primary">Lab</Title>
+            <PageDescription>
+              Experiments in Gaussian Splatting, Three.js, WebGL shaders, and
+              canvas.
+            </PageDescription>
+          </div>
+          <SubGrid className="col-span-full md:col-start-2 md:col-end-10 mt-12 gap-y-14 content-start">
+            {LAB_CATEGORIES.map((category) => (
+              <LabCategorySection key={category.title} {...category} />
+            ))}
+          </SubGrid>
+        </Grid>
+      </SmoothScroll>
+    </PageLayer>
   );
 }

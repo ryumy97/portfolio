@@ -1,3 +1,4 @@
+import PageLayer from "@/components/page-layer";
 import { PointerEventHandler } from "@/components/pointer";
 import SmoothScroll from "@/components/smooth-scroll";
 import Link from "@/components/transition-link";
@@ -43,103 +44,144 @@ import smashTransition from "./cup-smash/transition.png";
 
 export default function Page() {
   return (
-    <SmoothScroll horizontal>
-      <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
-        <div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
-          <Title className="">
-            <div className="">Feast Mode</div>
-            <div className="text-primary mt-[0.3em]">- DDB NZ</div>
-          </Title>
-          <PageLink className="w-full mt-[1em]">
-            <PointerEventHandler asChild type="underline">
-              <Link
-                href="https://mcdonalds.co.nz/page/feast-mode"
-                target="_blank"
-                className="text-secondary italic"
-              >
-                https://mcdonalds.co.nz/page/feast-mode
-              </Link>
-            </PointerEventHandler>
-          </PageLink>
-        </div>
+    <PageLayer>
+      <SmoothScroll horizontal>
+        <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
+          <div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
+            <Title className="">
+              <div className="">Feast Mode</div>
+              <div className="text-primary mt-[0.3em]">- DDB NZ</div>
+            </Title>
+            <PageLink className="w-full mt-[1em]">
+              <PointerEventHandler asChild type="underline">
+                <Link
+                  href="https://mcdonalds.co.nz/page/feast-mode"
+                  target="_blank"
+                  className="text-secondary italic"
+                >
+                  https://mcdonalds.co.nz/page/feast-mode
+                </Link>
+              </PointerEventHandler>
+            </PageLink>
+          </div>
 
-        <TextSection text="McDonald’s New Zealand — a summer promotion built around limited-edition colour-changing Coke® cups, weekly cash draws, and an in-app Cup Smash game with instant food prizes." />
+          <TextSection text="McDonald’s New Zealand — a summer promotion built around limited-edition colour-changing Coke® cups, weekly cash draws, and an in-app Cup Smash game with instant food prizes." />
 
-        <ImageSection image={main} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={main} className="w-[60vw] md:w-[20vw]" />
 
-        <TextSection
-          text={`Cup Showcase — a mobile microsite where customers explore all four cup designs and see them shift from B&W outlines to full colour, when chilled. 
+          <TextSection
+            text={`Cup Showcase — a mobile microsite where customers explore all four cup designs and see them shift from B&W outlines to full colour, when chilled. 
 							
 							Three.js was used to display 3d cups with texture swapping to create the colour-changing effect.`}
-        />
+          />
 
-        <ImageSection image={showcaseIntro1} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={showcaseIntro2} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={showcaseLoader} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection
-          image={showcaseTransition}
-          className="w-[60vw] md:w-[20vw]"
-        />
+          <ImageSection
+            image={showcaseIntro1}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={showcaseIntro2}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={showcaseLoader}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={showcaseTransition}
+            className="w-[60vw] md:w-[20vw]"
+          />
 
-        <ImageSection image={showcaseMain1} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={showcaseMain2} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={showcaseMain3} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={showcaseMain4} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection
+            image={showcaseMain1}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={showcaseMain2}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={showcaseMain3}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={showcaseMain4}
+            className="w-[60vw] md:w-[20vw]"
+          />
 
-        <ImageSection
-          image={colourChanging1}
-          className="w-[60vw] md:w-[20vw]"
-        />
-        <ImageSection
-          image={colourChanging2}
-          className="w-[60vw] md:w-[20vw]"
-        />
-        <ImageSection
-          image={colourChanging3}
-          className="w-[60vw] md:w-[20vw]"
-        />
-        <ImageSection
-          image={colourChanging4}
-          className="w-[60vw] md:w-[20vw]"
-        />
+          <ImageSection
+            image={colourChanging1}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={colourChanging2}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={colourChanging3}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={colourChanging4}
+            className="w-[60vw] md:w-[20vw]"
+          />
 
-        <ImageSection image={detail1} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={detail2} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={detail3} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={detail4} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={detail1} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={detail2} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={detail3} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={detail4} className="w-[60vw] md:w-[20vw]" />
 
-        <ImageSection image={showcaseModal} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection
+            image={showcaseModal}
+            className="w-[60vw] md:w-[20vw]"
+          />
 
-        <TextSection text="Cup Smash — an in-app game in the Macca’s app. Buy a Large Combo, earn a play, and smash cups for a chance to win." />
+          <TextSection text="Cup Smash — an in-app game in the Macca’s app. Buy a Large Combo, earn a play, and smash cups for a chance to win." />
 
-        <ImageSection image={smashLoader} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashHowToPlay} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashHome1} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashHome2} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashHome3} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashHome4} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashHome5} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashLoader} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection
+            image={smashHowToPlay}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection image={smashHome1} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashHome2} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashHome3} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashHome4} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashHome5} className="w-[60vw] md:w-[20vw]" />
 
-        <ImageSection image={smashPlayModal} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection
+            image={smashPlayModal}
+            className="w-[60vw] md:w-[20vw]"
+          />
 
-        <ImageSection
-          image={smashTransition}
-          className="w-[60vw] md:w-[20vw]"
-        />
+          <ImageSection
+            image={smashTransition}
+            className="w-[60vw] md:w-[20vw]"
+          />
 
-        <ImageSection image={smashGameplay1} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashGameplay2} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashGameplay3} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection
+            image={smashGameplay1}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={smashGameplay2}
+            className="w-[60vw] md:w-[20vw]"
+          />
+          <ImageSection
+            image={smashGameplay3}
+            className="w-[60vw] md:w-[20vw]"
+          />
 
-        <ImageSection image={smashResult1} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashResult2} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashResult3} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashResult4} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashResult5} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashResult1} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashResult2} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashResult3} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashResult4} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashResult5} className="w-[60vw] md:w-[20vw]" />
 
-        <ImageSection image={smashMenu} className="w-[60vw] md:w-[20vw]" />
-        <ImageSection image={smashError} className="w-[60vw] md:w-[20vw]" />
-      </main>
-    </SmoothScroll>
+          <ImageSection image={smashMenu} className="w-[60vw] md:w-[20vw]" />
+          <ImageSection image={smashError} className="w-[60vw] md:w-[20vw]" />
+        </main>
+      </SmoothScroll>
+    </PageLayer>
   );
 }

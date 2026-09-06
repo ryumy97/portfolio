@@ -1,3 +1,4 @@
+import PageLayer from "@/components/page-layer";
 import SmoothScroll from "@/components/smooth-scroll";
 import { Title } from "@/components/ui/typography";
 import aimhigh from "./aimhigh/assets/main.png";
@@ -13,60 +14,62 @@ import typography from "./typography/assets/main.png";
 
 export default function Page2() {
   return (
-    <SmoothScroll horizontal>
-      <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
-        <div className="md:max-w-[30vw] max-w-[100vw] w-screen">
-          <Title className="">
-            <div className="text-primary">Projects</div>
-          </Title>
-        </div>
-        {/* Reflct */}
-        <ListItemSection
-          title="Reflct"
-          image={reflct}
-          link="/projects/reflct"
-        />
-        {/* Typography */}
-        <ListItemSection
-          title="Typography"
-          image={typography}
-          link="/projects/typography"
-        />
-        {/* Kiwi */}
-        <ListItemSection title="Kiwi" image={kiwi} link="/projects/kiwi" />
-        {/* Aim High */}
-        <ListItemSection
-          title="Aim High"
-          image={aimhigh}
-          link="/projects/aimhigh"
-        />
-        {/* Fola */}
-        <ListItemSection title="Fola" image={fola} link="/projects/fola" />
-        {/* Greenprint */}
-        <ListItemSection
-          title="Greenprint"
-          image={greenprint}
-          link="/projects/greenprint"
-        />
-        {/* Real Watergate */}
-        <ListItemSection
-          title="Real Watergate"
-          image={realWatergate}
-          link="/projects/real-watergate"
-        />
-        {/* Heritage New Zealand */}
-        <ListItemSection
-          title="Heritage NZ"
-          image={heritage}
-          link="/projects/heritage-new-zealand"
-        />
-        {/* Feast mode */}
-        <ListItemSection
-          title="Feast Mode"
-          image={feastMode}
-          link="/projects/feast-mode"
-        />
-      </main>
-    </SmoothScroll>
+    <PageLayer>
+      <SmoothScroll horizontal>
+        <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
+          <div className="md:max-w-[30vw] max-w-[100vw] w-screen">
+            <Title className="">
+              <div className="text-primary">Projects</div>
+            </Title>
+          </div>
+          {/* Reflct */}
+          <ListItemSection
+            title="Reflct"
+            image={reflct}
+            link="/projects/reflct"
+          />
+          {/* Typography */}
+          <ListItemSection
+            title="Typography"
+            image={typography}
+            link="/projects/typography"
+          />
+          {/* Kiwi */}
+          <ListItemSection title="Kiwi" image={kiwi} link="/projects/kiwi" />
+          {/* Aim High */}
+          <ListItemSection
+            title="Aim High"
+            image={aimhigh}
+            link="/projects/aimhigh"
+          />
+          {/* Fola */}
+          <ListItemSection title="Fola" image={fola} link="/projects/fola" />
+          {/* Greenprint */}
+          <ListItemSection
+            title="Greenprint"
+            image={greenprint}
+            link="/projects/greenprint"
+          />
+          {/* Real Watergate */}
+          <ListItemSection
+            title="Real Watergate"
+            image={realWatergate}
+            link="/projects/real-watergate"
+          />
+          {/* Heritage New Zealand */}
+          <ListItemSection
+            title="Heritage NZ"
+            image={heritage}
+            link="/projects/heritage-new-zealand"
+          />
+          {/* Feast mode */}
+          <ListItemSection
+            title="Feast Mode"
+            image={feastMode}
+            link="/projects/feast-mode"
+          />
+        </main>
+      </SmoothScroll>
+    </PageLayer>
   );
 }

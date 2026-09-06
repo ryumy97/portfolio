@@ -21,6 +21,9 @@ const METABALL_RADIUS_SCALE = 3;
 const METABALL_THRESHOLD = 0.42;
 const METABALL_SOFTNESS = 0.01;
 export const SETTLED_TIME = 1e6;
+/** Incoming DOM starts when this share of particles look landed (ease-out). */
+const REVEAL_FRACTION = 0.5;
+const REVEAL_PATH_PROGRESS = 0.85;
 
 const CORNERS: Array<[number, number]> = [
   [-1, -1],
@@ -260,6 +263,37 @@ export function gridForCanvas(canvas: HTMLCanvasElement) {
   };
 }
 
+/** Clock time when any particle has traveled `progress` of its path. */
+export function firstMotionTime(
+  data: Float32Array,
+  easeIn = false,
+  progress = 0.02,
+) {
+  const stride = VERTS_PER_PARTICLE * FLOATS_PER_VERT;
+  const count = Math.floor(data.length / stride);
+  const tAt = easeIn ? progress ** 0.25 : 1 - (1 - progress) ** 0.25;
+  let earliest = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < count; i++) {
+    earliest = Math.min(
+      earliest,
+      data[i * stride + 6] + data[i * stride + 7] * tAt,
+    );
+  }
+  return Number.isFinite(earliest) ? earliest : 0;
+}
+
+function easeOutQuarticTime(progress: number) {
+  return 1 - (1 - progress) ** 0.25;
+}
+
+/** Time when `fraction` of particles have reached rest (delay + travel). */
+export function coverageTime(arrivals: number[], fraction = 0.5) {
+  if (arrivals.length === 0) return 0;
+  const sorted = arrivals.slice().sort((a, b) => a - b);
+  const index = Math.max(0, Math.ceil(sorted.length * fraction) - 1);
+  return sorted[index] ?? 0;
+}
+
 export function retargetParticleBuffer(data: Float32Array, side: GatherSide) {
   const copy = data.slice();
   const count = Math.floor(
@@ -271,7 +305,7 @@ export function retargetParticleBuffer(data: Float32Array, side: GatherSide) {
     const src = i * VERTS_PER_PARTICLE * FLOATS_PER_VERT;
     const restX = copy[src];
     const restY = copy[src + 1];
-    const delay = Math.random() * 0.25;
+    const delay = 0;
     const travel = 0.7 + Math.random() * 0.4;
     fillEnd = Math.max(fillEnd, delay + travel);
     const [gx, gy] = startFromGather(side);
@@ -287,7 +321,11 @@ export function retargetParticleBuffer(data: Float32Array, side: GatherSide) {
     }
   }
 
-  return { data: copy, fillEnd };
+  return {
+    data: copy,
+    fillEnd,
+    motionAt: firstMotionTime(copy, true),
+  };
 }
 
 export function buildParticleBuffer(
@@ -345,15 +383,18 @@ export function buildParticleBuffer(
   }
 
   const data = new Float32Array(count * VERTS_PER_PARTICLE * FLOATS_PER_VERT);
+  const arrivals: number[] = [];
   let fillEnd = 0;
   let offset = 0;
 
   for (let i = 0; i < count; i++) {
     const [sx, sy] = starts[i];
     const rest = rests[restOfStart[i]];
-    const delay = Math.random() * 0.65;
+    const delay = 0;
     const travel = 1.2 + Math.random() * 0.7;
-    fillEnd = Math.max(fillEnd, delay + travel);
+    const arrival = delay + travel;
+    arrivals.push(delay + travel * easeOutQuarticTime(REVEAL_PATH_PROGRESS));
+    fillEnd = Math.max(fillEnd, arrival);
 
     for (const [cx, cy] of CORNERS) {
       data[offset] = rest.x;
@@ -369,7 +410,12 @@ export function buildParticleBuffer(
     }
   }
 
-  return { data, fillEnd, vertexCount: count * VERTS_PER_PARTICLE };
+  return {
+    data,
+    fillEnd,
+    revealAt: coverageTime(arrivals, REVEAL_FRACTION),
+    vertexCount: count * VERTS_PER_PARTICLE,
+  };
 }
 
 export function createParticleFieldRenderer(

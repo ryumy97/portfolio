@@ -40,6 +40,9 @@ const ForegroundCanvas = ({ className }: Props) => {
   const generation = usePageTransition((state) => state.generation);
   const phase = usePageTransition((state) => state.phase);
   const entryFrom = usePageTransition((state) => state.entryFrom);
+  const covering = usePageTransition((state) => state.covering);
+  const covered = usePageTransition((state) => state.covered);
+  const overlay = covering && !covered;
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -57,6 +60,7 @@ const ForegroundCanvas = ({ className }: Props) => {
     let running = true;
     let filled = reduceMotion;
     let fillEnd = 0;
+    let revealAt = 0;
     let cols = 0;
     let rows = 0;
     let vertexCount = 0;
@@ -119,6 +123,10 @@ const ForegroundCanvas = ({ className }: Props) => {
       usePageTransition.getState().markCovered();
     };
 
+    const markRevealed = () => {
+      usePageTransition.getState().markRevealed();
+    };
+
     const uploadParticles = (force = false) => {
       const next = gridForCanvas(canvas);
       if (
@@ -133,6 +141,7 @@ const ForegroundCanvas = ({ className }: Props) => {
       rows = next.rows;
       const packed = buildParticleBuffer(cols, rows, fromSide);
       fillEnd = packed.fillEnd;
+      revealAt = packed.revealAt;
       vertexCount = packed.vertexCount;
       fieldData = packed.data;
       renderer.upload({ ...packed, cols, rows });
@@ -145,11 +154,13 @@ const ForegroundCanvas = ({ className }: Props) => {
         return;
       }
       const time = performance.now() / 1000 - startedAt;
+      if (time >= revealAt) markCovered();
       if (time >= fillEnd) {
         filled = true;
         commitSettledField();
         renderer.drawIdle();
         markCovered();
+        markRevealed();
         return;
       }
       renderer.draw(time, sampleDisplayColor(), debug());
@@ -170,6 +181,7 @@ const ForegroundCanvas = ({ className }: Props) => {
         commitSettledField();
         renderer.drawIdle();
         markCovered();
+        markRevealed();
         return;
       }
       filled = false;
@@ -192,8 +204,8 @@ const ForegroundCanvas = ({ className }: Props) => {
         if (filled) renderer.drawIdle();
         return;
       }
-      const { covering, covered } = usePageTransition.getState();
-      if (covering && !covered) {
+      const { covering } = usePageTransition.getState();
+      if (covering) {
         beginColorBlend(state.current);
         return;
       }
@@ -242,7 +254,8 @@ const ForegroundCanvas = ({ className }: Props) => {
       ref={canvasRef}
       aria-hidden
       className={cn(
-        "pointer-events-none fixed inset-0 z-30 h-svh w-full",
+        "pointer-events-none fixed inset-0 h-svh w-full",
+        overlay ? "z-30" : "z-0",
         className,
       )}
       style={CANVAS_STYLE}

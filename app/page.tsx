@@ -1,3 +1,9 @@
+import PageLayer from "@/components/page-layer";
+
 export default function Home() {
-  return <main className="min-h-svh" />;
+  return (
+    <PageLayer>
+      <main className="min-h-svh" />
+    </PageLayer>
+  );
 }

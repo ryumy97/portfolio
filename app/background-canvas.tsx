@@ -47,9 +47,11 @@ const BackgroundCanvas = ({ className }: Props) => {
     let running = true;
     let mode: "empty" | "idle" | "collecting" = "empty";
     let fillEnd = 0;
+    let motionAt = 0;
     let startedAt = 0;
     let fieldColor: ParticleField["color"] | null = null;
     let collectToken = 0;
+    let notifiedLeave = false;
 
     const debug = () => useParticleDebug.getState().enabled;
 
@@ -81,6 +83,10 @@ const BackgroundCanvas = ({ className }: Props) => {
       if (!running || token !== collectToken || mode !== "collecting") return;
       if (!fieldColor) return;
       const time = performance.now() / 1000 - startedAt;
+      if (!notifiedLeave && time >= motionAt) {
+        notifiedLeave = true;
+        usePageTransition.getState().markLeaveStarted();
+      }
       if (time >= fillEnd) {
         mode = "empty";
         renderer.drawIdle();
@@ -95,9 +101,11 @@ const BackgroundCanvas = ({ className }: Props) => {
       cancelAnimationFrame(raf);
       const field = usePageTransition.getState().particleField;
       const token = ++collectToken;
+      notifiedLeave = false;
       if (!field) {
         mode = "empty";
         renderer.drawIdle();
+        usePageTransition.getState().markLeaveStarted();
         usePageTransition.getState().markCollected();
         return;
       }
@@ -105,11 +113,13 @@ const BackgroundCanvas = ({ className }: Props) => {
         mode = "empty";
         fieldColor = field.color;
         renderer.drawIdle();
+        usePageTransition.getState().markLeaveStarted();
         usePageTransition.getState().markCollected();
         return;
       }
       const packed = retargetParticleBuffer(field.data, side);
       fillEnd = packed.fillEnd;
+      motionAt = packed.motionAt;
       fieldColor = field.color;
       renderer.upload({
         data: packed.data,

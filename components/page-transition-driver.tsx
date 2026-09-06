@@ -1,13 +1,13 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import {
-  type ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+  AnimatePresence,
+  cubicBezier,
+  motion,
+  useReducedMotion,
+} from "motion/react";
+import { usePathname } from "next/navigation";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import {
   applyDocumentBackground,
   colorForPath,
@@ -15,7 +15,9 @@ import {
   pageOrder,
 } from "@/lib/page-color";
 import { normalizePath } from "@/lib/page-href";
+import { cn } from "@/lib/utils";
 import { usePageColor } from "@/stores/page-color";
+import { usePageLayers } from "@/stores/page-layers";
 import { usePageTransition } from "@/stores/page-transition";
 
 type Props = {
@@ -24,31 +26,55 @@ type Props = {
 
 /** Survives remounts so a route change cannot reset the frozen view. */
 let committedPath: string | null = null;
-let snapshotHtml = "";
 let revealed = false;
 
-const PageTransitionDriver = ({ children }: Props) => {
+const EASE = cubicBezier(0.3, 0, 0, 1);
+const DISAPPEAR_DURATION = 0.5;
+const REVEAL_DURATION = 0.6;
+const SHIFT = "8vw";
+
+const PageLayerStage = () => {
   const pathname = usePathname();
+  const layers = usePageLayers((state) => state.layers);
+  const release = usePageLayers((state) => state.release);
   const covered = usePageTransition((state) => state.covered);
   const covering = usePageTransition((state) => state.covering);
+  const leaveStarted = usePageTransition((state) => state.leaveStarted);
   const startCover = usePageTransition((state) => state.startCover);
-  const markRevealed = usePageTransition((state) => state.markRevealed);
+  const gatherSide = usePageTransition((state) => state.gatherSide);
+  const entryFrom = usePageTransition((state) => state.entryFrom);
   const current = usePageColor((state) => state.current);
   const previous = usePageColor((state) => state.previous);
+  const reduceMotion = useReducedMotion();
 
   const [viewPath, setViewPath] = useState(() => committedPath ?? pathname);
   const [hasRevealed, setHasRevealed] = useState(() => revealed);
-  const liveRef = useRef<HTMLDivElement>(null);
-  const holdRef = useRef<HTMLDivElement>(null);
   const startedFor = useRef<string | null>(null);
 
-  const pathPending = normalizePath(viewPath) !== normalizePath(pathname);
+  const destPath = normalizePath(pathname);
+  const view = normalizePath(viewPath);
+  const pathPending = view !== destPath;
   const collecting = covering && !covered;
-  const hideLive = pathPending || !hasRevealed || collecting;
+  const showLive = hasRevealed && !pathPending && !collecting;
+  const landingReveal = entryFrom === "all";
+  const exitX = gatherSide === "left" ? `-${SHIFT}` : SHIFT;
+  const enterX = landingReveal
+    ? 0
+    : gatherSide === "left"
+      ? SHIFT
+      : `-${SHIFT}`;
+  const enterY = landingReveal ? 16 : 0;
+  const duration = reduceMotion ? 0 : undefined;
+
+  const staged = layers.filter((layer) =>
+    pathPending
+      ? layer.path === view || layer.path === destPath
+      : layer.path === destPath,
+  );
 
   if (covered && covering) {
     if (pathPending) {
-      committedPath = normalizePath(pathname);
+      committedPath = destPath;
       setViewPath(pathname);
     }
     if (!hasRevealed) {
@@ -57,31 +83,10 @@ const PageTransitionDriver = ({ children }: Props) => {
     }
   }
 
-  useEffect(() => {
-    const onClick = (event: MouseEvent) => {
-      if (event.button !== 0) return;
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-        return;
-      }
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      const anchor = target.closest("a");
-      if (!(anchor instanceof HTMLAnchorElement)) return;
-      if (anchor.target && anchor.target !== "_self") return;
-      if (anchor.origin !== window.location.origin) return;
-      const next = normalizePath(anchor.pathname);
-      const currentPath = normalizePath(window.location.pathname);
-      if (next === currentPath) return;
-      snapshotHtml = liveRef.current?.innerHTML ?? snapshotHtml;
-    };
-    document.addEventListener("click", onClick, true);
-    return () => document.removeEventListener("click", onClick, true);
-  }, []);
-
   useLayoutEffect(() => {
-    const path = normalizePath(pathname);
-    const { covering, covered } = usePageTransition.getState();
-    if (covering && !covered) {
+    const path = destPath;
+    const { covering } = usePageTransition.getState();
+    if (covering) {
       startedFor.current = path;
       usePageColor.getState().retarget(colorForPath(path));
       return;
@@ -89,7 +94,7 @@ const PageTransitionDriver = ({ children }: Props) => {
     if (startedFor.current === path) return;
     startedFor.current = path;
 
-    if (normalizePath(viewPath) === path) {
+    if (view === path) {
       usePageColor.getState().reset(colorForPath(path));
     } else {
       usePageColor.getState().advance(colorForPath(path));
@@ -98,16 +103,14 @@ const PageTransitionDriver = ({ children }: Props) => {
     const from = pageOrder(viewPath);
     const to = pageOrder(path);
     startCover(to >= from ? "left" : "right");
-  }, [pathname, viewPath, startCover]);
+  }, [destPath, view, viewPath, startCover]);
 
   useLayoutEffect(() => {
-    if (pathPending && !collecting) {
-      if (holdRef.current) holdRef.current.innerHTML = snapshotHtml;
-      return;
+    if (pathPending) return;
+    for (const layer of usePageLayers.getState().layers) {
+      if (layer.path !== destPath) release(layer.path);
     }
-    if (!hasRevealed) return;
-    snapshotHtml = liveRef.current?.innerHTML ?? "";
-  });
+  }, [pathPending, destPath, release]);
 
   useLayoutEffect(() => {
     if (collecting) {
@@ -119,29 +122,56 @@ const PageTransitionDriver = ({ children }: Props) => {
     );
   }, [collecting, covered, hasRevealed, pathPending, current, previous]);
 
-  useLayoutEffect(() => {
-    if (!covering || !covered) return;
-    markRevealed();
-  }, [covering, covered, markRevealed]);
+  return (
+    <AnimatePresence>
+      {staged.map((layer) => {
+        const outgoing = pathPending && layer.path === view;
+        return (
+          <motion.div
+            key={layer.path}
+            className={cn(
+              "fixed inset-0 overflow-hidden",
+              outgoing
+                ? "pointer-events-none z-20"
+                : cn("z-10", !showLive && "pointer-events-none"),
+            )}
+            initial={false}
+            animate={
+              outgoing
+                ? leaveStarted
+                  ? { opacity: 0, x: reduceMotion ? 0 : exitX }
+                  : { opacity: 1, x: 0 }
+                : showLive
+                  ? { opacity: 1, x: 0, y: 0 }
+                  : { opacity: 0, x: enterX, y: enterY }
+            }
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: outgoing
+                ? leaveStarted
+                  ? (duration ?? DISAPPEAR_DURATION)
+                  : 0
+                : showLive
+                  ? (duration ?? REVEAL_DURATION)
+                  : 0,
+              ease: EASE,
+            }}
+            aria-hidden={outgoing || !showLive ? true : undefined}
+            inert={outgoing || !showLive ? true : undefined}
+          >
+            {layer.node}
+          </motion.div>
+        );
+      })}
+    </AnimatePresence>
+  );
+};
 
+const PageTransitionDriver = ({ children }: Props) => {
   return (
     <>
-      <div
-        ref={liveRef}
-        className="relative z-10"
-        hidden={hideLive}
-        aria-hidden={hideLive || undefined}
-        inert={hideLive || undefined}
-      >
-        {children}
-      </div>
-      {pathPending && !collecting ? (
-        <div
-          ref={holdRef}
-          className="pointer-events-none relative z-10"
-          aria-hidden
-        />
-      ) : null}
+      {children}
+      <PageLayerStage />
     </>
   );
 };
