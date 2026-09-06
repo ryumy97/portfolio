@@ -1,4 +1,4 @@
-import { PAGE_COLOR, type Rgb } from "@/lib/page-color";
+import type { Rgb } from "@/lib/page-color";
 import {
   bindFramebuffer,
   createFramebuffer,
@@ -99,62 +99,6 @@ void main() {
 }
 `;
 
-const RING_FS = `
-precision mediump float;
-varying vec2 v_corner;
-uniform vec3 u_color;
-
-void main() {
-  float r = length(v_corner);
-  if (r > 1.0 || r < 0.86) discard;
-  float lum = dot(u_color, vec3(0.299, 0.587, 0.114));
-  vec3 stroke = lum > 0.5
-    ? vec3(0.118, 0.118, 0.118)
-    : vec3(0.976, 0.973, 0.961);
-  gl_FragColor = vec4(stroke, 1.0);
-}
-`;
-
-const DEBUG_PATH_VS = `
-attribute vec2 a_pos;
-void main() {
-  gl_Position = vec4(a_pos, 0.0, 1.0);
-}
-`;
-
-const DEBUG_COLOR_FS = `
-precision mediump float;
-uniform vec3 u_color;
-void main() {
-  gl_FragColor = vec4(u_color, 1.0);
-}
-`;
-
-const DEBUG_ARROW_VS = `
-attribute vec2 a_tip;
-attribute vec2 a_from;
-attribute vec2 a_vert;
-uniform vec2 u_resolution;
-uniform float u_size;
-
-void main() {
-  vec2 dir = a_tip - a_from;
-  float d = length(dir);
-  dir = d > 0.0001 ? dir / d : vec2(1.0, 0.0);
-  vec2 perp = vec2(-dir.y, dir.x);
-  vec2 local = dir * a_vert.x + perp * a_vert.y;
-  vec2 offset = local * u_size * 2.0 / max(u_resolution, vec2(1.0));
-  gl_Position = vec4(a_tip + offset, 0.0, 1.0);
-}
-`;
-
-const ARROW_SIZE_PX = 12;
-const ARROW_WINGS: Array<[number, number]> = [
-  [0, 0],
-  [-1, 0.55],
-  [-1, -0.55],
-];
-
 export type ParticleField = {
   data: Float32Array;
   vertexCount: number;
@@ -167,7 +111,7 @@ export type ParticleFieldRenderer = {
   upload: (
     field: Pick<ParticleField, "data" | "vertexCount" | "cols" | "rows">,
   ) => void;
-  draw: (time: number, color: Rgb, debug?: boolean, easeIn?: boolean) => void;
+  draw: (time: number, color: Rgb, easeIn?: boolean) => void;
   drawIdle: () => void;
   destroy: () => void;
 };
@@ -183,51 +127,6 @@ export const GATHER_CLIP: Record<GatherSide, readonly [number, number]> = {
 
 export function oppositeGather(side: GatherSide): GatherSide {
   return side === "left" ? "right" : "left";
-}
-
-function debugMotionColor(page: Rgb): Rgb {
-  const coral = PAGE_COLOR.coral;
-  const dist =
-    Math.abs(page[0] - coral[0]) +
-    Math.abs(page[1] - coral[1]) +
-    Math.abs(page[2] - coral[2]);
-  return dist < 0.2 ? PAGE_COLOR.cobalt : PAGE_COLOR.coral;
-}
-
-function buildDebugGeometry(data: Float32Array, vertexCount: number) {
-  const count = Math.floor(vertexCount / VERTS_PER_PARTICLE);
-  const path = new Float32Array(count * 4);
-  const arrows = new Float32Array(count * ARROW_WINGS.length * 6);
-
-  for (let i = 0; i < count; i++) {
-    const src = i * VERTS_PER_PARTICLE * FLOATS_PER_VERT;
-    const ox = data[src];
-    const oy = data[src + 1];
-    const sx = data[src + 2];
-    const sy = data[src + 3];
-    path[i * 4] = sx;
-    path[i * 4 + 1] = sy;
-    path[i * 4 + 2] = ox;
-    path[i * 4 + 3] = oy;
-
-    let offset = i * ARROW_WINGS.length * 6;
-    for (const [vx, vy] of ARROW_WINGS) {
-      arrows[offset] = ox;
-      arrows[offset + 1] = oy;
-      arrows[offset + 2] = sx;
-      arrows[offset + 3] = sy;
-      arrows[offset + 4] = vx;
-      arrows[offset + 5] = vy;
-      offset += 6;
-    }
-  }
-
-  return {
-    path,
-    arrows,
-    pathVertexCount: count * 2,
-    arrowVertexCount: count * ARROW_WINGS.length,
-  };
 }
 
 function fract(value: number) {
@@ -306,7 +205,7 @@ export function retargetParticleBuffer(data: Float32Array, side: GatherSide) {
     const restX = copy[src];
     const restY = copy[src + 1];
     const delay = 0;
-    const travel = 0.7 + Math.random() * 0.4;
+    const travel = 0.8 + Math.random() * 0.3;
     fillEnd = Math.max(fillEnd, delay + travel);
     const [gx, gy] = startFromGather(side);
 
@@ -391,7 +290,7 @@ export function buildParticleBuffer(
     const [sx, sy] = starts[i];
     const rest = rests[restOfStart[i]];
     const delay = 0;
-    const travel = 1.2 + Math.random() * 0.7;
+    const travel = 1.1 + Math.random() * 0.5;
     const arrival = delay + travel;
     arrivals.push(delay + travel * easeOutQuarticTime(REVEAL_PATH_PROGRESS));
     fillEnd = Math.max(fillEnd, arrival);
@@ -425,53 +324,29 @@ export function createParticleFieldRenderer(
   if (!gl) return null;
 
   const blobProgram = createProgram(gl, VS, BLOB_FS);
-  const ringProgram = createProgram(gl, VS, RING_FS);
   const thresholdProgram = createProgram(gl, FULLSCREEN_VS, THRESHOLD_FS);
-  const pathProgram = createProgram(gl, DEBUG_PATH_VS, DEBUG_COLOR_FS);
-  const arrowProgram = createProgram(gl, DEBUG_ARROW_VS, DEBUG_COLOR_FS);
-  if (
-    !blobProgram ||
-    !ringProgram ||
-    !thresholdProgram ||
-    !pathProgram ||
-    !arrowProgram
-  ) {
+  if (!blobProgram || !thresholdProgram) {
     if (blobProgram) gl.deleteProgram(blobProgram);
-    if (ringProgram) gl.deleteProgram(ringProgram);
     if (thresholdProgram) gl.deleteProgram(thresholdProgram);
-    if (pathProgram) gl.deleteProgram(pathProgram);
-    if (arrowProgram) gl.deleteProgram(arrowProgram);
     return null;
   }
 
   const buffer = gl.createBuffer();
-  const pathBuffer = gl.createBuffer();
-  const arrowBuffer = gl.createBuffer();
   const fullscreenBuffer = createFullscreenTriangleBuffer(gl);
-  if (!buffer || !pathBuffer || !arrowBuffer || !fullscreenBuffer) {
+  if (!buffer || !fullscreenBuffer) {
     if (buffer) gl.deleteBuffer(buffer);
-    if (pathBuffer) gl.deleteBuffer(pathBuffer);
-    if (arrowBuffer) gl.deleteBuffer(arrowBuffer);
     if (fullscreenBuffer) gl.deleteBuffer(fullscreenBuffer);
     gl.deleteProgram(blobProgram);
-    gl.deleteProgram(ringProgram);
     gl.deleteProgram(thresholdProgram);
-    gl.deleteProgram(pathProgram);
-    gl.deleteProgram(arrowProgram);
     return null;
   }
 
   let fieldTarget: FramebufferTarget | null = createFramebuffer(gl, 1, 1);
   if (!fieldTarget) {
     gl.deleteBuffer(buffer);
-    gl.deleteBuffer(pathBuffer);
-    gl.deleteBuffer(arrowBuffer);
     gl.deleteBuffer(fullscreenBuffer);
     gl.deleteProgram(blobProgram);
-    gl.deleteProgram(ringProgram);
     gl.deleteProgram(thresholdProgram);
-    gl.deleteProgram(pathProgram);
-    gl.deleteProgram(arrowProgram);
     return null;
   }
 
@@ -485,53 +360,25 @@ export function createParticleFieldRenderer(
   const blobUTime = gl.getUniformLocation(blobProgram, "u_time");
   const blobUEaseIn = gl.getUniformLocation(blobProgram, "u_ease_in");
 
-  const ringAOrigin = gl.getAttribLocation(ringProgram, "a_origin");
-  const ringAStart = gl.getAttribLocation(ringProgram, "a_start");
-  const ringACorner = gl.getAttribLocation(ringProgram, "a_corner");
-  const ringALife = gl.getAttribLocation(ringProgram, "a_life");
-  const ringUResolution = gl.getUniformLocation(ringProgram, "u_resolution");
-  const ringUGrid = gl.getUniformLocation(ringProgram, "u_grid");
-  const ringUTime = gl.getUniformLocation(ringProgram, "u_time");
-  const ringUEaseIn = gl.getUniformLocation(ringProgram, "u_ease_in");
-  const ringUColor = gl.getUniformLocation(ringProgram, "u_color");
-
   const uField = gl.getUniformLocation(thresholdProgram, "u_field");
   const uThresholdColor = gl.getUniformLocation(thresholdProgram, "u_color");
   const uThreshold = gl.getUniformLocation(thresholdProgram, "u_threshold");
   const uSoftness = gl.getUniformLocation(thresholdProgram, "u_softness");
 
-  const aPathPos = gl.getAttribLocation(pathProgram, "a_pos");
-  const uPathColor = gl.getUniformLocation(pathProgram, "u_color");
-
-  const aArrowTip = gl.getAttribLocation(arrowProgram, "a_tip");
-  const aArrowFrom = gl.getAttribLocation(arrowProgram, "a_from");
-  const aArrowVert = gl.getAttribLocation(arrowProgram, "a_vert");
-  const uArrowResolution = gl.getUniformLocation(arrowProgram, "u_resolution");
-  const uArrowSize = gl.getUniformLocation(arrowProgram, "u_size");
-  const uArrowColor = gl.getUniformLocation(arrowProgram, "u_color");
-  const arrowStride = 6 * 4;
-
   let vertexCount = 0;
-  let pathVertexCount = 0;
-  let arrowVertexCount = 0;
   let cols = 0;
   let rows = 0;
 
-  const bindParticleAttributes = (
-    aOrigin: number,
-    aStart: number,
-    aCorner: number,
-    aLife: number,
-  ) => {
+  const bindParticleAttributes = () => {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.enableVertexAttribArray(aOrigin);
-    gl.vertexAttribPointer(aOrigin, 2, gl.FLOAT, false, stride, 0);
-    gl.enableVertexAttribArray(aStart);
-    gl.vertexAttribPointer(aStart, 2, gl.FLOAT, false, stride, 8);
-    gl.enableVertexAttribArray(aCorner);
-    gl.vertexAttribPointer(aCorner, 2, gl.FLOAT, false, stride, 16);
-    gl.enableVertexAttribArray(aLife);
-    gl.vertexAttribPointer(aLife, 3, gl.FLOAT, false, stride, 24);
+    gl.enableVertexAttribArray(blobAOrigin);
+    gl.vertexAttribPointer(blobAOrigin, 2, gl.FLOAT, false, stride, 0);
+    gl.enableVertexAttribArray(blobAStart);
+    gl.vertexAttribPointer(blobAStart, 2, gl.FLOAT, false, stride, 8);
+    gl.enableVertexAttribArray(blobACorner);
+    gl.vertexAttribPointer(blobACorner, 2, gl.FLOAT, false, stride, 16);
+    gl.enableVertexAttribArray(blobALife);
+    gl.vertexAttribPointer(blobALife, 3, gl.FLOAT, false, stride, 24);
   };
 
   const ensureFieldTarget = (width: number, height: number) => {
@@ -544,31 +391,6 @@ export function createParticleFieldRenderer(
     return true;
   };
 
-  const drawDebug = (color: Rgb) => {
-    const motion = debugMotionColor(color);
-    // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-    gl.useProgram(pathProgram);
-    gl.bindBuffer(gl.ARRAY_BUFFER, pathBuffer);
-    gl.enableVertexAttribArray(aPathPos);
-    gl.vertexAttribPointer(aPathPos, 2, gl.FLOAT, false, 0, 0);
-    if (uPathColor) gl.uniform3f(uPathColor, motion[0], motion[1], motion[2]);
-    gl.drawArrays(gl.LINES, 0, pathVertexCount);
-
-    // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-    gl.useProgram(arrowProgram);
-    gl.bindBuffer(gl.ARRAY_BUFFER, arrowBuffer);
-    gl.enableVertexAttribArray(aArrowTip);
-    gl.vertexAttribPointer(aArrowTip, 2, gl.FLOAT, false, arrowStride, 0);
-    gl.enableVertexAttribArray(aArrowFrom);
-    gl.vertexAttribPointer(aArrowFrom, 2, gl.FLOAT, false, arrowStride, 8);
-    gl.enableVertexAttribArray(aArrowVert);
-    gl.vertexAttribPointer(aArrowVert, 2, gl.FLOAT, false, arrowStride, 16);
-    setResolutionUniform(gl, uArrowResolution);
-    if (uArrowSize) gl.uniform1f(uArrowSize, ARROW_SIZE_PX);
-    if (uArrowColor) gl.uniform3f(uArrowColor, motion[0], motion[1], motion[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, arrowVertexCount);
-  };
-
   return {
     upload(field) {
       cols = field.cols;
@@ -576,16 +398,8 @@ export function createParticleFieldRenderer(
       vertexCount = field.vertexCount;
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(gl.ARRAY_BUFFER, field.data, gl.STATIC_DRAW);
-
-      const debug = buildDebugGeometry(field.data, field.vertexCount);
-      pathVertexCount = debug.pathVertexCount;
-      arrowVertexCount = debug.arrowVertexCount;
-      gl.bindBuffer(gl.ARRAY_BUFFER, pathBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, debug.path, gl.STATIC_DRAW);
-      gl.bindBuffer(gl.ARRAY_BUFFER, arrowBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, debug.arrows, gl.STATIC_DRAW);
     },
-    draw(time, color, debug = false, easeIn = false) {
+    draw(time, color, easeIn = false) {
       if (vertexCount === 0) return;
       const width = gl.drawingBufferWidth;
       const height = gl.drawingBufferHeight;
@@ -600,7 +414,7 @@ export function createParticleFieldRenderer(
       gl.blendEquation(gl.FUNC_ADD);
       // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
       gl.useProgram(blobProgram);
-      bindParticleAttributes(blobAOrigin, blobAStart, blobACorner, blobALife);
+      bindParticleAttributes();
       setResolutionUniform(gl, blobUResolution);
       if (blobUGrid) gl.uniform2f(blobUGrid, cols, rows);
       if (blobUTime) gl.uniform1f(blobUTime, time);
@@ -624,19 +438,6 @@ export function createParticleFieldRenderer(
       if (uSoftness) gl.uniform1f(uSoftness, METABALL_SOFTNESS);
       drawFullscreenTriangle(gl, thresholdProgram, fullscreenBuffer);
       gl.bindTexture(gl.TEXTURE_2D, null);
-
-      if (debug) {
-        // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-        gl.useProgram(ringProgram);
-        bindParticleAttributes(ringAOrigin, ringAStart, ringACorner, ringALife);
-        setResolutionUniform(gl, ringUResolution);
-        if (ringUGrid) gl.uniform2f(ringUGrid, cols, rows);
-        if (ringUTime) gl.uniform1f(ringUTime, time);
-        if (ringUEaseIn) gl.uniform1f(ringUEaseIn, easeIn ? 1 : 0);
-        if (ringUColor) gl.uniform3f(ringUColor, color[0], color[1], color[2]);
-        gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
-        drawDebug(color);
-      }
     },
     drawIdle() {
       gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -646,14 +447,9 @@ export function createParticleFieldRenderer(
     destroy() {
       if (fieldTarget) deleteFramebuffer(gl, fieldTarget);
       gl.deleteBuffer(buffer);
-      gl.deleteBuffer(pathBuffer);
-      gl.deleteBuffer(arrowBuffer);
       gl.deleteBuffer(fullscreenBuffer);
       gl.deleteProgram(blobProgram);
-      gl.deleteProgram(ringProgram);
       gl.deleteProgram(thresholdProgram);
-      gl.deleteProgram(pathProgram);
-      gl.deleteProgram(arrowProgram);
     },
   };
 }

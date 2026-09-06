@@ -2,13 +2,24 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (
-  &:where(.dark, .dark *, .cobalt, .cobalt *, .coral, .coral *, .ink, .ink *)
-);
+@custom-variant dark (&:where(
+  .dark,
+  .dark *,
+  .cobalt,
+  .cobalt *,
+  .coral,
+  .coral *,
+  .ink,
+  .ink *
+));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: #1e1e1e;
+  --color-ivory: #f9f8f5;
+  --color-coral: #f75d5d;
+  --color-cobalt: #1255cb;
   --font-sans: var(--font-lato);
   --font-mono: var(--font-lato);
   --font-heading: var(--font-playfair-display);
@@ -183,14 +194,20 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
   body {
     @apply bg-background text-foreground;
   }
   html {
     @apply bg-background font-sans;
+  }
+  /* Resolve color on the themed node so a document theme change
+     (html.ink during collect) cannot recolor an outgoing page. */
+  .ivory,
+  .ink,
+  .cobalt,
+  .coral,
+  .dark {
+    color: var(--foreground);
   }
   a {
     @apply max-md:underline;

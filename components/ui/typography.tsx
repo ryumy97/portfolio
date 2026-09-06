@@ -1,5 +1,5 @@
-import { Slot } from "radix-ui";
 import { cn } from "@/lib/utils";
+import { Slot } from "radix-ui";
 
 type Props = {
   className?: string;
@@ -50,7 +50,7 @@ export const PageDescription: React.FC<Props> = ({
   return (
     <Comp
       className={cn(
-        "text-[min(max(2.5vw,14px),24px)] leading-[1.25em]",
+        "text-[min(max(2vw,14px),20px)] leading-[1.25em]",
         className,
       )}
     >

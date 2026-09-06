@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
 import Header from "@/components/header";
 import PageTransitionDriver from "@/components/page-transition-driver";
-import ParticleDebugHud from "@/components/particle-debug-hud";
 import Pointer from "@/components/pointer";
 import ThemeProvider from "@/components/theme-provider";
-import BackgroundCanvas from "./background-canvas";
-import ForegroundCanvas from "./foreground-canvas";
+import PageCanvas from "./page-canvas";
 import "./globals.css";
 
 // Heading
@@ -40,12 +38,10 @@ export default function RootLayout({
     >
       <body className="min-h-svh overflow-hidden pointer-events-auto">
         <ThemeProvider>
-          <BackgroundCanvas />
+          <PageCanvas />
           <PageTransitionDriver>{children}</PageTransitionDriver>
-          <ForegroundCanvas />
           <Header />
           <Pointer />
-          <ParticleDebugHud />
         </ThemeProvider>
       </body>
     </html>

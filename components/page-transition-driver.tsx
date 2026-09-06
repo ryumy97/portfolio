@@ -1,15 +1,6 @@
 "use client";
 
 import {
-  AnimatePresence,
-  cubicBezier,
-  motion,
-  useReducedMotion,
-} from "motion/react";
-import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
-import {
   applyDocumentBackground,
   colorForPath,
   PAGE_COLOR,
@@ -22,6 +13,15 @@ import { cn } from "@/lib/utils";
 import { usePageColor } from "@/stores/page-color";
 import { usePageLayers } from "@/stores/page-layers";
 import { usePageTransition } from "@/stores/page-transition";
+import {
+  AnimatePresence,
+  cubicBezier,
+  motion,
+  useReducedMotion,
+} from "motion/react";
+import { useTheme } from "next-themes";
+import { usePathname } from "next/navigation";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 type Props = {
   children: ReactNode;
@@ -33,7 +33,7 @@ let revealed = false;
 
 const EASE = cubicBezier(0.3, 0, 0, 1);
 const DISAPPEAR_DURATION = 0.5;
-const REVEAL_DURATION = 0.6;
+const REVEAL_DURATION = 0.5;
 const SHIFT = "8vw";
 
 const PageLayerStage = () => {
@@ -159,11 +159,11 @@ const PageLayerStage = () => {
             animate={
               outgoing
                 ? leaveStarted
-                  ? { opacity: 0, x: reduceMotion ? 0 : exitX }
-                  : { opacity: 1, x: 0 }
+                  ? { opacity: 0 }
+                  : { opacity: 1 }
                 : showLive
-                  ? { opacity: 1, x: 0, y: 0 }
-                  : { opacity: 0, x: enterX, y: enterY }
+                  ? { opacity: 1 }
+                  : { opacity: 0 }
             }
             exit={{ opacity: 0 }}
             transition={{

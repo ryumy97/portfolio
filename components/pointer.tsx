@@ -1,9 +1,11 @@
 "use client";
 
-import { useAnimationFrame } from "motion/react";
+import { cubicBezier, motion, useAnimationFrame } from "motion/react";
 import { Slot } from "radix-ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { lerp } from "@/lib/math";
+import { themeClassName } from "@/lib/page-color";
+import { pointerColor, useHeaderTheme } from "@/lib/use-header-theme";
 import { cn } from "@/lib/utils";
 import { pointer } from "@/stores/pointer";
 import { useScrollEvent } from "./smooth-scroll";
@@ -178,6 +180,7 @@ export const PointerEventHandler = ({
 const Pointer = () => {
   const ref = useRef<HTMLDivElement>(null);
   const [isTouch, setIsTouch] = useState(false);
+  const theme = useHeaderTheme();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(pointer: touch)");
@@ -241,10 +244,14 @@ const Pointer = () => {
   if (isTouch) return;
 
   return (
-    <div
+    <motion.div
       ref={ref}
+      initial={false}
+      animate={{ backgroundColor: pointerColor(theme) }}
+      transition={{ duration: 0.5, ease: cubicBezier(0.3, 0, 0, 1) }}
       className={cn(
-        "pointer-events-none fixed -top-4 -left-4 bg-primary rounded-full w-3 h-3 z-40 max-md:hidden",
+        "pointer-events-none fixed -top-4 -left-4 rounded-full w-3 h-3 z-40 max-md:hidden",
+        themeClassName(theme),
       )}
     />
   );

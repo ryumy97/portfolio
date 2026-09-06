@@ -1,15 +1,19 @@
 "use client";
 
+import Link from "@/components/transition-link";
+import { themeClassName } from "@/lib/page-color";
+import { headerForeground, useHeaderTheme } from "@/lib/use-header-theme";
+import { cn } from "@/lib/utils";
+import favicon from "@/public/favicon.png";
 import { AnimatePresence, cubicBezier, motion } from "motion/react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { type Ref, useEffect, useRef, useState } from "react";
-import Link from "@/components/transition-link";
-import { cn } from "@/lib/utils";
-import favicon from "@/public/favicon.png";
 import { PointerEventHandler, usePointerEvent } from "./pointer";
 import { Button } from "./ui/button";
 import { Grid } from "./ui/grid";
+
+const COLOR_EASE = "duration-500 ease-default";
 
 const Logo = () => {
   const pathname = usePathname();
@@ -69,6 +73,7 @@ const Logo = () => {
 
 const Header = () => {
   const pathname = usePathname();
+  const theme = useHeaderTheme();
 
   const [isOpen, setIsOpen] = useState(false);
   const previousPathname = useRef(pathname);
@@ -82,7 +87,20 @@ const Header = () => {
   return (
     <>
       <Grid asChild>
-        <header className="fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10">
+        <motion.header
+          initial={false}
+          animate={{ color: headerForeground(theme) }}
+          transition={{
+            delay: 0.3,
+            duration: 0.5,
+            ease: cubicBezier(0.3, 0, 0, 1),
+          }}
+          className={cn(
+            "fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10",
+            "[&_[data-variant=nav]]:text-current [&_[data-variant=nav]:hover]:text-background",
+            themeClassName(theme),
+          )}
+        >
           <Logo />
 
           <div className="col-start-10 md:hidden">
@@ -107,7 +125,7 @@ const Header = () => {
             </PointerEventHandler>
           </div>
 
-          <div className="col-start-8 flex justify-end items-center max-md:hidden">
+          <div className="col-start-7 flex justify-end items-center max-md:hidden">
             <PointerEventHandler asChild>
               <Button
                 variant={pathname.startsWith("/projects") ? "navActive" : "nav"}
@@ -119,7 +137,7 @@ const Header = () => {
             </PointerEventHandler>
           </div>
 
-          <div className="col-start-9 flex justify-end items-center max-md:hidden">
+          <div className="col-start-7 flex justify-end items-center max-md:hidden">
             <PointerEventHandler asChild>
               <Button
                 variant={pathname.startsWith("/gallery") ? "navActive" : "nav"}
@@ -130,7 +148,7 @@ const Header = () => {
               </Button>
             </PointerEventHandler>
           </div>
-          <div className="col-start-10 flex justify-end items-center max-md:hidden">
+          <div className="col-start-10 row-start-1 flex justify-end items-center max-md:hidden">
             <PointerEventHandler asChild>
               <Button
                 variant={pathname.startsWith("/lab") ? "navActive" : "nav"}
@@ -141,13 +159,17 @@ const Header = () => {
               </Button>
             </PointerEventHandler>
           </div>
-        </header>
+        </motion.header>
       </Grid>
       <AnimatePresence>
         {isOpen && (
           <motion.div
             key={"header-modal"}
-            className="fixed top-0 left-0 right-0 z-49 p-2 flex flex-col gap-2 bg-popover items-center justify-center overflow-hidden"
+            className={cn(
+              "fixed top-0 left-0 right-0 z-49 p-2 flex flex-col gap-2 bg-popover items-center justify-center overflow-hidden transition-colors",
+              COLOR_EASE,
+              themeClassName(theme),
+            )}
             initial={"hidden"}
             animate={"visible"}
             exit={"hidden"}
