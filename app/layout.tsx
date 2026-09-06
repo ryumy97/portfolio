@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import PageTransitionDriver from "@/components/page-transition-driver";
 import ParticleDebugHud from "@/components/particle-debug-hud";
 import Pointer from "@/components/pointer";
+import ThemeProvider from "@/components/theme-provider";
 import BackgroundCanvas from "./background-canvas";
 import ForegroundCanvas from "./foreground-canvas";
 import "./globals.css";
@@ -34,15 +35,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${playfairDisplay.variable} ${lato.variable} h-full antialiased`}
     >
       <body className="min-h-svh overflow-hidden pointer-events-auto">
-        <BackgroundCanvas />
-        <PageTransitionDriver>{children}</PageTransitionDriver>
-        <ForegroundCanvas />
-        <Header />
-        <Pointer />
-        <ParticleDebugHud />
+        <ThemeProvider>
+          <BackgroundCanvas />
+          <PageTransitionDriver>{children}</PageTransitionDriver>
+          <ForegroundCanvas />
+          <Header />
+          <Pointer />
+          <ParticleDebugHud />
+        </ThemeProvider>
       </body>
     </html>
   );

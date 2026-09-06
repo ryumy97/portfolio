@@ -35,8 +35,9 @@ export const usePageTransition = create<PageTransitionState>((set, get) => ({
   entryFrom: "all",
   particleField: null,
   startCover: (gatherSide) => {
-    const { covering, particleField } = get();
-    if (covering) return;
+    const { covering, covered, particleField } = get();
+    // In-flight nav before the DOM appears: keep particles, retarget color only.
+    if (covering && !covered) return;
     const hasField = particleField !== null;
     set({
       covering: true,

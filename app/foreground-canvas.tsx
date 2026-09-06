@@ -20,6 +20,7 @@ import {
 
 type FieldApi = {
   play: (from: ParticleOrigin) => void;
+  stop: () => void;
 };
 
 const COLOR_BLEND_SECONDS = 0.85;
@@ -120,6 +121,7 @@ const ForegroundCanvas = ({ className }: Props) => {
     const markCovered = () => {
       if (notifiedCover) return;
       notifiedCover = true;
+      commitSettledField();
       usePageTransition.getState().markCovered();
     };
 
@@ -194,7 +196,20 @@ const ForegroundCanvas = ({ className }: Props) => {
       loop(token);
     };
 
-    apiRef.current = { play };
+    const stop = () => {
+      cancelAnimationFrame(raf);
+      playToken += 1;
+      filled = true;
+      blendDuration = 0;
+      renderer.drawIdle();
+    };
+
+    apiRef.current = { play, stop };
+
+    const unsubCover = usePageTransition.subscribe((state, prev) => {
+      if (state.generation === prev.generation) return;
+      if (state.phase === "collecting") stop();
+    });
 
     const unsubColor = usePageColor.subscribe((state, prev) => {
       if (state.current === prev.current && state.previous === prev.previous) {
@@ -204,8 +219,8 @@ const ForegroundCanvas = ({ className }: Props) => {
         if (filled) renderer.drawIdle();
         return;
       }
-      const { covering } = usePageTransition.getState();
-      if (covering) {
+      const { covering, covered } = usePageTransition.getState();
+      if (covering && !covered) {
         beginColorBlend(state.current);
         return;
       }
@@ -236,6 +251,7 @@ const ForegroundCanvas = ({ className }: Props) => {
       running = false;
       apiRef.current = null;
       cancelAnimationFrame(raf);
+      unsubCover();
       unsubColor();
       unsubDebug();
       disconnectResize();
@@ -245,6 +261,10 @@ const ForegroundCanvas = ({ className }: Props) => {
 
   useLayoutEffect(() => {
     if (generation === 0) return;
+    if (phase === "collecting") {
+      apiRef.current?.stop();
+      return;
+    }
     if (phase !== "covering") return;
     apiRef.current?.play(entryFrom);
   }, [phase, generation, entryFrom]);

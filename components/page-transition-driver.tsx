@@ -7,12 +7,15 @@ import {
   useReducedMotion,
 } from "motion/react";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import {
   applyDocumentBackground,
   colorForPath,
   PAGE_COLOR,
   pageOrder,
+  themeClassName,
+  themeForPath,
 } from "@/lib/page-color";
 import { normalizePath } from "@/lib/page-href";
 import { cn } from "@/lib/utils";
@@ -45,6 +48,7 @@ const PageLayerStage = () => {
   const entryFrom = usePageTransition((state) => state.entryFrom);
   const current = usePageColor((state) => state.current);
   const previous = usePageColor((state) => state.previous);
+  const { setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
   const [viewPath, setViewPath] = useState(() => committedPath ?? pathname);
@@ -73,7 +77,7 @@ const PageLayerStage = () => {
   );
 
   if (covered && covering) {
-    if (pathPending) {
+    if (pathPending && startedFor.current === destPath) {
       committedPath = destPath;
       setViewPath(pathname);
     }
@@ -85,8 +89,8 @@ const PageLayerStage = () => {
 
   useLayoutEffect(() => {
     const path = destPath;
-    const { covering } = usePageTransition.getState();
-    if (covering) {
+    const { covering, covered } = usePageTransition.getState();
+    if (covering && !covered) {
       startedFor.current = path;
       usePageColor.getState().retarget(colorForPath(path));
       return;
@@ -100,10 +104,11 @@ const PageLayerStage = () => {
       usePageColor.getState().advance(colorForPath(path));
     }
     applyDocumentBackground(PAGE_COLOR.ink);
+    setTheme("ink");
     const from = pageOrder(viewPath);
     const to = pageOrder(path);
     startCover(to >= from ? "left" : "right");
-  }, [destPath, view, viewPath, startCover]);
+  }, [destPath, view, viewPath, startCover, setTheme]);
 
   useLayoutEffect(() => {
     if (pathPending) return;
@@ -115,12 +120,26 @@ const PageLayerStage = () => {
   useLayoutEffect(() => {
     if (collecting) {
       applyDocumentBackground(PAGE_COLOR.ink);
+      setTheme("ink");
       return;
     }
+    const visiblePath =
+      covered && hasRevealed && !pathPending ? destPath : view;
     applyDocumentBackground(
       covered && hasRevealed && !pathPending ? current : previous,
     );
-  }, [collecting, covered, hasRevealed, pathPending, current, previous]);
+    setTheme(themeForPath(visiblePath));
+  }, [
+    collecting,
+    covered,
+    hasRevealed,
+    pathPending,
+    current,
+    previous,
+    destPath,
+    view,
+    setTheme,
+  ]);
 
   return (
     <AnimatePresence>
@@ -131,6 +150,7 @@ const PageLayerStage = () => {
             key={layer.path}
             className={cn(
               "fixed inset-0 overflow-hidden",
+              themeClassName(themeForPath(layer.path)),
               outgoing
                 ? "pointer-events-none z-20"
                 : cn("z-10", !showLive && "pointer-events-none"),

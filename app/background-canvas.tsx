@@ -136,7 +136,11 @@ const BackgroundCanvas = ({ className }: Props) => {
     applyField(usePageTransition.getState().particleField);
 
     const unsubField = usePageTransition.subscribe((state, prev) => {
-      if (state.particleField === prev.particleField) return;
+      const fieldChanged = state.particleField !== prev.particleField;
+      const coverEnded = prev.covering && !state.covering;
+      if (!fieldChanged && !coverEnded) return;
+      // Inbound cover still owns the pixels; keep the settled field for collect.
+      if (state.phase === "covering") return;
       applyField(state.particleField);
     });
 

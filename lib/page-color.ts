@@ -3,12 +3,29 @@ import { normalizePath } from "@/lib/page-href";
 /** Linear RGB 0–1 */
 export type Rgb = readonly [number, number, number];
 
+export const PAGE_THEMES = ["ivory", "cobalt", "coral", "ink"] as const;
+export type PageTheme = (typeof PAGE_THEMES)[number];
+
 export const PAGE_COLOR = {
   ivory: [249 / 255, 248 / 255, 245 / 255],
   ink: [30 / 255, 30 / 255, 30 / 255],
   coral: [247 / 255, 93 / 255, 93 / 255],
   cobalt: [18 / 255, 85 / 255, 203 / 255],
 } as const satisfies Record<string, Rgb>;
+
+/** CSS class theme for each route. */
+export function themeForPath(path: string): PageTheme {
+  const route = normalizePath(path);
+  if (route.startsWith("/about")) return "cobalt";
+  if (route.startsWith("/projects")) return "coral";
+  if (route.startsWith("/gallery")) return "ink";
+  if (route.startsWith("/lab")) return "cobalt";
+  return "ivory";
+}
+
+export function themeClassName(theme: PageTheme) {
+  return theme;
+}
 
 /** Settled field / particle color for each route. */
 export function colorForPath(path: string): Rgb {
