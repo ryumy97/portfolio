@@ -16,10 +16,10 @@ export default function Page2() {
   return (
     <PageLayer>
       <SmoothScroll horizontal>
-        <main className="flex min-h-svh w-max items-center gap-[10vw] md:gap-[5vw] px-8">
-          <div className="md:max-w-[30vw] max-w-[100vw] w-screen">
+        <main className="flex flex-col md:flex-row min-h-svh w-full md:w-max items-center gap-[10vw] md:gap-[5vw] px-8 pt-24 pb-16 md:py-0">
+          <div className="md:max-w-[30vw] w-full md:w-screen">
             <Title className="">
-              <div className="text-primary">Work</div>
+              <div className="text-ivory">Work</div>
             </Title>
           </div>
           {/* Reflct */}

@@ -13,8 +13,6 @@ import { PointerEventHandler, usePointerEvent } from "./pointer";
 import { Button } from "./ui/button";
 import { Grid } from "./ui/grid";
 
-const COLOR_EASE = "duration-500 ease-default";
-
 const Logo = () => {
   const pathname = usePathname();
   const [hover, setHover] = useState(false);
@@ -74,9 +72,9 @@ const Logo = () => {
 const Header = () => {
   const pathname = usePathname();
   const theme = useHeaderTheme();
-
   const [isOpen, setIsOpen] = useState(false);
   const previousPathname = useRef(pathname);
+  const chromeTheme = isOpen ? "ivory" : theme;
 
   useEffect(() => {
     if (previousPathname.current === pathname) return;
@@ -89,7 +87,7 @@ const Header = () => {
       <Grid asChild>
         <motion.header
           initial={false}
-          animate={{ color: headerForeground(theme) }}
+          animate={{ color: headerForeground(chromeTheme) }}
           transition={{
             delay: 0.3,
             duration: 0.5,
@@ -98,7 +96,7 @@ const Header = () => {
           className={cn(
             "fixed top-0 left-0 right-0 z-50 p-2 grid grid-cols-10",
             "[&_[data-variant=nav]]:text-current [&_[data-variant=nav]:hover]:text-background",
-            themeClassName(theme),
+            themeClassName(chromeTheme),
           )}
         >
           <Logo />
@@ -166,9 +164,8 @@ const Header = () => {
           <motion.div
             key={"header-modal"}
             className={cn(
-              "fixed top-0 left-0 right-0 z-49 p-2 flex flex-col gap-2 bg-popover items-center justify-center overflow-hidden transition-colors",
-              COLOR_EASE,
-              themeClassName(theme),
+              "fixed top-0 left-0 right-0 z-49 p-2 flex flex-col gap-2 bg-background items-center justify-center overflow-hidden",
+              themeClassName("ivory"),
             )}
             initial={"hidden"}
             animate={"visible"}

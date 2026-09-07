@@ -8,10 +8,17 @@ import {
 } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   applyDocumentBackground,
   colorForPath,
+  isSamePageSection,
   PAGE_COLOR,
   pageOrder,
   themeClassName,
@@ -34,7 +41,6 @@ let revealed = false;
 const EASE = cubicBezier(0.3, 0, 0, 1);
 const DISAPPEAR_DURATION = 0.5;
 const REVEAL_DURATION = 0.5;
-const SHIFT = "8vw";
 
 const PageLayerStage = () => {
   const pathname = usePathname();
@@ -44,8 +50,6 @@ const PageLayerStage = () => {
   const covering = usePageTransition((state) => state.covering);
   const leaveStarted = usePageTransition((state) => state.leaveStarted);
   const startCover = usePageTransition((state) => state.startCover);
-  const gatherSide = usePageTransition((state) => state.gatherSide);
-  const entryFrom = usePageTransition((state) => state.entryFrom);
   const current = usePageColor((state) => state.current);
   const previous = usePageColor((state) => state.previous);
   const { setTheme } = useTheme();
@@ -58,16 +62,10 @@ const PageLayerStage = () => {
   const destPath = normalizePath(pathname);
   const view = normalizePath(viewPath);
   const pathPending = view !== destPath;
+  const skipCover = pathPending && isSamePageSection(view, destPath);
   const collecting = covering && !covered;
   const showLive = hasRevealed && !pathPending && !collecting;
-  const landingReveal = entryFrom === "all";
-  const exitX = gatherSide === "left" ? `-${SHIFT}` : SHIFT;
-  const enterX = landingReveal
-    ? 0
-    : gatherSide === "left"
-      ? SHIFT
-      : `-${SHIFT}`;
-  const enterY = landingReveal ? 16 : 0;
+  const leaving = leaveStarted || skipCover;
   const duration = reduceMotion ? 0 : undefined;
 
   const staged = layers.filter((layer) =>
@@ -96,6 +94,12 @@ const PageLayerStage = () => {
       return;
     }
     if (startedFor.current === path) return;
+
+    if (view !== path && isSamePageSection(view, path)) {
+      startedFor.current = path;
+      return;
+    }
+
     startedFor.current = path;
 
     if (view === path) {
@@ -110,6 +114,16 @@ const PageLayerStage = () => {
     startCover(to >= from ? "left" : "right");
   }, [destPath, view, viewPath, startCover, setTheme]);
 
+  useEffect(() => {
+    if (!skipCover) return;
+    const delay = reduceMotion ? 0 : DISAPPEAR_DURATION * 1000;
+    const timer = window.setTimeout(() => {
+      committedPath = destPath;
+      setViewPath(destPath);
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [skipCover, destPath, reduceMotion]);
+
   useLayoutEffect(() => {
     if (pathPending) return;
     for (const layer of usePageLayers.getState().layers) {
@@ -118,19 +132,18 @@ const PageLayerStage = () => {
   }, [pathPending, destPath, release]);
 
   useLayoutEffect(() => {
-    if (collecting) {
+    if (collecting && !skipCover) {
       applyDocumentBackground(PAGE_COLOR.ink);
       setTheme("ink");
       return;
     }
-    const visiblePath =
-      covered && hasRevealed && !pathPending ? destPath : view;
-    applyDocumentBackground(
-      covered && hasRevealed && !pathPending ? current : previous,
-    );
+    const live = skipCover || (covered && hasRevealed && !pathPending);
+    const visiblePath = live ? destPath : view;
+    applyDocumentBackground(live ? current : previous);
     setTheme(themeForPath(visiblePath));
   }, [
     collecting,
+    skipCover,
     covered,
     hasRevealed,
     pathPending,
@@ -158,7 +171,7 @@ const PageLayerStage = () => {
             initial={false}
             animate={
               outgoing
-                ? leaveStarted
+                ? leaving
                   ? { opacity: 0 }
                   : { opacity: 1 }
                 : showLive
@@ -168,7 +181,7 @@ const PageLayerStage = () => {
             exit={{ opacity: 0 }}
             transition={{
               duration: outgoing
-                ? leaveStarted
+                ? leaving
                   ? (duration ?? DISAPPEAR_DURATION)
                   : 0
                 : showLive

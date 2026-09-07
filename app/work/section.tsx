@@ -1,14 +1,5 @@
 "use client";
 
-import {
-  cubicBezier,
-  motion,
-  transform,
-  useAnimationFrame,
-  useMotionValue,
-} from "motion/react";
-import type { StaticImageData } from "next/image";
-import { useEffect, useRef } from "react";
 import { MotionImage } from "@/components/motion-image";
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
@@ -19,10 +10,21 @@ import {
   ProjectTitle,
 } from "@/components/ui/typography";
 import { lerp } from "@/lib/math";
+import { useMdUp } from "@/lib/use-md-up";
 import { cn } from "@/lib/utils";
+import {
+  cubicBezier,
+  motion,
+  transform,
+  useAnimationFrame,
+  useMotionValue,
+} from "motion/react";
+import type { StaticImageData } from "next/image";
+import { useCallback, useEffect, useRef } from "react";
 
 const useRevealMotionValues = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const mdUp = useMdUp();
 
   const dataRef = useRef({
     target: {
@@ -38,12 +40,16 @@ const useRevealMotionValues = () => {
   const height = useMotionValue("0%");
   const x = useMotionValue("-5%");
 
-  useScrollEvent((_lenis) => {
+  const updateFromRect = useCallback(() => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
 
+    const pos = mdUp ? rect.left : rect.top;
+    const size = mdUp ? rect.width : rect.height;
+    const viewport = mdUp ? window.innerWidth : window.innerHeight;
+
     dataRef.current.target.x = transform(
-      transform(rect.left, [-rect.width, window.innerWidth], [1, 0], {
+      transform(pos, [-size, viewport], [1, 0], {
         clamp: true,
       }),
       [0, 1],
@@ -54,7 +60,7 @@ const useRevealMotionValues = () => {
     );
 
     dataRef.current.target.height = transform(
-      transform(rect.left, [window.innerWidth / 2, window.innerWidth], [1, 0], {
+      transform(pos, [viewport / 2, viewport], [1, 0], {
         clamp: true,
       }),
       [0, 1],
@@ -64,35 +70,13 @@ const useRevealMotionValues = () => {
         ease: cubicBezier(0.3, 0, 0.3, 1),
       },
     );
-  });
+  }, [mdUp]);
+
+  useScrollEvent(updateFromRect);
 
   useEffect(() => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    dataRef.current.target.x = transform(
-      transform(rect.left, [-rect.width, window.innerWidth], [1, 0], {
-        clamp: true,
-      }),
-      [0, 1],
-      [20, -20],
-      {
-        clamp: true,
-      },
-    );
-
-    dataRef.current.target.height = transform(
-      transform(rect.left, [window.innerWidth / 2, window.innerWidth], [1, 0], {
-        clamp: true,
-      }),
-      [0, 1],
-      [0, 100],
-      {
-        clamp: true,
-        ease: cubicBezier(0.3, 0, 0.3, 1),
-      },
-    );
-  }, []);
+    updateFromRect();
+  }, [updateFromRect]);
 
   useAnimationFrame((_, delta) => {
     const t = delta / 1000 / 0.3;
@@ -130,7 +114,7 @@ export const ListItemSection: React.FC<{
   return (
     <div
       className={cn(
-        "w-[80vw] md:w-[30vw] text-center relative mr-[40vw] md:mr-[30vw]",
+        "w-[80vw] md:w-[30vw] text-center relative md:mr-[30vw]",
         className,
       )}
     >
@@ -139,7 +123,7 @@ export const ListItemSection: React.FC<{
           aspectRatio: image.width / image.height,
         }}
         ref={ref}
-        className="w-full absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
+        className="w-full relative md:absolute md:top-1/2 md:left-0 md:-translate-x-1/2 md:-translate-y-1/2 overflow-hidden mb-2 md:mb-0"
       >
         <motion.div
           style={{
@@ -167,7 +151,7 @@ export const ListItemSection: React.FC<{
       </motion.div>
       <ProjectTitle className="relative">
         <PointerEventHandler asChild type="underline" offsetHeight={2}>
-          <Link href={link} className="bg-white/80">
+          <Link href={link} className="bg-coral px-2">
             {title}
           </Link>
         </PointerEventHandler>
@@ -230,7 +214,7 @@ export const ImageSection: React.FC<{
       className={cn(
         "w-[80vw] md:w-[30vw] text-center relative",
         {
-          "w-[120vw] md:w-[60vw]": type === "desktop",
+          "w-[90vw] md:w-[60vw]": type === "desktop",
           "w-[60vw] md:w-[20vw]": type === "mobile",
           "w-[80vw] md:w-[40vw]": type === "default",
         },
@@ -256,7 +240,7 @@ export const ImageSection: React.FC<{
             className="w-full h-full object-cover"
             sizes={
               type === "desktop"
-                ? "(max-width: 768px) 120vw, 60vw"
+                ? "(max-width: 768px) 90vw, 60vw"
                 : type === "mobile"
                   ? "(max-width: 768px) 60vw, 20vw"
                   : "(max-width: 768px) 80vw, 40vw"

@@ -45,6 +45,18 @@ export function pageOrder(path: string): number {
   return 1;
 }
 
+/** Top-level section: `/`, `/work`, `/gallery`, … */
+export function pageSection(path: string): string {
+  const route = normalizePath(path);
+  if (route === "/") return "/";
+  const [segment] = route.split("/").filter(Boolean);
+  return `/${segment ?? ""}`;
+}
+
+export function isSamePageSection(a: string, b: string): boolean {
+  return pageSection(a) === pageSection(b);
+}
+
 export function rgbToCss(rgb: Rgb) {
   return `rgb(${Math.round(rgb[0] * 255)} ${Math.round(rgb[1] * 255)} ${Math.round(rgb[2] * 255)})`;
 }

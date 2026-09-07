@@ -8,16 +8,18 @@ import {
   useMotionValue,
 } from "motion/react";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
 import Link from "@/components/transition-link";
 import { ProjectTitle } from "@/components/ui/typography";
 import { lerp } from "@/lib/math";
+import { useMdUp } from "@/lib/use-md-up";
 import { cn } from "@/lib/utils";
 
 const useRevealMotionValues = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const mdUp = useMdUp();
 
   const dataRef = useRef({
     target: {
@@ -30,19 +32,18 @@ const useRevealMotionValues = () => {
 
   const y = useMotionValue("5%");
 
-  useScrollEvent((_lenis) => {
+  const updateFromRect = useCallback(() => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
 
+    const pos = mdUp ? rect.left : rect.top;
+    const start = mdUp ? window.innerWidth * 0.75 : window.innerHeight * 0.75;
+    const end = mdUp ? window.innerWidth : window.innerHeight;
+
     dataRef.current.target.y = transform(
-      transform(
-        rect.left,
-        [window.innerWidth * 0.75, window.innerWidth],
-        [1, 0],
-        {
-          clamp: true,
-        },
-      ),
+      transform(pos, [start, end], [1, 0], {
+        clamp: true,
+      }),
       [0, 1],
       [100, 0],
       {
@@ -50,29 +51,13 @@ const useRevealMotionValues = () => {
         ease: cubicBezier(0.3, 0, 0.3, 1),
       },
     );
-  });
+  }, [mdUp]);
+
+  useScrollEvent(updateFromRect);
 
   useEffect(() => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    dataRef.current.target.y = transform(
-      transform(
-        rect.left,
-        [window.innerWidth * 0.75, window.innerWidth],
-        [1, 0],
-        {
-          clamp: true,
-        },
-      ),
-      [0, 1],
-      [100, 0],
-      {
-        clamp: true,
-        ease: cubicBezier(0.3, 0, 0.3, 1),
-      },
-    );
-  }, []);
+    updateFromRect();
+  }, [updateFromRect]);
 
   useAnimationFrame((_, delta) => {
     const t = delta / 1000 / 0.2;
@@ -103,12 +88,12 @@ export const ListItemSection: React.FC<{
   return (
     <div
       className={cn(
-        "w-[50vw] md:w-[30vw] text-center relative mr-[40vw] md:mr-[30vw]",
+        "w-[80vw] md:w-[30vw] text-center relative md:mr-[30vw]",
         className,
       )}
     >
       <motion.div
-        className="w-full absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 border-white overflow-hidden border-[0.5vw] aspect-landscape shadow-2xl"
+        className="w-full border-white overflow-hidden border-[0.5vw] aspect-landscape shadow-2xl"
         style={{ y }}
         ref={ref}
       >
@@ -116,15 +101,13 @@ export const ListItemSection: React.FC<{
           src={image}
           alt="Gallery"
           fill
-          sizes="(max-width: 768px) 50vw, 30vw"
+          sizes="(max-width: 768px) 80vw, 30vw"
           loading="eager"
         />
       </motion.div>
-      <ProjectTitle className="relative">
+      <ProjectTitle className="relative text-left">
         <PointerEventHandler asChild type="underline" offsetHeight={2}>
-          <Link href={link} className="bg-white/80">
-            {title}
-          </Link>
+          <Link href={link}>{title}</Link>
         </PointerEventHandler>
       </ProjectTitle>
     </div>
@@ -142,7 +125,7 @@ export const ImageSection: React.FC<{
   return (
     <motion.div
       className={cn(
-        "text-center relative mr-[10vw] md:mr-[10vw] border-white overflow-hidden border-[0.5vw] shadow-2xl",
+        "text-center relative md:mr-[10vw] border-white overflow-hidden border-[0.5vw] shadow-2xl",
         {
           "w-[90vw] md:w-[30vw] aspect-landscape": layout === "landscape",
           "w-[60vw] md:w-[20vw] aspect-portrait": layout === "portrait",

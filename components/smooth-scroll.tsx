@@ -4,6 +4,7 @@ import type { ScrollCallback } from "lenis";
 import { Lenis as LenisComponent, type LenisRef, useLenis } from "lenis/react";
 import { cancelFrame, frame } from "motion";
 import { useEffect, useRef } from "react";
+import { useMdUp } from "@/lib/use-md-up";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -23,6 +24,8 @@ function SmoothScrollController({
 
 const SmoothScroll = ({ horizontal = false, onScroll, children }: Props) => {
   const lenisRef = useRef<LenisRef | null>(null);
+  const mdUp = useMdUp();
+  const horizontalActive = horizontal && mdUp;
 
   useEffect(() => {
     function update(data: { timestamp: number }) {
@@ -37,13 +40,14 @@ const SmoothScroll = ({ horizontal = false, onScroll, children }: Props) => {
 
   return (
     <LenisComponent
+      key={horizontalActive ? "x" : "y"}
       ref={lenisRef}
       className={cn("h-svh w-screen relative", {
-        "overflow-x-auto overflow-y-hidden": horizontal,
-        "overflow-y-auto overflow-x-hidden": !horizontal,
+        "overflow-x-auto overflow-y-hidden": horizontalActive,
+        "overflow-y-auto overflow-x-hidden": !horizontalActive,
       })}
       options={
-        horizontal
+        horizontalActive
           ? {
               autoRaf: false,
               orientation: "horizontal",

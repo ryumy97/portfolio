@@ -85,7 +85,7 @@ export default function Labs() {
   return (
     <PageLayer>
       <SmoothScroll>
-        <div className="mt-14" />
+        <div className="mt-24" />
         <Grid className="w-full max-md:p-4">
           <div className="col-span-full md:col-start-2 md:col-end-10">
             <Title className="text-primary">Lab</Title>

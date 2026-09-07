@@ -152,7 +152,12 @@ const PageCanvas = ({ className }: Props) => {
       }
       cols = next.cols;
       rows = next.rows;
-      const packed = buildParticleBuffer(cols, rows, fromSide);
+      const packed = buildParticleBuffer(
+        cols,
+        rows,
+        fromSide,
+        window.matchMedia("(max-width: 767px)").matches ? 2 : 1,
+      );
       fillEnd = packed.fillEnd;
       revealAt = packed.revealAt;
       vertexCount = packed.vertexCount;
@@ -259,7 +264,11 @@ const PageCanvas = ({ className }: Props) => {
         usePageTransition.getState().markCollected();
         return;
       }
-      const packed = retargetParticleBuffer(field.data, side);
+      const packed = retargetParticleBuffer(
+        field.data,
+        side,
+        window.matchMedia("(max-width: 767px)").matches ? 2 : 1,
+      );
       fillEnd = packed.fillEnd;
       motionAt = packed.motionAt;
       fieldColor = field.color;

@@ -137,18 +137,18 @@ function hash(i: number, j: number, salt: number) {
   return fract(Math.sin(i * 12.9898 + j * 78.233 + salt * 37.719) * 43758.5453);
 }
 
-function startFromGather(side: GatherSide): [number, number] {
+function startFromGather(side: GatherSide, originScale = 1): [number, number] {
   const [gx, gy] = GATHER_CLIP[side];
   return [
-    gx + (Math.random() - 0.5) * 0.4,
+    gx * originScale + (Math.random() - 0.5) * 0.4,
     gy + (Math.random() * 2 - 1) * 1.25,
   ];
 }
 
-function randomStart(): [number, number] {
+function randomStart(originScale = 1): [number, number] {
   const side = Math.floor(Math.random() * 4);
   const along = (Math.random() * 2 - 1) * 1.5;
-  const out = 2 + Math.random() * 0.75;
+  const out = (2 + Math.random() * 0.75) * originScale;
   if (side === 0) return [out, along];
   if (side === 1) return [-out, along];
   if (side === 2) return [along, out];
@@ -193,7 +193,11 @@ export function coverageTime(arrivals: number[], fraction = 0.5) {
   return sorted[index] ?? 0;
 }
 
-export function retargetParticleBuffer(data: Float32Array, side: GatherSide) {
+export function retargetParticleBuffer(
+  data: Float32Array,
+  side: GatherSide,
+  originScale = 1,
+) {
   const copy = data.slice();
   const count = Math.floor(
     copy.length / (VERTS_PER_PARTICLE * FLOATS_PER_VERT),
@@ -207,7 +211,7 @@ export function retargetParticleBuffer(data: Float32Array, side: GatherSide) {
     const delay = 0;
     const travel = 0.8 + Math.random() * 0.3;
     fillEnd = Math.max(fillEnd, delay + travel);
-    const [gx, gy] = startFromGather(side);
+    const [gx, gy] = startFromGather(side, originScale);
 
     for (let v = 0; v < VERTS_PER_PARTICLE; v++) {
       const offset = (i * VERTS_PER_PARTICLE + v) * FLOATS_PER_VERT;
@@ -231,6 +235,7 @@ export function buildParticleBuffer(
   cols: number,
   rows: number,
   from: ParticleOrigin,
+  originScale = 1,
 ) {
   const col0 = -1;
   const row0 = -1;
@@ -252,7 +257,9 @@ export function buildParticleBuffer(
   }
 
   const starts = Array.from({ length: count }, () =>
-    from === "all" ? randomStart() : startFromGather(from),
+    from === "all"
+      ? randomStart(originScale)
+      : startFromGather(from, originScale),
   );
   const order = starts.map((_, i) => i);
   order.sort((a, b) => {
