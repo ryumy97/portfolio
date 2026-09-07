@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  cubicBezier,
+  motion,
+  transform,
+  useAnimationFrame,
+  useMotionValue,
+} from "motion/react";
+import type { StaticImageData } from "next/image";
+import { useCallback, useEffect, useRef } from "react";
 import { MotionImage } from "@/components/motion-image";
 import { PointerEventHandler } from "@/components/pointer";
 import { useScrollEvent } from "@/components/smooth-scroll";
@@ -12,15 +21,6 @@ import {
 import { lerp } from "@/lib/math";
 import { useMdUp } from "@/lib/use-md-up";
 import { cn } from "@/lib/utils";
-import {
-  cubicBezier,
-  motion,
-  transform,
-  useAnimationFrame,
-  useMotionValue,
-} from "motion/react";
-import type { StaticImageData } from "next/image";
-import { useCallback, useEffect, useRef } from "react";
 
 const useRevealMotionValues = () => {
   const ref = useRef<HTMLDivElement>(null);

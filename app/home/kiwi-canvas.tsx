@@ -30,10 +30,12 @@ function hitTest(body: Body, x: number, y: number) {
 
 const KiwiCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hitRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const hit = hitRef.current;
+    if (!canvas || !hit) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -97,6 +99,18 @@ const KiwiCanvas = () => {
       pointer.target.width = 12;
       pointer.target.height = 12;
       pointer.target.borderRadius = 9999;
+    };
+
+    const syncHitArea = () => {
+      if (!spawned) {
+        hit.hidden = true;
+        return;
+      }
+      hit.hidden = false;
+      const size = `${body.r * 2}px`;
+      hit.style.width = size;
+      hit.style.height = size;
+      hit.style.transform = `translate(${body.x - body.r}px, ${body.y - body.r}px)`;
     };
 
     const TIME_SCALE = 0.45;
@@ -180,6 +194,7 @@ const KiwiCanvas = () => {
       if (ratio > 2) ratio = 2;
       if (visible && spawned) step(ratio);
       draw();
+      syncHitArea();
       if (grabbing) syncPointer();
       raf = requestAnimationFrame(loop);
     };
@@ -194,43 +209,31 @@ const KiwiCanvas = () => {
       pointerY = point.y;
       grabDx = point.x - body.x;
       grabDy = point.y - body.y;
-      canvas.setPointerCapture(event.pointerId);
-      canvas.style.cursor = "grabbing";
+      hit.setPointerCapture(event.pointerId);
+      hit.style.cursor = "grabbing";
       syncPointer();
       event.preventDefault();
     };
 
     const onPointerMove = (event: PointerEvent) => {
+      if (activePointerId !== event.pointerId || !grabbing) return;
       const point = localPoint(event.clientX, event.clientY);
-      if (activePointerId === event.pointerId && grabbing) {
-        pointerX = point.x;
-        pointerY = point.y;
-        return;
-      }
-      canvas.style.cursor =
-        spawned && hitTest(body, point.x, point.y) ? "grab" : "default";
+      pointerX = point.x;
+      pointerY = point.y;
     };
 
     const endPointer = (event: PointerEvent) => {
       if (activePointerId !== event.pointerId) return;
-      if (canvas.hasPointerCapture(event.pointerId)) {
-        canvas.releasePointerCapture(event.pointerId);
+      if (hit.hasPointerCapture(event.pointerId)) {
+        hit.releasePointerCapture(event.pointerId);
       }
       activePointerId = null;
       grabbing = false;
       body.vx *= 1.5;
       body.vy *= 1.5;
       body.ay = height * 0.005;
-      const point = localPoint(event.clientX, event.clientY);
-      canvas.style.cursor = hitTest(body, point.x, point.y)
-        ? "grab"
-        : "default";
+      hit.style.cursor = "grab";
       syncPointer();
-    };
-
-    const onPointerLeave = () => {
-      if (grabbing) return;
-      canvas.style.cursor = "default";
     };
 
     const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
@@ -250,6 +253,7 @@ const KiwiCanvas = () => {
         spawn();
       }
       draw();
+      syncHitArea();
     });
 
     const observer = new IntersectionObserver(
@@ -261,11 +265,10 @@ const KiwiCanvas = () => {
     );
     observer.observe(canvas);
 
-    canvas.addEventListener("pointerdown", onPointerDown);
-    canvas.addEventListener("pointermove", onPointerMove);
-    canvas.addEventListener("pointerup", endPointer);
-    canvas.addEventListener("pointercancel", endPointer);
-    canvas.addEventListener("pointerleave", onPointerLeave);
+    hit.addEventListener("pointerdown", onPointerDown);
+    hit.addEventListener("pointermove", onPointerMove);
+    hit.addEventListener("pointerup", endPointer);
+    hit.addEventListener("pointercancel", endPointer);
 
     raf = requestAnimationFrame(loop);
 
@@ -274,11 +277,10 @@ const KiwiCanvas = () => {
       cancelAnimationFrame(raf);
       observer.disconnect();
       disconnectResize();
-      canvas.removeEventListener("pointerdown", onPointerDown);
-      canvas.removeEventListener("pointermove", onPointerMove);
-      canvas.removeEventListener("pointerup", endPointer);
-      canvas.removeEventListener("pointercancel", endPointer);
-      canvas.removeEventListener("pointerleave", onPointerLeave);
+      hit.removeEventListener("pointerdown", onPointerDown);
+      hit.removeEventListener("pointermove", onPointerMove);
+      hit.removeEventListener("pointerup", endPointer);
+      hit.removeEventListener("pointercancel", endPointer);
       pointer.hover = false;
       pointer.target.width = 12;
       pointer.target.height = 12;
@@ -286,12 +288,21 @@ const KiwiCanvas = () => {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      aria-label="Draggable kiwi"
-      className="h-full w-full touch-none"
-      style={CANVAS_STYLE}
-    />
+    <div className="absolute inset-0 overflow-hidden touch-pan-y">
+      <canvas
+        ref={canvasRef}
+        aria-hidden
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        style={CANVAS_STYLE}
+      />
+      <div
+        ref={hitRef}
+        hidden
+        aria-label="Draggable kiwi"
+        role="img"
+        className="absolute top-0 left-0 touch-none cursor-grab rounded-full"
+      />
+    </div>
   );
 };
 

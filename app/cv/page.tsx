@@ -25,7 +25,7 @@ export default function Page() {
       <SmoothScroll>
         <main>
           <Grid className="h-svh w-full items-end px-2">
-            <div className="col-start-2 col-end-7 py-2">
+            <div className="col-start-2 col-end-9 md:col-end-7 py-2">
               <Title>
                 <div className="text-primary">CV</div>
                 <div className="mt-2">In Ha Ryu</div>
@@ -94,7 +94,7 @@ export default function Page() {
           </Grid>
 
           <Grid className="w-full px-2 py-16">
-            <div className="col-start-2 col-end-7 flex flex-col gap-12 pb-16">
+            <div className="col-start-2 col-end-9 md:col-end-7 flex flex-col gap-12 pb-16">
               <SectionHeader text="Personal" />
 
               {/* Reflct */}

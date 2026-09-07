@@ -305,7 +305,7 @@ const HeroCanvas = () => {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none h-full w-full"
+      className="pointer-events-none absolute inset-0 h-full w-full"
       style={CANVAS_STYLE}
     />
   );

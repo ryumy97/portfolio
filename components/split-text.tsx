@@ -1,5 +1,6 @@
 "use client";
 
+import { useScrollEvent } from "@/components/smooth-scroll";
 import { transform, useReducedMotion } from "motion/react";
 import {
   Children,
@@ -12,8 +13,6 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { PointerEventHandler } from "@/components/pointer";
-import { useScrollEvent } from "@/components/smooth-scroll";
 
 type Mark = {
   italic?: boolean;
@@ -47,7 +46,7 @@ function textOf(node: ReactNode): string {
 }
 
 function isAtomType(type: unknown) {
-  return type === "a" || type === PointerEventHandler;
+  return type === "a" || typeof type === "function" || typeof type === "object";
 }
 
 function flatten(
@@ -75,6 +74,7 @@ function flatten(
     if (type === "br") {
       return [{ ...mark, char: "\n" }];
     }
+
     if (isAtomType(type)) {
       return [
         {
