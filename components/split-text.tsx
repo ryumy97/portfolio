@@ -153,7 +153,7 @@ function revealStyle(index: number): CSSProperties {
     "--i": index,
     opacity:
       "clamp(0, calc((var(--reveal) * (var(--count) + 1) - var(--i)) / 2), 1)",
-  };
+  } as CSSProperties;
 }
 
 function Char({ char, index }: { char: string; index: number }) {
