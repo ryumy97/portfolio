@@ -1,6 +1,5 @@
 "use client";
 
-import { useScrollEvent } from "@/components/smooth-scroll";
 import { transform, useReducedMotion } from "motion/react";
 import {
   Children,
@@ -13,6 +12,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { useScrollEvent } from "@/components/smooth-scroll";
 
 type Mark = {
   italic?: boolean;

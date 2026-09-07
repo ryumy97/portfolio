@@ -1,8 +1,8 @@
+import Link from "next/link";
 import { PointerEventHandler } from "@/components/pointer";
 import SplitText from "@/components/split-text";
 import { Grid } from "@/components/ui/grid";
 import { PageDescription } from "@/components/ui/typography";
-import Link from "next/link";
 
 const Intro = () => {
   return (
