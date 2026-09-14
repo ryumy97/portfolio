@@ -126,9 +126,7 @@ function gatherPose(
   const seed = seedPose(width, height);
   const cover = coverPose(width, height);
   const travel =
-    kind === "enter"
-      ? seed.rx * 2.4
-      : Math.max(cover.rx, seed.rx) * 1.15;
+    kind === "enter" ? seed.rx * 2.4 : Math.max(cover.rx, seed.rx) * 1.15;
   return {
     cx: side === "left" ? -travel : width + travel,
     cy: height * 0.5,
@@ -314,7 +312,9 @@ function particleTarget(
   index: number,
 ): [number, number] {
   const [ux, uy] = travelDir(from, to);
-  const env = motionEnvelope(time, motion.duration, motion.kind) * deformGain(motion.kind);
+  const env =
+    motionEnvelope(time, motion.duration, motion.kind) *
+    deformGain(motion.kind);
   const pose = poseAt(from, to, motion, time, index);
   return blobPoint(
     pose,
@@ -627,12 +627,7 @@ export function createParticleFieldRenderer(
     vertCount = RING_COUNT * CURVE_STEPS * 3;
   };
 
-  const paint = (
-    color: Rgb,
-    width: number,
-    height: number,
-    clear: boolean,
-  ) => {
+  const paint = (color: Rgb, width: number, height: number, clear: boolean) => {
     gl.viewport(0, 0, width, height);
     if (clear) {
       gl.clearColor(0, 0, 0, 0);
@@ -676,7 +671,12 @@ export function createParticleFieldRenderer(
     }
     const drawLeaving = Boolean(leavingMotion && outgoingColor);
     fillMesh(drawLeaving ? leavingBlob : blob, width, height);
-    paint(drawLeaving && outgoingColor ? outgoingColor : color, width, height, true);
+    paint(
+      drawLeaving && outgoingColor ? outgoingColor : color,
+      width,
+      height,
+      true,
+    );
     if (drawLeaving) {
       fillMesh(blob, width, height);
       paint(color, width, height, false);
@@ -711,7 +711,11 @@ export function createParticleFieldRenderer(
         duration: ENTER_DURATION,
         easeIn: false,
       };
-      placeRing(blob, gatherPose(fromSide, width, height, "enter"), LOBE_ENV_FLOOR);
+      placeRing(
+        blob,
+        gatherPose(fromSide, width, height, "enter"),
+        LOBE_ENV_FLOOR,
+      );
       hasTime = false;
       lastTime = 0;
       simWidth = width;
@@ -748,7 +752,11 @@ export function createParticleFieldRenderer(
         duration: ENTER_DURATION,
         easeIn: false,
       };
-      placeRing(blob, gatherPose(enterFrom, width, height, "enter"), LOBE_ENV_FLOOR);
+      placeRing(
+        blob,
+        gatherPose(enterFrom, width, height, "enter"),
+        LOBE_ENV_FLOOR,
+      );
       hasTime = false;
       lastTime = 0;
       simWidth = width;
