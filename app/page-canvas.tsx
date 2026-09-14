@@ -4,14 +4,11 @@ import { useLayoutEffect, useRef } from "react";
 import { lerp } from "@/lib/math";
 import type { Rgb } from "@/lib/page-color";
 import {
-  buildParticleBuffer,
   createParticleFieldRenderer,
   type GatherSide,
-  gridForCanvas,
+  oppositeGather,
   type ParticleField,
   type ParticleOrigin,
-  retargetParticleBuffer,
-  SETTLED_TIME,
 } from "@/lib/page-particle-field";
 import { cn } from "@/lib/utils";
 import { CANVAS_STYLE, observeCanvasPixelSize } from "@/lib/webgl";
@@ -23,7 +20,7 @@ type FieldApi = {
   collect: (side: GatherSide) => void;
 };
 
-const COLOR_BLEND_SECONDS = 0.45;
+const COLOR_BLEND_SECONDS = 0.7;
 const LANDING_DELAY_SECONDS = 0.8;
 
 function copyRgb(to: [number, number, number], from: Rgb) {
@@ -61,16 +58,12 @@ const PageCanvas = ({ className }: Props) => {
     let fillEnd = 0;
     let revealAt = 0;
     let motionAt = 0;
-    let cols = 0;
-    let rows = 0;
-    let vertexCount = 0;
-    let fieldData: Float32Array | null = null;
     let fieldColor: ParticleField["color"] | null = null;
+    let outgoingColor: ParticleField["color"] | null = null;
     let startedAt = 0;
     let notifiedCover = false;
     let notifiedLeave = false;
     let playToken = 0;
-    let fromSide: ParticleOrigin = "all";
     const displayColor: [number, number, number] = [0, 0, 0];
     const blendFrom: [number, number, number] = [0, 0, 0];
     let blendTo: Rgb = displayColor;
@@ -100,7 +93,8 @@ const PageCanvas = ({ className }: Props) => {
         snapDisplayColor(blendTo);
         return displayColor;
       }
-      const e = 1 - (1 - Math.min(1, Math.max(0, t))) ** 4;
+      const x = Math.min(1, Math.max(0, t));
+      const e = x * x * x * (x * (x * 6 - 15) + 10);
       displayColor[0] = lerp(blendFrom[0], blendTo[0], e);
       displayColor[1] = lerp(blendFrom[1], blendTo[1], e);
       displayColor[2] = lerp(blendFrom[2], blendTo[2], e);
@@ -113,20 +107,13 @@ const PageCanvas = ({ className }: Props) => {
         renderer.drawIdle();
         return;
       }
-      renderer.draw(SETTLED_TIME, fieldColor);
+      renderer.drawSettled(fieldColor);
     };
 
     const commitSettledField = () => {
-      if (!fieldData || vertexCount === 0) return;
       const color = colors().current;
       fieldColor = color;
-      usePageTransition.getState().commitParticleField({
-        data: fieldData,
-        vertexCount,
-        cols,
-        rows,
-        color,
-      });
+      usePageTransition.getState().commitParticleField({ color });
     };
 
     const markCovered = () => {
@@ -140,49 +127,27 @@ const PageCanvas = ({ className }: Props) => {
       usePageTransition.getState().markRevealed();
     };
 
-    const uploadCoverParticles = (force = false) => {
-      const next = gridForCanvas(canvas);
-      if (
-        !force &&
-        next.cols === cols &&
-        next.rows === rows &&
-        vertexCount > 0
-      ) {
-        return;
-      }
-      cols = next.cols;
-      rows = next.rows;
-      const packed = buildParticleBuffer(
-        cols,
-        rows,
-        fromSide,
-        window.matchMedia("(max-width: 767px)").matches ? 2 : 1,
-      );
-      fillEnd = packed.fillEnd;
-      revealAt = packed.revealAt;
-      vertexCount = packed.vertexCount;
-      fieldData = packed.data;
-      renderer.upload({ ...packed, cols, rows });
-    };
-
     const coverLoop = (token: number) => {
       if (!running || token !== playToken || mode !== "covering") return;
-      if (vertexCount === 0) {
+      const time = performance.now() / 1000 - startedAt;
+      if (!notifiedLeave && time >= motionAt) {
+        notifiedLeave = true;
+        usePageTransition.getState().markLeaveStarted();
+      }
+      renderer.draw(time, sampleDisplayColor(), outgoingColor);
+      if (!notifiedCover && time >= revealAt) {
+        markCovered();
+      }
+      if (time < fillEnd) {
         raf = requestAnimationFrame(() => coverLoop(token));
         return;
       }
-      const time = performance.now() / 1000 - startedAt;
-      if (time >= revealAt) markCovered();
-      if (time >= fillEnd) {
-        mode = "idle";
-        commitSettledField();
-        drawSettled();
-        markCovered();
+      mode = "idle";
+      if (!notifiedCover) markCovered();
+      raf = requestAnimationFrame(() => {
+        if (!running || token !== playToken) return;
         markRevealed();
-        return;
-      }
-      renderer.draw(time, sampleDisplayColor());
-      raf = requestAnimationFrame(() => coverLoop(token));
+      });
     };
 
     const collectLoop = (token: number) => {
@@ -199,22 +164,22 @@ const PageCanvas = ({ className }: Props) => {
         usePageTransition.getState().markCollected();
         return;
       }
-      renderer.draw(time, fieldColor, true);
+      renderer.draw(time, fieldColor);
       raf = requestAnimationFrame(() => collectLoop(token));
     };
 
     const play = (from: ParticleOrigin) => {
       cancelAnimationFrame(raf);
       window.clearTimeout(delayTimer);
-      fromSide = from;
       notifiedCover = false;
+      notifiedLeave = false;
       const token = ++playToken;
       const target = colors().current;
+      const existing = usePageTransition.getState().particleField;
       if (blendDuration > 0) beginColorBlend(target);
       else snapDisplayColor(target);
       if (reduceMotion) {
         mode = "idle";
-        uploadCoverParticles(true);
         commitSettledField();
         drawSettled();
         markCovered();
@@ -225,11 +190,21 @@ const PageCanvas = ({ className }: Props) => {
         if (!running || token !== playToken) return;
         mode = "covering";
         startedAt = performance.now() / 1000;
-        cols = 0;
-        rows = 0;
-        vertexCount = 0;
-        fieldData = null;
-        uploadCoverParticles(true);
+        const times =
+          from !== "all" && existing
+            ? renderer.prepareHandoff(oppositeGather(from), from)
+            : from === "all"
+              ? renderer.prepareExpand()
+              : renderer.prepareEnter(from);
+        fillEnd = times.fillEnd;
+        revealAt = times.revealAt;
+        motionAt = times.motionAt;
+        if (from !== "all" && existing) {
+          fieldColor = existing.color;
+          outgoingColor = existing.color;
+        } else {
+          outgoingColor = null;
+        }
         coverLoop(token);
       };
       if (from === "all") {
@@ -264,24 +239,10 @@ const PageCanvas = ({ className }: Props) => {
         usePageTransition.getState().markCollected();
         return;
       }
-      const packed = retargetParticleBuffer(
-        field.data,
-        side,
-        window.matchMedia("(max-width: 767px)").matches ? 2 : 1,
-      );
-      fillEnd = packed.fillEnd;
-      motionAt = packed.motionAt;
       fieldColor = field.color;
-      cols = field.cols;
-      rows = field.rows;
-      vertexCount = field.vertexCount;
-      fieldData = packed.data;
-      renderer.upload({
-        data: packed.data,
-        vertexCount: field.vertexCount,
-        cols: field.cols,
-        rows: field.rows,
-      });
+      const times = renderer.prepareExit(side);
+      fillEnd = times.fillEnd;
+      motionAt = times.motionAt;
       mode = "collecting";
       startedAt = performance.now() / 1000;
       collectLoop(token);
@@ -299,12 +260,7 @@ const PageCanvas = ({ className }: Props) => {
       }
       mode = "idle";
       fieldColor = field.color;
-      cols = field.cols;
-      rows = field.rows;
-      vertexCount = field.vertexCount;
-      fieldData = field.data;
-      renderer.upload(field);
-      renderer.draw(SETTLED_TIME, field.color);
+      renderer.drawSettled(field.color);
     };
 
     apiRef.current = { play, collect };
@@ -315,6 +271,12 @@ const PageCanvas = ({ className }: Props) => {
       const coverEnded = prev.covering && !state.covering;
       if (!fieldChanged && !coverEnded) return;
       if (state.phase !== "idle") return;
+      if (mode === "covering" || mode === "collecting") return;
+      if (coverEnded) {
+        mode = "idle";
+        fieldColor = state.particleField?.color ?? fieldColor;
+        return;
+      }
       applyField(state.particleField);
     });
 
@@ -342,15 +304,13 @@ const PageCanvas = ({ className }: Props) => {
         drawSettled();
         return;
       }
+      const time = performance.now() / 1000 - startedAt;
       if (mode === "collecting") {
         if (!fieldColor) return;
-        const time = performance.now() / 1000 - startedAt;
-        renderer.draw(time, fieldColor, true);
+        renderer.draw(time, fieldColor);
         return;
       }
-      uploadCoverParticles();
-      const time = performance.now() / 1000 - startedAt;
-      renderer.draw(time, sampleDisplayColor());
+      renderer.draw(time, sampleDisplayColor(), outgoingColor);
     });
 
     return () => {
@@ -376,15 +336,19 @@ const PageCanvas = ({ className }: Props) => {
   }, [phase, generation, entryFrom, gatherSide]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden
+    <div
       className={cn(
         "pointer-events-none fixed inset-0 z-0 h-svh w-full",
         className,
       )}
-      style={CANVAS_STYLE}
-    />
+    >
+      <canvas
+        ref={canvasRef}
+        aria-hidden
+        className="h-full w-full"
+        style={CANVAS_STYLE}
+      />
+    </div>
   );
 };
 

@@ -1,117 +1,62 @@
 import type { Rgb } from "@/lib/page-color";
-import {
-  bindFramebuffer,
-  createFramebuffer,
-  createFullscreenTriangleBuffer,
-  createProgram,
-  deleteFramebuffer,
-  drawFullscreenTriangle,
-  type FramebufferTarget,
-  FULLSCREEN_VS,
-  getWebGLContext,
-  resizeFramebuffer,
-  setResolutionUniform,
-} from "@/lib/webgl";
+import { createProgram, getWebGLContext } from "@/lib/webgl";
 
-/** CSS px. Circles overlap enough to cover every cell, including jitter. */
-const TARGET_CELL = 128;
-const VERTS_PER_PARTICLE = 6;
-const FLOATS_PER_VERT = 9;
-const METABALL_RADIUS_SCALE = 3;
-const METABALL_THRESHOLD = 0.42;
-const METABALL_SOFTNESS = 0.01;
-export const SETTLED_TIME = 1e6;
-/** Incoming DOM starts when this share of particles look landed (ease-out). */
-const REVEAL_FRACTION = 0.5;
-const REVEAL_PATH_PROGRESS = 0.85;
-
-const CORNERS: Array<[number, number]> = [
-  [-1, -1],
-  [1, -1],
-  [1, 1],
-  [-1, -1],
-  [1, 1],
-  [-1, 1],
-];
+const RING_COUNT = 16;
+const CURVE_STEPS = 12;
+const CURVE_TENSION = 6;
+const SPRING_PASSES = 3;
+const SUBSTEPS = 3;
+const STIFFNESS = 36;
+const DAMPING = 2 * Math.sqrt(STIFFNESS) * 1.05;
+const NEIGHBOR_STRENGTH = 0.22;
+const SKIP_STRENGTH = 0.09;
+const PRESSURE = 0.035;
+const COVER_PAD = Math.SQRT2 * 1.06;
+const SEED_RADIUS_FRACTION = 0.07;
+const EXIT_DURATION = 1.45;
+const ENTER_DURATION = 0.88;
+const EXPAND_DURATION = 1.4;
+const EXIT_SETTLE = 0.45;
+const ENTER_SETTLE = 0.35;
+const EXPAND_SETTLE = 0.55;
+const LOBE_ENV_FLOOR = 0.22;
+const LEAVE_PROGRESS = 0.02;
+const MAX_DT = 1 / 40;
 
 const VS = `
-attribute vec2 a_origin;
-attribute vec2 a_start;
-attribute vec2 a_corner;
-attribute vec3 a_life;
-
-uniform vec2 u_resolution;
-uniform vec2 u_grid;
-uniform float u_time;
-uniform float u_ease_in;
-
-varying vec2 v_corner;
+attribute vec2 a_pos;
 
 void main() {
-  float delay = a_life.x;
-  float travel = a_life.y;
-  float sizeScale = a_life.z;
-  float t = clamp((u_time - delay) / max(travel, 0.0001), 0.0, 1.0);
-  float eOut = 1.0 - pow(1.0 - t, 4.0);
-  float eIn = t * t * t * t;
-  float e = mix(eOut, eIn, u_ease_in);
-  v_corner = a_corner;
-
-  vec2 pos = mix(a_start, a_origin, e);
-
-  vec2 cell = u_resolution / max(u_grid, vec2(1.0));
-  float radiusPx = length(cell) * 0.5 * sizeScale * ${METABALL_RADIUS_SCALE.toFixed(2)};
-  vec2 offset = a_corner * radiusPx * 2.0 / u_resolution;
-  gl_Position = vec4(pos + offset, 0.0, 1.0);
+  gl_Position = vec4(a_pos, 0.0, 1.0);
 }
 `;
 
-const BLOB_FS = `
+const FS = `
 precision mediump float;
-varying vec2 v_corner;
-
-void main() {
-  float r2 = dot(v_corner, v_corner);
-  if (r2 > 1.0) discard;
-  float falloff = 1.0 - r2;
-  float field = falloff * falloff;
-  gl_FragColor = vec4(field, field, field, field);
-}
-`;
-
-const THRESHOLD_FS = `
-precision mediump float;
-varying vec2 vUv;
-uniform sampler2D u_field;
 uniform vec3 u_color;
-uniform float u_threshold;
-uniform float u_softness;
 
 void main() {
-  float density = texture2D(u_field, vUv).r;
-  float alpha = smoothstep(
-    u_threshold - u_softness,
-    u_threshold + u_softness,
-    density
-  );
-  if (alpha < 0.004) discard;
-  gl_FragColor = vec4(u_color, alpha);
+  gl_FragColor = vec4(u_color, 1.0);
 }
 `;
 
 export type ParticleField = {
-  data: Float32Array;
-  vertexCount: number;
-  cols: number;
-  rows: number;
   color: Rgb;
 };
 
+export type MotionTimes = {
+  fillEnd: number;
+  revealAt: number;
+  motionAt: number;
+};
+
 export type ParticleFieldRenderer = {
-  upload: (
-    field: Pick<ParticleField, "data" | "vertexCount" | "cols" | "rows">,
-  ) => void;
-  draw: (time: number, color: Rgb, easeIn?: boolean) => void;
+  prepareExpand: () => MotionTimes;
+  prepareEnter: (from: GatherSide) => MotionTimes;
+  prepareExit: (side: GatherSide) => MotionTimes;
+  prepareHandoff: (exitSide: GatherSide, enterFrom: GatherSide) => MotionTimes;
+  draw: (time: number, color: Rgb, outgoingColor?: Rgb | null) => void;
+  drawSettled: (color: Rgb) => void;
   drawIdle: () => void;
   destroy: () => void;
 };
@@ -119,209 +64,488 @@ export type ParticleFieldRenderer = {
 export type GatherSide = "left" | "right";
 export type ParticleOrigin = GatherSide | "all";
 
-/** Clip space for -50vw / 50vh (left) and 150vw / 50vh (right). */
-export const GATHER_CLIP: Record<GatherSide, readonly [number, number]> = {
-  left: [-2, 0],
-  right: [2, 0],
-};
-
 export function oppositeGather(side: GatherSide): GatherSide {
   return side === "left" ? "right" : "left";
 }
 
-function fract(value: number) {
-  return value - Math.floor(value);
+type Pose = {
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+};
+
+type Motion = {
+  kind: "expand" | "enter" | "exit";
+  side: GatherSide;
+  duration: number;
+  easeIn: boolean;
+};
+
+type SoftBlob = {
+  x: Float32Array;
+  y: Float32Array;
+  vx: Float32Array;
+  vy: Float32Array;
+};
+
+function pixelToClip(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): [number, number] {
+  return [(x / width) * 2 - 1, 1 - (y / height) * 2];
 }
 
-function hash(i: number, j: number, salt: number) {
-  return fract(Math.sin(i * 12.9898 + j * 78.233 + salt * 37.719) * 43758.5453);
+function coverPose(width: number, height: number): Pose {
+  return {
+    cx: width * 0.5,
+    cy: height * 0.5,
+    rx: width * 0.5 * COVER_PAD,
+    ry: height * 0.5 * COVER_PAD,
+  };
 }
 
-function startFromGather(side: GatherSide, originScale = 1): [number, number] {
-  const [gx, gy] = GATHER_CLIP[side];
+function seedPose(width: number, height: number): Pose {
+  const radius = Math.min(width, height) * SEED_RADIUS_FRACTION;
+  return {
+    cx: width * 0.5,
+    cy: height * 0.5,
+    rx: radius,
+    ry: radius,
+  };
+}
+
+function gatherPose(
+  side: GatherSide,
+  width: number,
+  height: number,
+  kind: "enter" | "exit" = "exit",
+): Pose {
+  const seed = seedPose(width, height);
+  const cover = coverPose(width, height);
+  const travel =
+    kind === "enter"
+      ? seed.rx * 2.4
+      : Math.max(cover.rx, seed.rx) * 1.15;
+  return {
+    cx: side === "left" ? -travel : width + travel,
+    cy: height * 0.5,
+    rx: seed.rx,
+    ry: seed.ry,
+  };
+}
+
+function mixPose(from: Pose, to: Pose, e: number): Pose {
+  return {
+    cx: from.cx + (to.cx - from.cx) * e,
+    cy: from.cy + (to.cy - from.cy) * e,
+    rx: from.rx + (to.rx - from.rx) * e,
+    ry: from.ry + (to.ry - from.ry) * e,
+  };
+}
+
+function settleTail(kind: Motion["kind"]) {
+  if (kind === "exit") return EXIT_SETTLE;
+  if (kind === "enter") return ENTER_SETTLE;
+  return EXPAND_SETTLE;
+}
+
+function motionTimes(
+  duration: number,
+  easeIn: boolean,
+  kind: Motion["kind"],
+): MotionTimes {
+  const fillEnd = duration + settleTail(kind);
+  return {
+    fillEnd,
+    revealAt: fillEnd,
+    motionAt: easeIn ? duration * LEAVE_PROGRESS ** 0.25 : fillEnd,
+  };
+}
+
+function smootherstep(t: number) {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * x * (x * (x * 6 - 15) + 10);
+}
+
+function curveProgress(time: number, duration: number, _kind: Motion["kind"]) {
+  return smootherstep(time / Math.max(duration, 1e-4));
+}
+
+function ellipseRadius(rx: number, ry: number, angle: number) {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return 1 / Math.hypot(c / Math.max(rx, 1e-4), s / Math.max(ry, 1e-4));
+}
+
+function ringAngle(index: number) {
+  return (index / RING_COUNT) * Math.PI * 2;
+}
+
+function hash01(index: number, salt: number) {
+  const x = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function travelDir(from: Pose, to: Pose): [number, number] {
+  const dx = to.cx - from.cx;
+  const dy = to.cy - from.cy;
+  const len = Math.hypot(dx, dy);
+  if (len < 1) return [0, 0];
+  return [dx / len, dy / len];
+}
+
+function motionEnvelope(time: number, duration: number, kind: Motion["kind"]) {
+  const floor = kind === "exit" ? 0.1 : LOBE_ENV_FLOOR;
+  if (time >= duration) {
+    return floor * (1 - smootherstep((time - duration) / settleTail(kind)));
+  }
+  const t = Math.min(1, Math.max(0, time / duration));
+  return floor + (1 - floor) * Math.sin(Math.PI * t);
+}
+
+function particleEase(
+  time: number,
+  duration: number,
+  index: number,
+  kind: Motion["kind"],
+  ux: number,
+  uy: number,
+) {
+  const angle = ringAngle(index);
+  let lag = hash01(index, 1.37) * (kind === "expand" ? 0.08 : 0.02);
+  if (kind === "expand") {
+    lag += 0.08 * (0.5 + 0.5 * Math.sin(2 * angle + 0.7));
+  } else if (kind === "enter") {
+    const facing = Math.cos(angle) * ux + Math.sin(angle) * uy;
+    lag += (1 - facing) * 0.04;
+  }
+  return curveProgress(time - lag * duration, duration, kind);
+}
+
+function blobPoint(
+  pose: Pose,
+  index: number,
+  env: number,
+  ux: number,
+  uy: number,
+  stretch: number,
+): [number, number] {
+  const angle = ringAngle(index);
+  let radius = ellipseRadius(pose.rx, pose.ry, angle);
+  radius *=
+    1 +
+    env *
+      (0.12 * Math.sin(2 * angle + 0.55) +
+        0.06 * Math.sin(3 * angle + 1.85) +
+        0.03 * Math.sin(5 * angle + 0.4));
+  let lx = Math.cos(angle) * radius;
+  let ly = Math.sin(angle) * radius;
+  if (stretch !== 1) {
+    if (ux !== 0 || uy !== 0) {
+      const along = lx * ux + ly * uy;
+      const px = lx - along * ux;
+      const py = ly - along * uy;
+      const squash = 1 / Math.sqrt(Math.max(stretch, 0.4));
+      lx = along * ux * stretch + px * squash;
+      ly = along * uy * stretch + py * squash;
+    } else {
+      const ca = Math.cos(0.55);
+      const sa = Math.sin(0.55);
+      const ax = lx * ca + ly * sa;
+      const ay = -lx * sa + ly * ca;
+      const sx = stretch;
+      const sy = 1 / Math.sqrt(Math.max(sx, 0.4));
+      const bx = ax * sx;
+      const by = ay * sy;
+      lx = bx * ca - by * sa;
+      ly = bx * sa + by * ca;
+    }
+  }
+  return [pose.cx + lx, pose.cy + ly];
+}
+
+function fieldStretch(
+  env: number,
+  ux: number,
+  uy: number,
+  kind: Motion["kind"] = "expand",
+) {
+  if (kind === "exit") return 1 + env * 0.05;
+  const traveling = ux !== 0 || uy !== 0;
+  return 1 + env * (traveling ? 0.18 : 0.12);
+}
+
+function deformGain(kind: Motion["kind"]) {
+  return kind === "exit" ? 0 : 1;
+}
+
+function poseAt(
+  from: Pose,
+  to: Pose,
+  motion: Motion,
+  time: number,
+  index?: number,
+): Pose {
+  const [ux, uy] = travelDir(from, to);
+  const ease =
+    index === undefined
+      ? curveProgress(time, motion.duration, motion.kind)
+      : particleEase(time, motion.duration, index, motion.kind, ux, uy);
+  if (motion.kind === "exit") {
+    const sizeE = ease ** 1.35;
+    return {
+      cx: from.cx + (to.cx - from.cx) * ease,
+      cy: from.cy + (to.cy - from.cy) * ease,
+      rx: from.rx + (to.rx - from.rx) * sizeE,
+      ry: from.ry + (to.ry - from.ry) * sizeE,
+    };
+  }
+  return mixPose(from, to, ease);
+}
+
+function particleTarget(
+  from: Pose,
+  to: Pose,
+  motion: Motion,
+  time: number,
+  index: number,
+): [number, number] {
+  const [ux, uy] = travelDir(from, to);
+  const env = motionEnvelope(time, motion.duration, motion.kind) * deformGain(motion.kind);
+  const pose = poseAt(from, to, motion, time, index);
+  return blobPoint(
+    pose,
+    index,
+    env,
+    ux,
+    uy,
+    fieldStretch(env, ux, uy, motion.kind),
+  );
+}
+
+function placeRing(blob: SoftBlob, pose: Pose, env = 0) {
+  const stretch = fieldStretch(env, 0, 0);
+  for (let i = 0; i < RING_COUNT; i++) {
+    const [x, y] = blobPoint(pose, i, env, 0, 0, stretch);
+    blob.x[i] = x;
+    blob.y[i] = y;
+    blob.vx[i] = 0;
+    blob.vy[i] = 0;
+  }
+}
+
+function centroid(blob: SoftBlob): [number, number] {
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0; i < RING_COUNT; i++) {
+    cx += blob.x[i];
+    cy += blob.y[i];
+  }
+  return [cx / RING_COUNT, cy / RING_COUNT];
+}
+
+function signedArea(blob: SoftBlob) {
+  let area = 0;
+  for (let i = 0; i < RING_COUNT; i++) {
+    const j = (i + 1) % RING_COUNT;
+    area += blob.x[i] * blob.y[j] - blob.x[j] * blob.y[i];
+  }
+  return area * 0.5;
+}
+
+function solvePair(
+  blob: SoftBlob,
+  i: number,
+  j: number,
+  rest: number,
+  strength: number,
+) {
+  const dx = blob.x[j] - blob.x[i];
+  const dy = blob.y[j] - blob.y[i];
+  const dist = Math.hypot(dx, dy);
+  if (dist <= 1e-6) return;
+  const diff = ((dist - rest) / dist) * strength * 0.5;
+  blob.x[i] += dx * diff;
+  blob.y[i] += dy * diff;
+  blob.x[j] -= dx * diff;
+  blob.y[j] -= dy * diff;
+}
+
+function neighborRest(
+  from: Pose,
+  to: Pose,
+  motion: Motion,
+  time: number,
+  i: number,
+  step: number,
+) {
+  const [ax, ay] = particleTarget(from, to, motion, time, i);
+  const [bx, by] = particleTarget(
+    from,
+    to,
+    motion,
+    time,
+    (i + step) % RING_COUNT,
+  );
+  return Math.hypot(bx - ax, by - ay);
+}
+
+function ringIndex(index: number) {
+  return (index + RING_COUNT) % RING_COUNT;
+}
+
+function cubicPoint(
+  x1: number,
+  y1: number,
+  c1x: number,
+  c1y: number,
+  c2x: number,
+  c2y: number,
+  x2: number,
+  y2: number,
+  t: number,
+): [number, number] {
+  const u = 1 - t;
+  const uu = u * u;
+  const tt = t * t;
   return [
-    gx * originScale + (Math.random() - 0.5) * 0.4,
-    gy + (Math.random() * 2 - 1) * 1.25,
+    uu * u * x1 + 3 * uu * t * c1x + 3 * u * tt * c2x + tt * t * x2,
+    uu * u * y1 + 3 * uu * t * c1y + 3 * u * tt * c2y + tt * t * y2,
   ];
 }
 
-function randomStart(originScale = 1): [number, number] {
-  const side = Math.floor(Math.random() * 4);
-  const along = (Math.random() * 2 - 1) * 1.5;
-  const out = (2 + Math.random() * 0.75) * originScale;
-  if (side === 0) return [out, along];
-  if (side === 1) return [-out, along];
-  if (side === 2) return [along, out];
-  return [along, -out];
-}
-
-export function gridForCanvas(canvas: HTMLCanvasElement) {
+function segmentCurve(xs: ArrayLike<number>, ys: ArrayLike<number>, i: number) {
+  const i0 = ringIndex(i - 1);
+  const i1 = ringIndex(i);
+  const i2 = ringIndex(i + 1);
+  const i3 = ringIndex(i + 2);
+  const x1 = xs[i1];
+  const y1 = ys[i1];
+  const x2 = xs[i2];
+  const y2 = ys[i2];
   return {
-    cols: Math.max(8, Math.ceil(canvas.clientWidth / TARGET_CELL)),
-    rows: Math.max(8, Math.ceil(canvas.clientHeight / TARGET_CELL)),
+    x1,
+    y1,
+    x2,
+    y2,
+    c1x: x1 + (x2 - xs[i0]) / CURVE_TENSION,
+    c1y: y1 + (y2 - ys[i0]) / CURVE_TENSION,
+    c2x: x2 - (xs[i3] - x1) / CURVE_TENSION,
+    c2y: y2 - (ys[i3] - y1) / CURVE_TENSION,
   };
 }
 
-/** Clock time when any particle has traveled `progress` of its path. */
-export function firstMotionTime(
-  data: Float32Array,
-  easeIn = false,
-  progress = 0.02,
-) {
-  const stride = VERTS_PER_PARTICLE * FLOATS_PER_VERT;
-  const count = Math.floor(data.length / stride);
-  const tAt = easeIn ? progress ** 0.25 : 1 - (1 - progress) ** 0.25;
-  let earliest = Number.POSITIVE_INFINITY;
-  for (let i = 0; i < count; i++) {
-    earliest = Math.min(
-      earliest,
-      data[i * stride + 6] + data[i * stride + 7] * tAt,
-    );
+function motionPose(
+  motion: Motion,
+  width: number,
+  height: number,
+): { from: Pose; to: Pose } {
+  const cover = coverPose(width, height);
+  if (motion.kind === "expand") {
+    return { from: seedPose(width, height), to: cover };
   }
-  return Number.isFinite(earliest) ? earliest : 0;
+  if (motion.kind === "enter") {
+    return { from: gatherPose(motion.side, width, height, "enter"), to: cover };
+  }
+  return { from: cover, to: gatherPose(motion.side, width, height, "exit") };
 }
 
-function easeOutQuarticTime(progress: number) {
-  return 1 - (1 - progress) ** 0.25;
-}
-
-/** Time when `fraction` of particles have reached rest (delay + travel). */
-export function coverageTime(arrivals: number[], fraction = 0.5) {
-  if (arrivals.length === 0) return 0;
-  const sorted = arrivals.slice().sort((a, b) => a - b);
-  const index = Math.max(0, Math.ceil(sorted.length * fraction) - 1);
-  return sorted[index] ?? 0;
-}
-
-export function retargetParticleBuffer(
-  data: Float32Array,
-  side: GatherSide,
-  originScale = 1,
+function stepBlob(
+  blob: SoftBlob,
+  motion: Motion,
+  width: number,
+  height: number,
+  time: number,
+  dt: number,
 ) {
-  const copy = data.slice();
-  const count = Math.floor(
-    copy.length / (VERTS_PER_PARTICLE * FLOATS_PER_VERT),
-  );
-  let fillEnd = 0;
+  const steps = SUBSTEPS;
+  const h = dt / steps;
+  for (let step = 1; step <= steps; step++) {
+    integrateBlob(blob, motion, width, height, time - dt + h * step, h);
+  }
+}
 
-  for (let i = 0; i < count; i++) {
-    const src = i * VERTS_PER_PARTICLE * FLOATS_PER_VERT;
-    const restX = copy[src];
-    const restY = copy[src + 1];
-    const delay = 0;
-    const travel = 0.8 + Math.random() * 0.3;
-    fillEnd = Math.max(fillEnd, delay + travel);
-    const [gx, gy] = startFromGather(side, originScale);
+function integrateBlob(
+  blob: SoftBlob,
+  motion: Motion,
+  width: number,
+  height: number,
+  time: number,
+  dt: number,
+) {
+  const { from, to } = motionPose(motion, width, height);
+  const pose = poseAt(from, to, motion, time);
+  const collecting = motion.kind === "exit";
+  const stiffness = collecting ? 40 : STIFFNESS;
+  const damping = collecting ? 2 * Math.sqrt(stiffness) * 1.05 : DAMPING;
+  const neighbor = collecting ? 0.26 : NEIGHBOR_STRENGTH;
+  const skip = collecting ? 0.11 : SKIP_STRENGTH;
+  const [cx, cy] = centroid(blob);
+  const area = signedArea(blob);
+  const targetArea = Math.PI * pose.rx * pose.ry;
+  const inflate = (targetArea - area) * PRESSURE;
 
-    for (let v = 0; v < VERTS_PER_PARTICLE; v++) {
-      const offset = (i * VERTS_PER_PARTICLE + v) * FLOATS_PER_VERT;
-      copy[offset] = gx;
-      copy[offset + 1] = gy;
-      copy[offset + 2] = restX;
-      copy[offset + 3] = restY;
-      copy[offset + 6] = delay;
-      copy[offset + 7] = travel;
+  for (let i = 0; i < RING_COUNT; i++) {
+    const [tx, ty] = particleTarget(from, to, motion, time, i);
+    const nx = blob.x[i] - cx;
+    const ny = blob.y[i] - cy;
+    const n = Math.hypot(nx, ny) || 1;
+    const ax =
+      stiffness * (tx - blob.x[i]) - damping * blob.vx[i] + (nx / n) * inflate;
+    const ay =
+      stiffness * (ty - blob.y[i]) - damping * blob.vy[i] + (ny / n) * inflate;
+    blob.vx[i] += ax * dt;
+    blob.vy[i] += ay * dt;
+    blob.x[i] += blob.vx[i] * dt;
+    blob.y[i] += blob.vy[i] * dt;
+  }
+
+  for (let pass = SPRING_PASSES; pass--; ) {
+    for (let i = 0; i < RING_COUNT; i++) {
+      solvePair(
+        blob,
+        i,
+        (i + 1) % RING_COUNT,
+        neighborRest(from, to, motion, time, i, 1),
+        neighbor,
+      );
+      solvePair(
+        blob,
+        i,
+        (i + 2) % RING_COUNT,
+        neighborRest(from, to, motion, time, i, 2),
+        skip,
+      );
     }
   }
+}
 
+function createBlob(): SoftBlob {
   return {
-    data: copy,
-    fillEnd,
-    motionAt: firstMotionTime(copy, true),
+    x: new Float32Array(RING_COUNT),
+    y: new Float32Array(RING_COUNT),
+    vx: new Float32Array(RING_COUNT),
+    vy: new Float32Array(RING_COUNT),
   };
 }
 
-export function buildParticleBuffer(
-  cols: number,
-  rows: number,
-  from: ParticleOrigin,
-  originScale = 1,
-) {
-  const col0 = -1;
-  const row0 = -1;
-  const colN = cols + 1;
-  const rowN = rows + 1;
-  const count = (colN - col0) * (rowN - row0);
-  const rests: Array<{ x: number; y: number; sizeScale: number }> = [];
+function copyBlob(from: SoftBlob, to: SoftBlob) {
+  to.x.set(from.x);
+  to.y.set(from.y);
+  to.vx.set(from.vx);
+  to.vy.set(from.vy);
+}
 
-  for (let row = row0; row < rowN; row++) {
-    for (let col = col0; col < colN; col++) {
-      const jitterX = (hash(col, row, 1.1) - 0.5) * (2 / cols) * 0.2;
-      const jitterY = (hash(col, row, 2.3) - 0.5) * (2 / rows) * 0.2;
-      rests.push({
-        x: (col + 0.5) * (2 / cols) - 1 + jitterX,
-        y: (row + 0.5) * (2 / rows) - 1 + jitterY,
-        sizeScale: 1.8 + hash(col, row, 6.1) * 0.4,
-      });
-    }
+function scaleBlob(blob: SoftBlob, sx: number, sy: number) {
+  for (let i = 0; i < RING_COUNT; i++) {
+    blob.x[i] *= sx;
+    blob.y[i] *= sy;
+    blob.vx[i] *= sx;
+    blob.vy[i] *= sy;
   }
-
-  const starts = Array.from({ length: count }, () =>
-    from === "all"
-      ? randomStart(originScale)
-      : startFromGather(from, originScale),
-  );
-  const order = starts.map((_, i) => i);
-  order.sort((a, b) => {
-    const da = starts[a][0] ** 2 + starts[a][1] ** 2;
-    const db = starts[b][0] ** 2 + starts[b][1] ** 2;
-    return da - db;
-  });
-
-  const restOfStart = new Int32Array(count);
-  const used = new Uint8Array(count);
-  for (const si of order) {
-    const [sx, sy] = starts[si];
-    let best = 0;
-    let bestD = Number.POSITIVE_INFINITY;
-    for (let ri = 0; ri < count; ri++) {
-      if (used[ri]) continue;
-      const dx = rests[ri].x - sx;
-      const dy = rests[ri].y - sy;
-      const d = dx * dx + dy * dy;
-      if (d < bestD) {
-        bestD = d;
-        best = ri;
-      }
-    }
-    used[best] = 1;
-    restOfStart[si] = best;
-  }
-
-  const data = new Float32Array(count * VERTS_PER_PARTICLE * FLOATS_PER_VERT);
-  const arrivals: number[] = [];
-  let fillEnd = 0;
-  let offset = 0;
-
-  for (let i = 0; i < count; i++) {
-    const [sx, sy] = starts[i];
-    const rest = rests[restOfStart[i]];
-    const delay = 0;
-    const travel = 1.1 + Math.random() * 0.5;
-    const arrival = delay + travel;
-    arrivals.push(delay + travel * easeOutQuarticTime(REVEAL_PATH_PROGRESS));
-    fillEnd = Math.max(fillEnd, arrival);
-
-    for (const [cx, cy] of CORNERS) {
-      data[offset] = rest.x;
-      data[offset + 1] = rest.y;
-      data[offset + 2] = sx;
-      data[offset + 3] = sy;
-      data[offset + 4] = cx;
-      data[offset + 5] = cy;
-      data[offset + 6] = delay;
-      data[offset + 7] = travel;
-      data[offset + 8] = rest.sizeScale;
-      offset += FLOATS_PER_VERT;
-    }
-  }
-
-  return {
-    data,
-    fillEnd,
-    revealAt: coverageTime(arrivals, REVEAL_FRACTION),
-    vertexCount: count * VERTS_PER_PARTICLE,
-  };
 }
 
 export function createParticleFieldRenderer(
@@ -330,133 +554,240 @@ export function createParticleFieldRenderer(
   const gl = getWebGLContext(canvas);
   if (!gl) return null;
 
-  const blobProgram = createProgram(gl, VS, BLOB_FS);
-  const thresholdProgram = createProgram(gl, FULLSCREEN_VS, THRESHOLD_FS);
-  if (!blobProgram || !thresholdProgram) {
-    if (blobProgram) gl.deleteProgram(blobProgram);
-    if (thresholdProgram) gl.deleteProgram(thresholdProgram);
-    return null;
-  }
+  const program = createProgram(gl, VS, FS);
+  if (!program) return null;
 
   const buffer = gl.createBuffer();
-  const fullscreenBuffer = createFullscreenTriangleBuffer(gl);
-  if (!buffer || !fullscreenBuffer) {
-    if (buffer) gl.deleteBuffer(buffer);
-    if (fullscreenBuffer) gl.deleteBuffer(fullscreenBuffer);
-    gl.deleteProgram(blobProgram);
-    gl.deleteProgram(thresholdProgram);
+  if (!buffer) {
+    gl.deleteProgram(program);
     return null;
   }
 
-  let fieldTarget: FramebufferTarget | null = createFramebuffer(gl, 1, 1);
-  if (!fieldTarget) {
-    gl.deleteBuffer(buffer);
-    gl.deleteBuffer(fullscreenBuffer);
-    gl.deleteProgram(blobProgram);
-    gl.deleteProgram(thresholdProgram);
-    return null;
-  }
+  const aPos = gl.getAttribLocation(program, "a_pos");
+  const uColor = gl.getUniformLocation(program, "u_color");
+  const blob = createBlob();
+  const leavingBlob = createBlob();
+  const mesh = new Float32Array(RING_COUNT * CURVE_STEPS * 6);
+  let vertCount = 0;
 
-  const stride = FLOATS_PER_VERT * 4;
-  const blobAOrigin = gl.getAttribLocation(blobProgram, "a_origin");
-  const blobAStart = gl.getAttribLocation(blobProgram, "a_start");
-  const blobACorner = gl.getAttribLocation(blobProgram, "a_corner");
-  const blobALife = gl.getAttribLocation(blobProgram, "a_life");
-  const blobUResolution = gl.getUniformLocation(blobProgram, "u_resolution");
-  const blobUGrid = gl.getUniformLocation(blobProgram, "u_grid");
-  const blobUTime = gl.getUniformLocation(blobProgram, "u_time");
-  const blobUEaseIn = gl.getUniformLocation(blobProgram, "u_ease_in");
+  let motion: Motion | null = null;
+  let leavingMotion: Motion | null = null;
+  let lastTime = 0;
+  let hasTime = false;
+  let simWidth = 0;
+  let simHeight = 0;
 
-  const uField = gl.getUniformLocation(thresholdProgram, "u_field");
-  const uThresholdColor = gl.getUniformLocation(thresholdProgram, "u_color");
-  const uThreshold = gl.getUniformLocation(thresholdProgram, "u_threshold");
-  const uSoftness = gl.getUniformLocation(thresholdProgram, "u_softness");
+  const size = () => ({
+    width: gl.drawingBufferWidth,
+    height: gl.drawingBufferHeight,
+  });
 
-  let vertexCount = 0;
-  let cols = 0;
-  let rows = 0;
-
-  const bindParticleAttributes = () => {
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.enableVertexAttribArray(blobAOrigin);
-    gl.vertexAttribPointer(blobAOrigin, 2, gl.FLOAT, false, stride, 0);
-    gl.enableVertexAttribArray(blobAStart);
-    gl.vertexAttribPointer(blobAStart, 2, gl.FLOAT, false, stride, 8);
-    gl.enableVertexAttribArray(blobACorner);
-    gl.vertexAttribPointer(blobACorner, 2, gl.FLOAT, false, stride, 16);
-    gl.enableVertexAttribArray(blobALife);
-    gl.vertexAttribPointer(blobALife, 3, gl.FLOAT, false, stride, 24);
+  const syncSize = (width: number, height: number) => {
+    if (simWidth > 0 && (simWidth !== width || simHeight !== height)) {
+      const sx = width / simWidth;
+      const sy = height / simHeight;
+      scaleBlob(blob, sx, sy);
+      scaleBlob(leavingBlob, sx, sy);
+    }
+    simWidth = width;
+    simHeight = height;
   };
 
-  const ensureFieldTarget = (width: number, height: number) => {
-    if (width < 1 || height < 1) return false;
-    if (!fieldTarget) {
-      fieldTarget = createFramebuffer(gl, width, height);
-      return fieldTarget !== null;
+  const fillMesh = (source: SoftBlob, width: number, height: number) => {
+    const [cx, cy] = centroid(source);
+    const [ccx, ccy] = pixelToClip(cx, cy, width, height);
+    let offset = 0;
+    for (let i = 0; i < RING_COUNT; i++) {
+      const curve = segmentCurve(source.x, source.y, i);
+      let [px, py] = pixelToClip(curve.x1, curve.y1, width, height);
+      for (let step = 1; step <= CURVE_STEPS; step++) {
+        const [qx, qy] = cubicPoint(
+          curve.x1,
+          curve.y1,
+          curve.c1x,
+          curve.c1y,
+          curve.c2x,
+          curve.c2y,
+          curve.x2,
+          curve.y2,
+          step / CURVE_STEPS,
+        );
+        const [sx, sy] = pixelToClip(qx, qy, width, height);
+        mesh[offset] = ccx;
+        mesh[offset + 1] = ccy;
+        mesh[offset + 2] = px;
+        mesh[offset + 3] = py;
+        mesh[offset + 4] = sx;
+        mesh[offset + 5] = sy;
+        offset += 6;
+        px = sx;
+        py = sy;
+      }
     }
-    resizeFramebuffer(gl, fieldTarget, width, height);
-    return true;
+    vertCount = RING_COUNT * CURVE_STEPS * 3;
+  };
+
+  const paint = (
+    color: Rgb,
+    width: number,
+    height: number,
+    clear: boolean,
+  ) => {
+    gl.viewport(0, 0, width, height);
+    if (clear) {
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      mesh.subarray(0, vertCount * 2),
+      gl.DYNAMIC_DRAW,
+    );
+    // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
+    gl.useProgram(program);
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+    if (uColor) gl.uniform3f(uColor, color[0], color[1], color[2]);
+    gl.disable(gl.BLEND);
+    gl.drawArrays(gl.TRIANGLES, 0, vertCount);
+  };
+
+  const finishMotion = (active: Motion | null, time: number) => {
+    if (!active) return null;
+    if (time >= active.duration + settleTail(active.kind)) return null;
+    return active;
+  };
+
+  const render = (
+    color: Rgb,
+    time: number,
+    dt: number,
+    outgoingColor: Rgb | null,
+  ) => {
+    const { width, height } = size();
+    if (width < 1 || height < 1) return;
+    syncSize(width, height);
+    if (leavingMotion && dt > 0) {
+      stepBlob(leavingBlob, leavingMotion, width, height, time, dt);
+    }
+    if (motion && dt > 0) {
+      stepBlob(blob, motion, width, height, time, dt);
+    }
+    const drawLeaving = Boolean(leavingMotion && outgoingColor);
+    fillMesh(drawLeaving ? leavingBlob : blob, width, height);
+    paint(drawLeaving && outgoingColor ? outgoingColor : color, width, height, true);
+    if (drawLeaving) {
+      fillMesh(blob, width, height);
+      paint(color, width, height, false);
+    }
+    leavingMotion = finishMotion(leavingMotion, time);
+    motion = finishMotion(motion, time);
   };
 
   return {
-    upload(field) {
-      cols = field.cols;
-      rows = field.rows;
-      vertexCount = field.vertexCount;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.bufferData(gl.ARRAY_BUFFER, field.data, gl.STATIC_DRAW);
+    prepareExpand() {
+      const { width, height } = size();
+      leavingMotion = null;
+      motion = {
+        kind: "expand",
+        side: "left",
+        duration: EXPAND_DURATION,
+        easeIn: false,
+      };
+      placeRing(blob, seedPose(width, height), LOBE_ENV_FLOOR);
+      hasTime = false;
+      lastTime = 0;
+      simWidth = width;
+      simHeight = height;
+      return motionTimes(EXPAND_DURATION, false, "expand");
     },
-    draw(time, color, easeIn = false) {
-      if (vertexCount === 0) return;
-      const width = gl.drawingBufferWidth;
-      const height = gl.drawingBufferHeight;
-      if (!ensureFieldTarget(width, height) || !fieldTarget) return;
-
-      bindFramebuffer(gl, fieldTarget);
-      gl.viewport(0, 0, width, height);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE);
-      gl.blendEquation(gl.FUNC_ADD);
-      // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-      gl.useProgram(blobProgram);
-      bindParticleAttributes();
-      setResolutionUniform(gl, blobUResolution);
-      if (blobUGrid) gl.uniform2f(blobUGrid, cols, rows);
-      if (blobUTime) gl.uniform1f(blobUTime, time);
-      if (blobUEaseIn) gl.uniform1f(blobUEaseIn, easeIn ? 1 : 0);
-      gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
-      gl.disable(gl.BLEND);
-
-      bindFramebuffer(gl, null);
-      gl.viewport(0, 0, width, height);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      // biome-ignore lint/correctness/useHookAtTopLevel: not a hook
-      gl.useProgram(thresholdProgram);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, fieldTarget.texture);
-      if (uField) gl.uniform1i(uField, 0);
-      if (uThresholdColor) {
-        gl.uniform3f(uThresholdColor, color[0], color[1], color[2]);
-      }
-      if (uThreshold) gl.uniform1f(uThreshold, METABALL_THRESHOLD);
-      if (uSoftness) gl.uniform1f(uSoftness, METABALL_SOFTNESS);
-      drawFullscreenTriangle(gl, thresholdProgram, fullscreenBuffer);
-      gl.bindTexture(gl.TEXTURE_2D, null);
+    prepareEnter(fromSide) {
+      const { width, height } = size();
+      leavingMotion = null;
+      motion = {
+        kind: "enter",
+        side: fromSide,
+        duration: ENTER_DURATION,
+        easeIn: false,
+      };
+      placeRing(blob, gatherPose(fromSide, width, height, "enter"), LOBE_ENV_FLOOR);
+      hasTime = false;
+      lastTime = 0;
+      simWidth = width;
+      simHeight = height;
+      return motionTimes(ENTER_DURATION, false, "enter");
+    },
+    prepareExit(side) {
+      const { width, height } = size();
+      leavingMotion = null;
+      motion = {
+        kind: "exit",
+        side,
+        duration: EXIT_DURATION,
+        easeIn: true,
+      };
+      hasTime = true;
+      lastTime = 0;
+      simWidth = width;
+      simHeight = height;
+      return motionTimes(EXIT_DURATION, true, "exit");
+    },
+    prepareHandoff(exitSide, enterFrom) {
+      const { width, height } = size();
+      copyBlob(blob, leavingBlob);
+      leavingMotion = {
+        kind: "exit",
+        side: exitSide,
+        duration: EXIT_DURATION,
+        easeIn: true,
+      };
+      motion = {
+        kind: "enter",
+        side: enterFrom,
+        duration: ENTER_DURATION,
+        easeIn: false,
+      };
+      placeRing(blob, gatherPose(enterFrom, width, height, "enter"), LOBE_ENV_FLOOR);
+      hasTime = false;
+      lastTime = 0;
+      simWidth = width;
+      simHeight = height;
+      const enter = motionTimes(ENTER_DURATION, false, "enter");
+      const exit = motionTimes(EXIT_DURATION, true, "exit");
+      return {
+        fillEnd: Math.max(enter.fillEnd, exit.fillEnd),
+        revealAt: enter.fillEnd,
+        motionAt: 0,
+      };
+    },
+    draw(time, color, outgoingColor = null) {
+      const dt = hasTime ? Math.min(MAX_DT, Math.max(0, time - lastTime)) : 0;
+      lastTime = time;
+      hasTime = true;
+      render(color, time, dt, outgoingColor ?? null);
+    },
+    drawSettled(color) {
+      const { width, height } = size();
+      if (width < 1 || height < 1) return;
+      leavingMotion = null;
+      motion = null;
+      hasTime = false;
+      lastTime = 0;
+      simWidth = width;
+      simHeight = height;
+      placeRing(blob, coverPose(width, height));
+      render(color, 0, 0, null);
     },
     drawIdle() {
+      leavingMotion = null;
       gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
     },
     destroy() {
-      if (fieldTarget) deleteFramebuffer(gl, fieldTarget);
       gl.deleteBuffer(buffer);
-      gl.deleteBuffer(fullscreenBuffer);
-      gl.deleteProgram(blobProgram);
-      gl.deleteProgram(thresholdProgram);
+      gl.deleteProgram(program);
     },
   };
 }

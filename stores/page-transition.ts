@@ -46,7 +46,7 @@ export const usePageTransition = create<PageTransitionState>((set, get) => ({
       gatherSide,
       entryFrom: hasField ? oppositeGather(gatherSide) : "all",
       generation: get().generation + 1,
-      phase: hasField ? "collecting" : "covering",
+      phase: "covering",
     });
   },
   markLeaveStarted: () => {
