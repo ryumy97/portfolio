@@ -22,6 +22,9 @@ const EXPAND_SETTLE = 0.55;
 const LOBE_ENV_FLOOR = 0.22;
 const LEAVE_PROGRESS = 0.02;
 const MAX_DT = 1 / 40;
+const PUSH_BIAS = 1.4;
+const PUSH_PAD = 24;
+const PUSH_GAIN = 0.55;
 
 const VS = `
 attribute vec2 a_pos;
@@ -80,6 +83,7 @@ type Motion = {
   side: GatherSide;
   duration: number;
   easeIn: boolean;
+  pushed?: boolean;
 };
 
 type SoftBlob = {
@@ -453,6 +457,73 @@ function motionPose(
   return { from: cover, to: gatherPose(motion.side, width, height, "exit") };
 }
 
+function pointInBlob(blob: SoftBlob, px: number, py: number) {
+  let inside = false;
+  for (let i = 0; i < RING_COUNT; i++) {
+    const j = (i + 1) % RING_COUNT;
+    const yi = blob.y[i];
+    const yj = blob.y[j];
+    const across = yi > py !== yj > py;
+    if (!across) continue;
+    const xi = blob.x[i];
+    const t = (py - yi) / (yj - yi || 1e-6);
+    if (px < xi + t * (blob.x[j] - xi)) inside = !inside;
+  }
+  return inside;
+}
+
+function blobExtent(blob: SoftBlob): [number, number, number] {
+  const [cx, cy] = centroid(blob);
+  let radius = 0;
+  for (let i = 0; i < RING_COUNT; i++) {
+    radius = Math.max(radius, Math.hypot(blob.x[i] - cx, blob.y[i] - cy));
+  }
+  return [cx, cy, radius];
+}
+
+function pushBlob(
+  leaving: SoftBlob,
+  incoming: SoftBlob,
+  ux: number,
+  uy: number,
+) {
+  const [icx, icy, ir] = blobExtent(incoming);
+  const solid = ir + PUSH_PAD;
+  if (solid < 8) return;
+
+  for (let i = 0; i < RING_COUNT; i++) {
+    const dx = leaving.x[i] - icx;
+    const dy = leaving.y[i] - icy;
+    const dist = Math.hypot(dx, dy);
+    const engulfed =
+      dist < solid || pointInBlob(incoming, leaving.x[i], leaving.y[i]);
+    if (!engulfed) continue;
+
+    let nx: number;
+    let ny: number;
+    if (dist < 1e-3) {
+      nx = ux;
+      ny = uy;
+    } else {
+      nx = dx / dist + ux * PUSH_BIAS;
+      ny = dy / dist + uy * PUSH_BIAS;
+    }
+    const n = Math.hypot(nx, ny) || 1;
+    nx /= n;
+    ny /= n;
+    const overlap = Math.max(solid - dist, PUSH_PAD);
+    const corr = overlap * PUSH_GAIN;
+    leaving.x[i] += nx * corr;
+    leaving.y[i] += ny * corr;
+    const along = leaving.vx[i] * nx + leaving.vy[i] * ny;
+    const want = overlap * 6;
+    if (along < want) {
+      leaving.vx[i] += nx * (want - along);
+      leaving.vy[i] += ny * (want - along);
+    }
+  }
+}
+
 function stepBlob(
   blob: SoftBlob,
   motion: Motion,
@@ -460,12 +531,17 @@ function stepBlob(
   height: number,
   time: number,
   dt: number,
+  pusher?: SoftBlob,
 ) {
   const steps = SUBSTEPS;
   const h = dt / steps;
   for (let step = 1; step <= steps; step++) {
     integrateBlob(blob, motion, width, height, time - dt + h * step, h);
   }
+  if (!pusher || !motion.pushed) return;
+  const { from, to } = motionPose(motion, width, height);
+  const [ux, uy] = travelDir(from, to);
+  pushBlob(blob, pusher, ux, uy);
 }
 
 function integrateBlob(
@@ -479,10 +555,15 @@ function integrateBlob(
   const { from, to } = motionPose(motion, width, height);
   const pose = poseAt(from, to, motion, time);
   const collecting = motion.kind === "exit";
-  const stiffness = collecting ? 40 : STIFFNESS;
-  const damping = collecting ? 2 * Math.sqrt(stiffness) * 1.05 : DAMPING;
-  const neighbor = collecting ? 0.26 : NEIGHBOR_STRENGTH;
-  const skip = collecting ? 0.11 : SKIP_STRENGTH;
+  const pushed = Boolean(motion.pushed);
+  const stiffness = pushed ? 10 : collecting ? 40 : STIFFNESS;
+  const damping = pushed
+    ? 2 * Math.sqrt(Math.max(stiffness, 16)) * 1.15
+    : collecting
+      ? 2 * Math.sqrt(stiffness) * 1.05
+      : DAMPING;
+  const neighbor = pushed ? 0.3 : collecting ? 0.26 : NEIGHBOR_STRENGTH;
+  const skip = pushed ? 0.14 : collecting ? 0.11 : SKIP_STRENGTH;
   const [cx, cy] = centroid(blob);
   const area = signedArea(blob);
   const targetArea = Math.PI * pose.rx * pose.ry;
@@ -663,11 +744,19 @@ export function createParticleFieldRenderer(
     const { width, height } = size();
     if (width < 1 || height < 1) return;
     syncSize(width, height);
-    if (leavingMotion && dt > 0) {
-      stepBlob(leavingBlob, leavingMotion, width, height, time, dt);
-    }
     if (motion && dt > 0) {
       stepBlob(blob, motion, width, height, time, dt);
+    }
+    if (leavingMotion && dt > 0) {
+      stepBlob(
+        leavingBlob,
+        leavingMotion,
+        width,
+        height,
+        time,
+        dt,
+        motion ? blob : undefined,
+      );
     }
     const drawLeaving = Boolean(leavingMotion && outgoingColor);
     fillMesh(drawLeaving ? leavingBlob : blob, width, height);
@@ -745,6 +834,7 @@ export function createParticleFieldRenderer(
         side: exitSide,
         duration: EXIT_DURATION,
         easeIn: true,
+        pushed: true,
       };
       motion = {
         kind: "enter",
