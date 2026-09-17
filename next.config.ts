@@ -28,6 +28,16 @@ const nextConfig: NextConfig = {
         destination: "/lab/particle-morphing/surface",
         permanent: true,
       },
+      {
+        source: "/blogs",
+        destination: "/blog",
+        permanent: true,
+      },
+      {
+        source: "/blogs/:path*",
+        destination: "/blog/:path*",
+        permanent: true,
+      },
     ];
   },
   turbopack: {
@@ -36,7 +46,18 @@ const nextConfig: NextConfig = {
         loaders: ["@svgr/webpack"],
         as: "*.js",
       },
+      "*.md": {
+        loaders: ["raw-loader"],
+        as: "*.js",
+      },
     },
+  },
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.md$/,
+      type: "asset/source",
+    });
+    return config;
   },
   images: {
     qualities: [75, 90],

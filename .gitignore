@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# generated blog markdown imports
+lib/blog-sources.generated.ts
+
 # prefer yarn lock
 package-lock.json
 certificates

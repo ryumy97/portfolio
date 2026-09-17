@@ -35,13 +35,14 @@ export function colorForPath(path: string): Rgb {
   return PAGE_COLOR.ivory;
 }
 
-/** Home 1, CV 2, Work 3, Gallery 4, Lab 5. */
+/** Home 1, CV 2, Work 3, Gallery 4, Lab 5, Blog 6. */
 export function pageOrder(path: string): number {
   const route = normalizePath(path);
   if (route.startsWith("/cv")) return 2;
   if (route.startsWith("/work")) return 3;
   if (route.startsWith("/gallery")) return 4;
   if (route.startsWith("/lab")) return 5;
+  if (route.startsWith("/blog")) return 6;
   return 1;
 }
 

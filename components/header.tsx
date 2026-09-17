@@ -157,6 +157,17 @@ const Header = () => {
               </Button>
             </PointerEventHandler>
           </div>
+          <div className="col-start-10 row-start-2 flex justify-end items-center max-md:hidden">
+            <PointerEventHandler asChild>
+              <Button
+                variant={pathname.startsWith("/blog") ? "navActive" : "nav"}
+                size={"nav"}
+                asChild
+              >
+                <Link href="/blog">Blog</Link>
+              </Button>
+            </PointerEventHandler>
+          </div>
         </motion.header>
       </Grid>
       <AnimatePresence>
@@ -299,6 +310,31 @@ const Header = () => {
                 })}
               >
                 Lab
+              </Link>
+            </motion.div>
+            <motion.div
+              className="w-full text-center"
+              variants={{
+                hidden: { opacity: 0, y: -100 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    delay: 0.7,
+                    duration: 1,
+                    ease: cubicBezier(0.3, 0, 0, 1),
+                  },
+                },
+              }}
+              transition={{ duration: 0.3, ease: cubicBezier(0.3, 0, 0, 1) }}
+            >
+              <Link
+                href="/blog"
+                className={cn("w-full font-heading text-[8vw] no-underline", {
+                  "text-primary": pathname.startsWith("/blog"),
+                })}
+              >
+                Blog
               </Link>
             </motion.div>
           </motion.div>
