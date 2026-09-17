@@ -343,8 +343,25 @@ export default function Page() {
                   <b>
                     McCann <i>(formerly DDB)</i>, Auckland
                   </b>
-                  <i>- Senior Frontend Developer</i>
                 </CVHeading>
+
+                <div className="flex gap-3">
+                  <CVHeading>
+                    <i>- Senior Frontend Developer</i>
+                  </CVHeading>
+                  <CVSubHeading className="text-primary mt-1.5">
+                    OCT 2023 - PRESENT
+                  </CVSubHeading>
+                </div>
+
+                <div className="flex gap-3">
+                  <CVHeading>
+                    <i>- Intermediate Frontend Developer</i>
+                  </CVHeading>
+                  <CVSubHeading className="text-primary mt-1.5">
+                    JUL 2022 - OCT 2023
+                  </CVSubHeading>
+                </div>
 
                 <CVList className="mt-2">
                   <CVListItem>
