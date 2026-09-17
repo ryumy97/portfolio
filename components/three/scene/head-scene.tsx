@@ -1,11 +1,11 @@
 "use client";
 
-import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { PerspectiveCamera } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useMotionValueEvent, useSpring } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
+import { SCREEN, useMediaQuery } from "@/hooks/use-media-query";
 import { Head } from "../model/head";
 
 const START = {

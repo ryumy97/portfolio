@@ -1,5 +1,6 @@
 "use client";
 
+import { useLayoutEffect, useRef } from "react";
 import { lerp } from "@/lib/math";
 import type { Rgb } from "@/lib/page-color";
 import {
@@ -13,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { CANVAS_STYLE, observeCanvasPixelSize } from "@/lib/webgl";
 import { usePageColor } from "@/stores/page-color";
 import { usePageTransition } from "@/stores/page-transition";
-import { useLayoutEffect, useRef } from "react";
 
 type FieldApi = {
   play: (from: ParticleOrigin) => void;
