@@ -4,7 +4,7 @@
  *
  * ---
  * title: ...
- * date: YYYY-MM-DD
+ * date: YYYY-MM-DD HH:mm
  * description: ...
  * tags: tag, another
  * ---
@@ -15,7 +15,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REQUIRED = ["title", "date", "description", "tags"];
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const DATETIME =
+  /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})?$/;
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 const BLOG_DIR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -81,8 +82,8 @@ function lintFile(raw) {
   }
 
   const date = parsed.data.date;
-  if (date && !DATE.test(date)) {
-    errors.push(`"date" must be YYYY-MM-DD (got "${date}")`);
+  if (date && !DATETIME.test(date)) {
+    errors.push(`"date" must be YYYY-MM-DD HH:mm (got "${date}")`);
   }
 
   const tags = (parsed.data.tags ?? "")

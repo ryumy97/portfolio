@@ -11,6 +11,7 @@
     "resize-pngs": "node scripts/resize-public-pngs.mjs",
     "resize-pngs:dry-run": "node scripts/resize-public-pngs.mjs --dry-run",
     "svg-to-png": "node scripts/svg-to-png.mjs",
+    "convert-mov": "node scripts/mov-to-mp4-webp.mjs",
     "prepare": "husky && node scripts/generate-blog-sources.mjs"
   },
   "dependencies": {
@@ -26,7 +27,6 @@
     "lucide-react": "^1.14.0",
     "motion": "^12.38.0",
     "next": "16.2.6",
-    "next-themes": "^0.4.6",
     "postprocessing": "^6.39.1",
     "radix-ui": "^1.4.3",
     "raw-loader": "^4.0.2",

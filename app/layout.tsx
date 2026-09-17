@@ -39,7 +39,8 @@ export default function RootLayout({
       <body className="min-h-svh overflow-hidden pointer-events-auto">
         <ThemeProvider>
           <PageCanvas />
-          <PageTransitionDriver>{children}</PageTransitionDriver>
+          {children}
+          <PageTransitionDriver />
           <Header />
           <Pointer />
         </ThemeProvider>

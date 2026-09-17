@@ -122,7 +122,7 @@ function seedPose(width: number, height: number): Pose {
 }
 
 function gatherPose(
-  side: GatherSide,
+  side: GatherSide | "bottom",
   width: number,
   height: number,
   kind: "enter" | "exit" = "exit",
@@ -131,6 +131,14 @@ function gatherPose(
   const cover = coverPose(width, height);
   const travel =
     kind === "enter" ? seed.rx * 2.4 : Math.max(cover.rx, seed.rx) * 1.15;
+  if (side === "bottom") {
+    return {
+      cx: width * 0.5,
+      cy: height + travel,
+      rx: seed.rx,
+      ry: seed.ry,
+    };
+  }
   return {
     cx: side === "left" ? -travel : width + travel,
     cy: height * 0.5,
@@ -220,6 +228,8 @@ function particleEase(
   let lag = hash01(index, 1.37) * (kind === "expand" ? 0.08 : 0.02);
   if (kind === "expand") {
     lag += 0.08 * (0.5 + 0.5 * Math.sin(2 * angle + 0.7));
+    const facing = Math.cos(angle) * ux + Math.sin(angle) * uy;
+    lag += (1 - facing) * 0.04;
   } else if (kind === "enter") {
     const facing = Math.cos(angle) * ux + Math.sin(angle) * uy;
     lag += (1 - facing) * 0.04;
@@ -449,7 +459,7 @@ function motionPose(
 ): { from: Pose; to: Pose } {
   const cover = coverPose(width, height);
   if (motion.kind === "expand") {
-    return { from: seedPose(width, height), to: cover };
+    return { from: gatherPose("bottom", width, height, "enter"), to: cover };
   }
   if (motion.kind === "enter") {
     return { from: gatherPose(motion.side, width, height, "enter"), to: cover };
@@ -784,7 +794,11 @@ export function createParticleFieldRenderer(
         duration: EXPAND_DURATION,
         easeIn: false,
       };
-      placeRing(blob, seedPose(width, height), LOBE_ENV_FLOOR);
+      placeRing(
+        blob,
+        gatherPose("bottom", width, height, "enter"),
+        LOBE_ENV_FLOOR,
+      );
       hasTime = false;
       lastTime = 0;
       simWidth = width;

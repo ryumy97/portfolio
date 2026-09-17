@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogMarkdown } from "@/components/blog-markdown";
+import { BlogPostFooter } from "@/components/blog-post-footer";
 import { BlogTagList } from "@/components/blog-tags";
 import PageLayer from "@/components/page-layer";
 import { PointerEventHandler } from "@/components/pointer";
@@ -12,6 +13,7 @@ import { CVSubHeading, Title } from "@/components/ui/typography";
 import {
   blogTagOptions,
   formatBlogDate,
+  getAdjacentBlogPosts,
   getBlogPost,
   getBlogPosts,
 } from "@/lib/blog";
@@ -45,11 +47,14 @@ export default async function BlogPostPage({
   const post = await getBlogPost(slug);
   if (!post) notFound();
 
+  const posts = await getBlogPosts();
+  const { previous, next } = getAdjacentBlogPosts(posts, slug);
+
   return (
     <PageLayer>
       <SmoothScroll>
         <Grid className="w-full max-md:p-4 pt-36 pb-24">
-          <article className="col-span-full md:col-start-2 md:col-end-8">
+          <article className="col-start-2 col-end-9 md:col-end-7">
             <PointerEventHandler asChild type="underline">
               <Button variant="ghost" size="nav" asChild>
                 <Link href="/blog">Back</Link>
@@ -65,6 +70,7 @@ export default async function BlogPostPage({
             <div className="mt-10">
               <BlogMarkdown content={post.content} />
             </div>
+            <BlogPostFooter previous={previous} next={next} />
           </article>
         </Grid>
       </SmoothScroll>

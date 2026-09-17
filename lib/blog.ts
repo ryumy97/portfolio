@@ -110,10 +110,17 @@ const MONTHS = [
   "DEC",
 ] as const;
 
-export function formatBlogDate(date: string) {
-  const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return date.toUpperCase();
+function parseBlogDateTime(value: string) {
+  const normalized = value.includes("T") ? value : value.replace(" ", "T");
+  const parsed = new Date(normalized);
+  return parsed.getTime();
+}
 
+export function formatBlogDate(value: string) {
+  const time = parseBlogDateTime(value);
+  if (Number.isNaN(time)) return value.toUpperCase();
+
+  const parsed = new Date(time);
   const day = parsed.getDate();
   const month = MONTHS[parsed.getMonth()];
   const year = parsed.getFullYear();
@@ -143,6 +150,20 @@ export const getBlogPosts = cache(async () => {
   return posts
     .filter((post): post is BlogPost => post !== null)
     .sort(
-      (a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title),
+      (a, b) =>
+        parseBlogDateTime(b.date) - parseBlogDateTime(a.date) ||
+        a.title.localeCompare(b.title),
     );
 });
+
+export function getAdjacentBlogPosts(posts: readonly BlogPost[], slug: string) {
+  const index = posts.findIndex((post) => post.slug === slug);
+  if (index === -1) {
+    return { previous: null, next: null };
+  }
+
+  return {
+    previous: posts[index + 1] ?? null,
+    next: posts[index - 1] ?? null,
+  };
+}

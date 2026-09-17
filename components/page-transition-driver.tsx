@@ -7,14 +7,8 @@ import {
   useReducedMotion,
 } from "motion/react";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import {
-  type ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useTheme } from "@/components/theme-provider";
 import {
   applyDocumentBackground,
   colorForPath,
@@ -29,10 +23,6 @@ import { cn } from "@/lib/utils";
 import { usePageColor } from "@/stores/page-color";
 import { usePageLayers } from "@/stores/page-layers";
 import { usePageTransition } from "@/stores/page-transition";
-
-type Props = {
-  children: ReactNode;
-};
 
 /** Survives remounts so a route change cannot reset the frozen view. */
 let committedPath: string | null = null;
@@ -200,13 +190,8 @@ const PageLayerStage = () => {
   );
 };
 
-const PageTransitionDriver = ({ children }: Props) => {
-  return (
-    <>
-      {children}
-      <PageLayerStage />
-    </>
-  );
+const PageTransitionDriver = () => {
+  return <PageLayerStage />;
 };
 
 export default PageTransitionDriver;
