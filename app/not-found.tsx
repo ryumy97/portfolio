@@ -1,7 +1,7 @@
+import dynamic from "next/dynamic";
 import PageLayer from "@/components/page-layer";
 import { Grid } from "@/components/ui/grid";
 import { Title } from "@/components/ui/typography";
-import dynamic from "next/dynamic";
 import Foreground from "./notfound/foreground";
 
 const Background = dynamic(() =>
