@@ -1,6 +1,8 @@
+import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   async redirects() {
     return [
       {
@@ -38,6 +40,16 @@ const nextConfig: NextConfig = {
         destination: "/blog/:path*",
         permanent: true,
       },
+      {
+        source: "/blog/studying-the-nature-of-code",
+        destination: "/blog/the-nature-of-code/studying-the-nature-of-code",
+        permanent: true,
+      },
+      {
+        source: "/blog/randomness",
+        destination: "/blog/the-nature-of-code/randomness",
+        permanent: true,
+      },
     ];
   },
   turbopack: {
@@ -46,18 +58,7 @@ const nextConfig: NextConfig = {
         loaders: ["@svgr/webpack"],
         as: "*.js",
       },
-      "*.md": {
-        loaders: ["raw-loader"],
-        as: "*.js",
-      },
     },
-  },
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.md$/,
-      type: "asset/source",
-    });
-    return config;
   },
   images: {
     qualities: [75, 90],
@@ -70,4 +71,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [
+      "remark-frontmatter",
+      "remark-mdx-frontmatter",
+      "remark-gfm",
+      "remark-math",
+    ],
+    rehypePlugins: ["rehype-katex"],
+  },
+});
+
+export default withMDX(nextConfig);

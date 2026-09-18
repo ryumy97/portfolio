@@ -1,8 +1,8 @@
-import { PointerEventHandler } from "@/components/pointer";
-import Link from "@/components/transition-link";
+import Link from "next/link";
 import { CVSubHeading, PageParagraphHeading } from "@/components/ui/typography";
 import { type BlogPost, formatBlogDate } from "@/lib/blog";
 import { cn } from "@/lib/utils";
+import { PointerEventHandler } from "./pointer";
 
 function FooterLink({
   label,
@@ -13,31 +13,44 @@ function FooterLink({
   post: BlogPost | null;
   align: "left" | "right";
 }) {
+  if (!post)
+    return (
+      <div
+        className={cn(
+          "flex min-w-0 flex-col gap-1",
+          align === "right" && "items-end text-right",
+        )}
+      >
+        <CVSubHeading className="text-muted-foreground">{label}</CVSubHeading>
+      </div>
+    );
+
   return (
-    <div
-      className={cn(
-        "flex min-w-0 flex-col gap-1",
-        align === "right" && "items-end text-right",
-      )}
+    <PointerEventHandler
+      asChild
+      type={align === "right" ? "bullet-top-right" : "bullet-top-left"}
     >
-      <CVSubHeading className={post ? "text-primary" : "text-muted-foreground"}>
-        {label}
-      </CVSubHeading>
-      {post ? (
-        <>
-          <CVSubHeading className="text-muted-foreground">
-            {formatBlogDate(post.date)}
-          </CVSubHeading>
-          <PointerEventHandler asChild type="underline">
-            <Link href={`/blog/${post.slug}`} className="w-fit max-w-full">
+      <Link href={`/blog/${post.slug}`} className="w-fit max-w-full">
+        <div
+          className={cn(
+            "flex min-w-0 flex-col gap-1",
+            align === "right" && "items-end text-right",
+          )}
+        >
+          <CVSubHeading className="text-primary">{label}</CVSubHeading>
+          {post ? (
+            <>
+              <CVSubHeading className="text-muted-foreground">
+                {formatBlogDate(post.date)}
+              </CVSubHeading>
               <PageParagraphHeading className="font-heading font-bold tracking-[-0.02em]">
                 {post.title}
               </PageParagraphHeading>
-            </Link>
-          </PointerEventHandler>
-        </>
-      ) : null}
-    </div>
+            </>
+          ) : null}
+        </div>
+      </Link>
+    </PointerEventHandler>
   );
 }
 

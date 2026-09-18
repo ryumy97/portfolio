@@ -1,8 +1,12 @@
 import PageLayer from "@/components/page-layer";
 import { Grid } from "@/components/ui/grid";
 import { Title } from "@/components/ui/typography";
-import Background from "./notfound/background";
+import dynamic from "next/dynamic";
 import Foreground from "./notfound/foreground";
+
+const Background = dynamic(() =>
+  import("./notfound/background").then((mod) => mod.default),
+);
 
 export default function NotFoundPage() {
   return (

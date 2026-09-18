@@ -1,0 +1,288 @@
+---
+title: The nature of the code - Randomness
+date: "2026-09-18 18:16"
+description: Chapter 1, Randomness - The nature of code by Daniel Shiffman
+tags: The nature of code, Randomness
+---
+
+import {
+    BiasedRandomWalk,
+    LevyFlightWalk,
+    LinearGraph,
+    MonteCarlo,
+    NormalDistribution,
+    RandomWalk,
+    UniformDistribution,
+    exponentialProbability,
+    linearProbability,
+} from "@/components/blog/the-nature-of-code/randomness"
+
+## Random Walks
+
+Let's start with the random walks example. In 2d canvas we will create a walker that moves in a random direction and draw a line each frame.
+
+```javascript
+class Walker {
+  constructor() {
+    this.x = width / 2;
+    this.y = height / 2;
+  }
+  display(ctx) {
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.rect(this.x, this.y, 1, 1);
+    ctx.fill();
+  }
+  step(ctx) {
+    let choice = Math.floor(Math.random() * 4);
+    switch (choice) {
+      case 0:
+        this.x++;
+        break;
+      case 1:
+        this.x--;
+        break;
+      case 2:
+        this.y++;
+        break;
+      case 3:
+        this.y--;
+    }
+    this.display(ctx);
+  }
+}
+```
+
+Let's create a new instance of the Walker class and call the step method in a loop.
+
+```javascript
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const walker = new Walker();
+
+function animate() {
+  walker.step();
+  walker.display(ctx);
+  window.requestAnimationFrame(animate);
+}
+
+window.requestAnimationFrame(animate);
+```
+
+<RandomWalk />
+
+You can see the walker moving in a random direction and filling the canvas for each pixel that it visits.
+
+The Random Walk is a simple example of a random process. It is a process that is not deterministic.
+If you leave the walker to move for a long time, it might walk outside the canvas.
+
+This is tranditional random walk where the probability of the walker going to any of the four directions is equal. 25% for each direction.
+This is called "uniform" distribution of the probability.
+
+
+<UniformDistribution />
+
+## Non-uniform distribution
+
+In the nature, the movement of an object is not total random. Most organic or natural looking simulations are biased to some degree.
+If the `random()` function can produce "non-uniform" distribution based on it's tendency, then the simulation could be more natural looking.
+
+One simple example is to bias the probability of the walker to move towards the center of the canvas.
+Let's create a new Walker class. This time imagine the walker is walking to the right of the canvas is 40% while other directions are 20% each.
+We can do so by having an array of the probabilities and use the `random()` function to select the direction based on the probabilities.
+
+```javascript
+class Walker {
+  constructor() {
+    this.x = width / 2;
+    this.y = height / 2;
+    // 2/5 (40%) for right, 1/5 (20%) for left, up, and down
+    this.probabilities = ['right', 'right', 'left', 'up', 'down'];
+  }
+  display(ctx) {
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.rect(this.x, this.y, 1, 1);
+    ctx.fill();
+  }
+  step(ctx) {
+    let choice = Math.floor(Math.random() * this.probabilities.length);
+    switch (this.probabilities[choice]) {
+      case 'right':
+        this.x++;
+        break;
+      case 'left':
+        this.x--;
+        break;
+      case 'up':
+        this.y--;
+        break;
+      case 'down':
+        this.y++;
+        break;
+    }
+    this.display(ctx);
+  }
+}
+```
+
+<BiasedRandomWalk />
+
+As you can see, the walk is more directed towards the right side of the canvas.
+
+## Normal Distribution
+
+Normal distribution is a type of distribution that is symmetric and bell-shaped.
+It is common to find this pattern in the nature.
+
+For example, imagine taking a distribution of the height of a male human population.
+You will find that most of the humans are around the average height, with a few very tall or very short humans.
+This is a normal distribution also called the Gaussian distribution.
+
+The same bell curve appears for female height, clustered around a slightly lower average.
+
+<NormalDistribution />
+
+The height of the curve at any value $x$ comes from this formula:
+
+$$
+\frac{1}{\sigma\sqrt{2\pi}}\,e^{-\frac12\left(\frac{x-\mu}{\sigma}\right)^2}
+$$
+
+$\mu$ (`mean`) is the center of the bell. Let's say adult height that is about $175.4\,\mathrm{cm}$ for males and $161.8\,\mathrm{cm}$ for females.
+
+$\sigma$ (`sd`) is the standard deviation. It is how spread out the population is. A larger $\sigma$ makes the bell shorter and wider. A smaller $\sigma$ makes it taller and narrower.
+
+```javascript
+function gaussian(x, mean, sd) {
+  let z = (x - mean) / sd;
+  return Math.exp(-0.5 * z * z) / (sd * Math.sqrt(2 * Math.PI));
+}
+
+gaussian(175, 175.4, 7.4); // male height, peak around 175cm
+gaussian(162, 161.8, 7.1); // female height, peak around 162cm
+```
+
+There are more to learn about the normal distribution to analyze the data. But since we only care about using the normal distribution to generate random numbers, we will stop here.
+
+## A Custom Distribution of Random Numbers
+
+Back to the random walks, Let's imagine for a random walker to search for a food. It should still move randomly without any tendency to move towards to certain known direction.
+
+This previous example of the Walker object is randomly walking but every now often, it will return to prevopisly visited postions many times, a phenomenon known as "oversampling".
+This would look or be very inefficient to the walker to search for the food.
+
+### Lévy flight
+
+One strategy to avoid such a problem is to take a very large step every so often. Walker can search randomly around a new section of positions for a random period of time.
+
+This variation on the random walk, known as a Lévy flight, requires a custom set of probabilities.
+
+```javascript
+class Walker {
+  constructor() {
+    this.x = width / 2;
+    this.y = height / 2;
+    this.probabilities = ['right', 'left', 'up', 'down'];
+  }
+  display(ctx) {
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.rect(this.x, this.y, 1, 1);
+    ctx.fill();
+  }
+  step(ctx) {
+    let choice = Math.floor(Math.random() * this.probabilities.length);
+    let r = Math.random();
+    // 1% of the time, take a large Lévy jump
+    let stepSize = r < 0.01 ? Math.floor(Math.random() * 100) : 1;
+    let prevX = this.x;
+    let prevY = this.y;
+    switch (this.probabilities[choice]) {
+      case 'right':
+        this.x += stepSize;
+        break;
+      case 'left':
+        this.x -= stepSize;
+        break;
+      case 'up':
+        this.y -= stepSize;
+        break;
+      case 'down':
+        this.y += stepSize;
+        break;
+    }
+    ctx.strokeStyle = "black";
+    ctx.beginPath();
+    ctx.moveTo(prevX, prevY);
+    ctx.lineTo(this.x, this.y);
+    ctx.stroke();
+    this.display(ctx);
+  }
+}
+```
+
+<LevyFlightWalk />
+
+However, this reduces the probabilities to a fixed number of options: 99 percent of the time, a small step; 1 percent of the time, a large step. 
+What if you instead wanted to make a more general rule, such as the higher a number, the more likely it is to be picked? 
+For example, 0.8791 would be more likely to be picked than 0.8532, even if that likelihood is just a tiny bit greater. 
+In other words, if x is the random number, the likelihood of it being picked could be mapped to the y-axis with the function y = x.
+
+<LinearGraph />
+
+If a distribution of random numbers can be generated according to the graph, we can generate a random number between 0 and 1 and use the graph to determine the probability of it being picked.
+
+### Qualifying random value
+
+One solution is to pick two random numbers. The first is a candidate, $x$. The second is a qualifier, $y$.
+
+If $y$ is less than the probability of $x$, we keep $x$. For $y = x$, that means we keep $x$ when $y$ is less than $x$ - the point $(x, y)$ sits under the line. If $y$ is greater than $x$, the point is above the line. We throw it away and try again.
+
+This process is called the accept-reject algorithm, a type of Monte Carlo method.
+
+```javascript
+function linearProbability(x) {
+    // y = x
+  return x;
+}
+
+function montecarlo(probabilityFunction) {
+  while (true) {
+    let r1 = Math.random();
+    let probability = probabilityFunction(r1);
+    let r2 = Math.random();
+    if (r2 < probability) {
+      return r1;
+    }
+  }
+}
+```
+
+<MonteCarlo probabilityFunction={linearProbability} />
+
+As you can see, as we pick more numbers in this function, the distribution of the numbers is more aligned with the linear line graph.
+If we change the probability function, the distribution of the numbers will change.
+
+```javascript
+function exponentialProbability(x) {
+    // y = e^{-x}
+  return Math.exp(-x);
+}
+```
+
+<MonteCarlo probabilityFunction={exponentialProbability} />
+
+As you can see, the distribution of the numbers is more aligned with the exponential line graph.
+
+We can summarise the Monte Carlo method as a way to say - Generate a random value and apply probability to that generated value to see if that value is accepted or rejected. So that each value has it's own probability of being accepted.
+
+## Conclusion
+
+In this chapter, we learned about the nature of randomness and how to generate random numbers with different distributions.
+Not all the random values are equally likely to be picked. Some values are more likely to be picked than others.
+
+It is likely that we will get a <b>Normal Distribution</b> of the random numbers in the nature. 
+But when it comes to the intention, we can create a custom distribution of the random numbers to fit our needs by using methods like <b>Monte Carlo</b>.
+
+

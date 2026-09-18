@@ -52,7 +52,7 @@ export default async function BlogPage({
           <div className="col-start-2 col-end-9 md:col-end-7">
             <Title className="text-primary">Blog</Title>
             <PageDescription className="mt-2">
-              Here I write about my interests and studies.
+              About my interests and studies.
             </PageDescription>
             <BlogTagFilter tags={tags} active={active} />
           </div>
@@ -65,10 +65,7 @@ export default async function BlogPage({
               </PageDescription>
             ) : (
               filtered.map((post) => (
-                <article
-                  key={post.slug}
-                  className="col-span-full md:col-span-6 flex flex-col gap-1"
-                >
+                <article key={post.slug} className="col-span-full">
                   <CVSubHeading className="text-primary">
                     {formatBlogDate(post.date)}
                   </CVSubHeading>

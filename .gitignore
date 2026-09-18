@@ -40,8 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# generated blog markdown imports
+# generated blog MDX imports
 lib/blog-sources.generated.ts
+
+# copied KaTeX assets for blog math
+/public/katex
 
 # prefer yarn lock
 package-lock.json

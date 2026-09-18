@@ -1,0 +1,27 @@
+.katex {
+  display: inline-block;
+  font-size: 1.08em;
+  line-height: 1;
+  color: inherit;
+  vertical-align: middle;
+  text-indent: 0;
+}
+
+.katex-display {
+  display: block;
+  margin: 1.5em 0;
+  padding: 0.75em 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+.katex-display > .katex {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 0.35em 0.25em;
+}
+
+.katex svg {
+  display: block;
+  max-width: none;
+}

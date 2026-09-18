@@ -1,7 +1,6 @@
+import type { MDXContent } from "mdx/types";
 import { cache } from "react";
 import { blogSources } from "./blog-sources.generated";
-
-const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 
 export type BlogPost = {
   slug: string;
@@ -10,7 +9,12 @@ export type BlogPost = {
   description: string;
   tags: string[];
   draft: boolean;
-  content: string;
+  Content: MDXContent;
+};
+
+type BlogSource = {
+  default: MDXContent;
+  frontmatter?: unknown;
 };
 
 export function parseBlogTags(value: string | undefined) {
@@ -60,26 +64,36 @@ function unwrap(value: string) {
   return value;
 }
 
-function parseFrontmatter(raw: string) {
-  const match = raw.match(FRONTMATTER);
-  if (!match) {
-    return { data: {} as Record<string, string>, content: raw.trim() };
+function stringifyFrontmatterValue(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ${pad(value.getHours())}:${pad(value.getMinutes())}`;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => stringifyFrontmatterValue(item)).join(", ");
+  }
+  return String(value);
+}
+
+function readFrontmatter(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return {} as Record<string, string>;
   }
 
   const data: Record<string, string> = {};
-  for (const line of match[1].split("\n")) {
-    const separator = line.indexOf(":");
-    if (separator === -1) continue;
-    const key = line.slice(0, separator).trim();
-    if (!key) continue;
-    data[key] = unwrap(line.slice(separator + 1).trim());
+  for (const [key, raw] of Object.entries(value)) {
+    data[key] = stringifyFrontmatterValue(raw);
   }
-
-  return { data, content: match[2].trim() };
+  return data;
 }
 
-function toPost(slug: string, raw: string): BlogPost {
-  const { data, content } = parseFrontmatter(raw);
+function toPost(slug: string, source: BlogSource): BlogPost {
+  const data = readFrontmatter(source.frontmatter);
   return {
     slug,
     title: data.title || slug,
@@ -87,7 +101,7 @@ function toPost(slug: string, raw: string): BlogPost {
     description: data.description || "",
     tags: parseBlogTags(data.tags),
     draft: data.draft === "true",
-    content,
+    Content: source.default,
   };
 }
 
@@ -127,19 +141,31 @@ export function formatBlogDate(value: string) {
   return `${day} ${month} ${year}`;
 }
 
+function isSafeBlogSlug(slug: string) {
+  if (!slug || slug.includes("\\") || slug.includes("..")) return false;
+  return slug
+    .split("/")
+    .every((segment) => Boolean(segment) && !segment.startsWith("."));
+}
+
+function seriesOf(slug: string) {
+  const index = slug.lastIndexOf("/");
+  return index === -1 ? "" : slug.slice(0, index);
+}
+
 export const getBlogSlugs = cache(async () => {
   return Object.keys(blogSources);
 });
 
 export const getBlogPost = cache(async (slug: string) => {
-  if (slug.includes("/") || slug.includes("\\") || slug.startsWith(".")) {
+  if (!isSafeBlogSlug(slug)) {
     return null;
   }
 
-  const raw = blogSources[slug];
-  if (typeof raw !== "string") return null;
+  const source = (blogSources as Record<string, BlogSource | undefined>)[slug];
+  if (!source?.default) return null;
 
-  const post = toPost(slug, raw);
+  const post = toPost(slug, source);
   return isPublished(post) ? post : null;
 });
 
@@ -157,13 +183,15 @@ export const getBlogPosts = cache(async () => {
 });
 
 export function getAdjacentBlogPosts(posts: readonly BlogPost[], slug: string) {
-  const index = posts.findIndex((post) => post.slug === slug);
+  const series = seriesOf(slug);
+  const grouped = posts.filter((post) => seriesOf(post.slug) === series);
+  const index = grouped.findIndex((post) => post.slug === slug);
   if (index === -1) {
     return { previous: null, next: null };
   }
 
   return {
-    previous: posts[index + 1] ?? null,
-    next: posts[index - 1] ?? null,
+    previous: grouped[index + 1] ?? null,
+    next: grouped[index - 1] ?? null,
   };
 }

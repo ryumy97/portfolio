@@ -16,8 +16,8 @@ export function watchBlogSources() {
     });
   };
 
-  watch(blogDir, (_event, filename) => {
-    if (typeof filename !== "string" || !filename.endsWith(".md")) return;
+  watch(blogDir, { recursive: true }, (_event, filename) => {
+    if (typeof filename !== "string" || !filename.endsWith(".mdx")) return;
     clearTimeout(timer);
     timer = setTimeout(generate, 50);
   });

@@ -9,7 +9,13 @@ import { cn } from "@/lib/utils";
 import { pointer } from "@/stores/pointer";
 import { useScrollEvent } from "./smooth-scroll";
 
-type PointerEventType = "bg" | "underline" | "bullet" | "hide";
+type PointerEventType =
+  | "bg"
+  | "underline"
+  | "bullet"
+  | "hide"
+  | "bullet-top-left"
+  | "bullet-top-right";
 type PointerEventProps = {
   ref?: React.RefObject<HTMLElement | null>;
   type?: PointerEventType;
@@ -53,6 +59,28 @@ export const usePointerEvent = ({
         height: 1 + offsetHeight,
         x: rect.x + offsetX + rect.width / 2 + 16,
         y: rect.y + offsetY + rect.height + 16,
+        borderRadius,
+      });
+      return;
+    }
+
+    if (type === "bullet-top-left") {
+      setHoverTarget({
+        width: 12 + offsetWidth,
+        height: 12 + offsetHeight,
+        x: rect.x + offsetX + 6,
+        y: rect.y + offsetY + 24,
+        borderRadius,
+      });
+      return;
+    }
+
+    if (type === "bullet-top-right") {
+      setHoverTarget({
+        width: 12 + offsetWidth,
+        height: 12 + offsetHeight,
+        x: rect.x + rect.width + offsetX + 26,
+        y: rect.y + offsetY + 24,
         borderRadius,
       });
       return;

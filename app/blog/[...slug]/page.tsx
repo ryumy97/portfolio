@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BlogMarkdown } from "@/components/blog-markdown";
+import { BlogMdx } from "@/components/blog-mdx";
 import { BlogPostFooter } from "@/components/blog-post-footer";
 import { BlogTagList } from "@/components/blog-tags";
 import PageLayer from "@/components/page-layer";
@@ -18,18 +18,22 @@ import {
   getBlogPosts,
 } from "@/lib/blog";
 
+function slugFromParams(slug: string | string[]) {
+  return Array.isArray(slug) ? slug.join("/") : slug;
+}
+
 export async function generateStaticParams() {
   const posts = await getBlogPosts();
-  return posts.map((post) => ({ slug: post.slug }));
+  return posts.map((post) => ({ slug: post.slug.split("/") }));
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string[] }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogPost(slug);
+  const post = await getBlogPost(slugFromParams(slug));
   if (!post) return {};
 
   return {
@@ -41,9 +45,10 @@ export async function generateMetadata({
 export default async function BlogPostPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string[] }>;
 }) {
-  const { slug } = await params;
+  const { slug: segments } = await params;
+  const slug = slugFromParams(segments);
   const post = await getBlogPost(slug);
   if (!post) notFound();
 
@@ -68,7 +73,7 @@ export default async function BlogPostPage({
               <BlogTagList tags={blogTagOptions(post.tags)} />
             </div>
             <div className="mt-10">
-              <BlogMarkdown content={post.content} />
+              <BlogMdx Content={post.Content} />
             </div>
             <BlogPostFooter previous={previous} next={next} />
           </article>

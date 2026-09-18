@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Require blog markdown files to start with:
+ * Require blog MDX files to start with:
  *
  * ---
  * title: ...
@@ -99,12 +99,28 @@ function lintFile(raw) {
   return errors;
 }
 
+async function collectMarkdown(dir, relative = "") {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    if (entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
+    const rel = relative ? `${relative}/${entry.name}` : entry.name;
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await collectMarkdown(fullPath, rel)));
+      continue;
+    }
+    if (entry.isFile() && entry.name.endsWith(".mdx")) files.push(rel);
+  }
+
+  return files.sort();
+}
+
 async function main() {
   let files = [];
   try {
-    files = (await readdir(BLOG_DIR))
-      .filter((file) => file.endsWith(".md"))
-      .sort();
+    files = await collectMarkdown(BLOG_DIR);
   } catch (error) {
     if (error.code === "ENOENT") return;
     throw error;
@@ -124,7 +140,7 @@ async function main() {
 
   if (failed > 0) {
     console.error(
-      `\n${failed} blog markdown file${failed === 1 ? "" : "s"} failed frontmatter lint.`,
+      `\n${failed} blog MDX file${failed === 1 ? "" : "s"} failed frontmatter lint.`,
     );
     process.exit(1);
   }
