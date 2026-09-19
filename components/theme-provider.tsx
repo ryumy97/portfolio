@@ -8,13 +8,13 @@ import {
   useMemo,
   useState,
 } from "react";
-import { PAGE_THEMES } from "@/lib/page-color";
+import { PAGE_THEMES, type PageTheme } from "@/lib/page-color";
 import { applyDocumentTheme, DEFAULT_THEME, persistTheme } from "@/lib/theme";
 
 type ThemeContextValue = {
-  theme: string;
-  setTheme: (theme: string) => void;
-  themes: readonly string[];
+  theme: PageTheme;
+  setTheme: (theme: PageTheme) => void;
+  themes: readonly PageTheme[];
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -48,9 +48,9 @@ type Props = {
 };
 
 const ThemeProvider = ({ children }: Props) => {
-  const [theme, setThemeState] = useState(DEFAULT_THEME);
+  const [theme, setThemeState] = useState<PageTheme>(DEFAULT_THEME);
 
-  const setTheme = useCallback((next: string) => {
+  const setTheme = useCallback((next: PageTheme) => {
     const restore = disableThemeTransitions();
     setThemeState(next);
     persistTheme(next);
