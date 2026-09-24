@@ -1,0 +1,240 @@
+---
+title: The nature of the code - Perlin Noise
+date: "2026-09-25 00:31"
+description: 1.1, Randomness | Perlin Noise - The nature of code by Daniel Shiffman
+tags: The nature of code, Randomness
+---
+
+import { FadeGraph, GradientNoise2D, GraphPaper1D, GraphPaper2D, GraphPaperGradient2D, JaggedLine, PerlinNoise, SmoothedLine, ValueNoise2D } from "@/components/blog/the-nature-of-code/perlin-noise"
+
+
+## Perlin Noise
+
+Previously, we have learnt how to generate random numbers with controls on the distribution of the numbers.
+As we have seen, organic movements and dicision favors using little bit of random numbers - however, sometimes total randomness is not what we want.
+
+An algorithm known as "Perlin Noise" is named after Ken Perlin. It was designed to create procedural textures for computer-generated effects in the original Tron movie in the early 1980s.
+
+Perlin noise could have a more organic appearance because it produces a naturally ordered ("smooth") sequence of pseudo-random numbers.
+
+<PerlinNoise />
+
+## How does this work?
+
+Think of a long list of numbers that are picked randomly. Few of them are close to each other, while some jumps with big gaps.
+How can we reduce the jumps and make the result more continuous? 
+
+We can simply try to connect the numbers with a line.
+
+<JaggedLine />
+
+X represent the numbers that are picked at a certain time step. Y represents the output of the noise function.
+If we take a very small step of x, the output of the noise function will be very close to the output of the noise function at the previous time step.
+
+This does mean the we have reduced the jumps from a point to the next point.
+
+To make the line smoother, we can use a technique called "interpolation".
+We can take the average of the two numbers closest to the point we want to find the value at.
+This will give us a smoother line.
+
+<SmoothedLine />
+
+Let's summarize the process of generating the noise value at a certain time step.
+1. Generate random numbers at each time step (for each integer lattice point). This is the "seeded" random part of the noise.
+2. Connect the number with the previous number with a line.
+3. Blend the value at the point we want to find the value at.
+
+<GraphPaper1D />
+
+The blend step is not a plain linear interpolation. We use a fade curve so the transition near each lattice edge eases in and eases out:
+
+$$
+\text{fade}(t) = 6t^5 - 15t^4 + 10t^3
+$$
+
+<FadeGraph />
+
+Linear interpolation itself is:
+
+$$
+\text{lerp}(a, b, t) = a + t\,(b - a)
+$$
+
+Putting them together — for example at $P = 2.3$, where $t = 0.3$, $v_0 = 0.504$, and $v_1 = 0.705$:
+
+$$
+\begin{aligned}
+n &= \text{lerp}\big(0.504,\ 0.705,\ \text{fade}(0.3)\big) \\
+&= 0.504 + \text{fade}(0.3)\,(0.705 - 0.504) \\
+&= 0.504 + 0.163 \times 0.201 \\
+&= 0.537
+\end{aligned}
+$$
+
+
+```javascript
+function lerp(a, b, t) {
+  return a + t * (b - a);
+}
+
+function fade(t) {
+  return 6 * t ** 5 - 15 * t ** 4 + 10 * t ** 3;
+}
+
+
+function random(x) {
+  // Deterministic hash of the lattice index — same x always yields same value
+  let n = (x | 0) * 1664525 + 1013904223;
+  n = (n ^ (n >>> 16)) >>> 0;
+  return (n & 0xffff) / 0x10000;
+}
+
+function noise(x) {
+  const t = Math.floor(x);
+  const v0 = random(t);
+  const v1 = random(t + 1);
+  return lerp(v0, v1, fade(x - t));
+}
+```
+
+## 2D noise
+
+The same idea extends to a plane.
+At every integer grid point $(i, j)$ we store a random value.
+For a floating point $(x, y)$, we find the four surrounding corners, fade-blend along $x$, then fade-blend those results along $y$:
+
+```text
+n = lerp(
+  lerp(v00, v10, fade(xf)),
+  lerp(v01, v11, fade(xf)),
+  fade(yf)
+)
+```
+
+<GraphPaper2D />
+
+<ValueNoise2D />
+
+This already makes soft clouds and terrain-like fields.
+But value noise still has a limitation: because each lattice point only stores a height, the interpolated surface can look blocky or directional, and slopes do not always meet smoothly across cell edges.
+
+## Gradient noise
+
+Value noise works — but look closely at the field above and you will notice square-ish blobs and seams that line up with the lattice.
+That happens because each corner only stores a *height*.
+Between corners we blend heights, so the surface tends to peak at lattice points and flatten toward cell centers.
+The first derivatives (the slopes) also do not always match across cell edges, which is why the result can look a little rigid.
+
+Ken Perlin's insight was to store a *gradient vector* (a random direction) at each lattice point instead of a raw value.
+
+**1. Find the cell corners.**
+For any input $(x, y)$, floor to the cell origin $(X_0, Y_0)$, then take the opposite corner $(X_1, Y_1) = (X_0 + 1,\ Y_0 + 1)$. Those four lattice points bound the cell.
+
+**2. Get the gradient vectors.**
+Each corner gets a random 2D unit vector. To keep the field reproducible, pick them with a hash of the lattice index (or a permutation table) — the same corner always returns the same gradient.
+
+**3. Calculate distance vectors.**
+From each corner to the sample point:
+
+$$
+\begin{aligned}
+\vec{d}_{00} &= (x - X_0,\ y - Y_0) \\
+\vec{d}_{10} &= (x - X_1,\ y - Y_0) \\
+\vec{d}_{01} &= (x - X_0,\ y - Y_1) \\
+\vec{d}_{11} &= (x - X_1,\ y - Y_1)
+\end{aligned}
+$$
+
+**4. Compute the dot products.**
+Each corner's *influence* is $\vec{g} \cdot \vec{d}$ — gradient times distance:
+
+$$
+(\vec{g}.x \times \vec{d}.x) + (\vec{g}.y \times \vec{d}.y)
+$$
+
+If the sample moves with the gradient, the value rises; against it, it falls. That gives four scalars $n_{00},\ n_{10},\ n_{01},\ n_{11}$.
+
+**5. Fade the relative position.**
+Inside the cell, $u = x - X_0$ and $v = y - Y_0$. Blending with raw $u$ and $v$ looks blocky at grid edges, so run them through the same fade curve as before:
+
+$$
+f(t) = 6t^5 - 15t^4 + 10t^3
+$$
+
+Then $u_{\text{smooth}} = f(u)$ and $v_{\text{smooth}} = f(v)$.
+
+**6. Interpolate.**
+Lerp the four influences with the smoothed weights — first along $x$, then along $y$:
+
+$$
+\begin{aligned}
+n_x &= \text{lerp}(n_{00},\ n_{10},\ u_{\text{smooth}}) \\
+n_y &= \text{lerp}(n_{01},\ n_{11},\ u_{\text{smooth}}) \\
+n &= \text{lerp}(n_x,\ n_y,\ v_{\text{smooth}})
+\end{aligned}
+$$
+
+The raw result sits roughly in $[-1,\ 1]$ (we often remap it to $[0,\ 1]$ afterward).
+
+<GraphPaperGradient2D />
+
+Here is a compact 2D version in JavaScript:
+
+```javascript
+const GRAD2 = [
+  [1, 1], [-1, 1], [1, -1], [-1, -1],
+  [1, 0], [-1, 0], [0, 1], [0, -1],
+];
+
+function lerp(a, b, t) {
+  return a + t * (b - a);
+}
+
+function fade(t) {
+  return 6 * t ** 5 - 15 * t ** 4 + 10 * t ** 3;
+}
+
+// Deterministic gradient pick from a lattice index
+function gradient(ix, iy) {
+  let n = (ix * 374761393 + iy * 668265263) | 0;
+  n = (n ^ (n >>> 13)) >>> 0;
+  return GRAD2[n & 7];
+}
+
+function noise2D(x, y) {
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const xf = x - x0;
+  const yf = y - y0;
+
+  const g00 = gradient(x0, y0);
+  const g10 = gradient(x0 + 1, y0);
+  const g01 = gradient(x0, y0 + 1);
+  const g11 = gradient(x0 + 1, y0 + 1);
+
+  // Dot product: gradient · distance from corner to (x, y)
+  const n00 = g00[0] * xf + g00[1] * yf;
+  const n10 = g10[0] * (xf - 1) + g10[1] * yf;
+  const n01 = g01[0] * xf + g01[1] * (yf - 1);
+  const n11 = g11[0] * (xf - 1) + g11[1] * (yf - 1);
+
+  const u = fade(xf);
+  const v = fade(yf);
+  const nx0 = lerp(n00, n10, u);
+  const nx1 = lerp(n01, n11, u);
+  const raw = lerp(nx0, nx1, v);
+
+  return (raw + 1) / 2; // map roughly [-1, 1] → [0, 1]
+}
+```
+
+<GradientNoise2D />
+
+## Conclusion
+
+Perlin noise is a type of noise that is used to generate natural-looking textures and patterns.
+Some times the nature behavior looks like a random noise, and sometimes it looks continuous and organic.
+
+We learned how to `control` the randomness of the generated random numbers - using Monte Carlo simulation and Perlin noise.
+
+Next is vectors. We will learn how to use vectors in nature.
