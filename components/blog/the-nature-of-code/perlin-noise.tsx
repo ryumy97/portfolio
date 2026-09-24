@@ -1,10 +1,5 @@
 "use client";
 
-import { PointerEventHandler } from "@/components/pointer";
-import { Button } from "@/components/ui/button";
-import { CVSubHeading } from "@/components/ui/typography";
-import { cn } from "@/lib/utils";
-import { CANVAS_STYLE, observeCanvasPixelSize } from "@/lib/webgl";
 import {
   Line,
   OrbitControls,
@@ -23,6 +18,11 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
+import { PointerEventHandler } from "@/components/pointer";
+import { Button } from "@/components/ui/button";
+import { CVSubHeading } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
+import { CANVAS_STYLE, observeCanvasPixelSize } from "@/lib/webgl";
 
 const NOISE_STEP = 0.01;
 const SCROLL_STEP = 0.01;
