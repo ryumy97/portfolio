@@ -97,6 +97,10 @@ export const usePointerEvent = ({
       return;
     }
 
+    if (type === "hide") {
+      return;
+    }
+
     setHoverTarget({
       width: rect.width + offsetWidth + 16,
       height: rect.height + offsetHeight,

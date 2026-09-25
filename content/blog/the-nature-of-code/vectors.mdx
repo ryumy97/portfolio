@@ -1,0 +1,438 @@
+---
+title: The nature of the code - Vectors
+date: "2026-09-25 22:55"
+description: 1.0 Vectors - The nature of code by Daniel Shiffman
+tags: The nature of code, Vectors
+---
+
+import { VectorAccelerationCanvas, VectorGraph, VectorInteractAwayCanvas, VectorInteractMultipleAwayCanvas, VectorInteractivityCanvas, VectorLocationCanvas, VectorMath, VectorVelocityCanvas } from "@/components/blog/the-nature-of-code/vectors"
+
+
+## Vectors
+
+A vector is an ordered list of numbers that represetns a specific magnitude and direction.
+One way to think of a vector an instruction to move from one location to another.
+
+Let's say we have a starting point at $(0, 0)$ and we want to move to $(10, 10)$. <br />
+This can be represented as a vector:
+
+$$
+\begin{pmatrix}
+10 \\
+10
+\end{pmatrix}
+$$
+
+<VectorGraph />
+
+### Ummm okay?
+
+What does this mean? Why is it useful?
+
+Let's start with a simple example of a position vector.
+
+```javascript
+class Vector2D {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+const position = new Vector2D(50, 50);
+
+const draw = (ctx) => {
+    // Draw the position as a circle
+    ctx.beginPath();
+    ctx.arc(position.x, position.y, 10, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+}
+```
+
+<VectorLocationCanvas />
+
+A location vector gives us a point relative to the origin.
+
+Then we can add a velocity vector to the position vector to move the object every frame.
+
+$$
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} x \\ y \end{pmatrix}
++
+\begin{pmatrix} v_x \\ v_y \end{pmatrix}
+$$
+
+```javascript
+class Vector2D {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  add(vector) {
+    this.x += vector.x;
+    this.y += vector.y;
+  }
+}
+
+const position = new Vector2D(50, 50);
+const velocity = new Vector2D(1, 1);
+
+const update = () => {
+    position.add(velocity);
+    // if the position hits the wall, reverse the velocity
+    if (position.x > width || position.x < 0) {
+        velocity.x = -velocity.x;
+    }
+    if (position.y > height || position.y < 0) {
+        velocity.y = -velocity.y;
+    }
+}
+
+const draw = (ctx) => {
+    // Draw the position as a circle
+    ctx.beginPath();
+    ctx.arc(position.x, position.y, 10, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+}
+
+const animate = () => {
+    update();
+    draw(ctx);
+    window.requestAnimationFrame(animate);
+}
+
+animate();
+```
+
+<VectorVelocityCanvas />
+
+A velocity vector gives us how to move from one location to another.
+
+## Vector math
+
+There are several operations that can be performed on vectors.
+
+```javascript
+class Vector2D {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  add(vector) {
+    this.x += vector.x;
+    this.y += vector.y;
+  }
+  
+  subtract(vector) {
+    this.x -= vector.x;
+    this.y -= vector.y;
+  }
+
+  multiply(scalar) {
+    this.x *= scalar;
+    this.y *= scalar;
+  }
+
+  divide(scalar) {
+    this.x /= scalar;
+    this.y /= scalar;
+  } 
+  
+  magnitude() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  normalize() {
+    const magnitude = this.magnitude();
+    this.x /= magnitude;
+    this.y /= magnitude;
+  }
+  
+  limit(max) {
+    const magnitude = this.magnitude();
+    if (magnitude > max) {
+      this.normalize();
+      this.multiply(max);
+    }
+  }
+
+  heading() {
+    return Math.atan2(this.y, this.x);
+  }
+
+  rotate(angle) {
+    const x = this.x * Math.cos(angle) - this.y * Math.sin(angle);
+    const y = this.x * Math.sin(angle) + this.y * Math.cos(angle);
+    this.x = x;
+    this.y = y;
+  }
+  
+  lerp(vector, amount) {
+    this.x = this.x + (vector.x - this.x) * amount;
+    this.y = this.y + (vector.y - this.y) * amount;
+  }
+
+  distance(vector) {
+    return Math.sqrt((this.x - vector.x) * (this.x - vector.x) + (this.y - vector.y) * (this.y - vector.y));
+  }
+
+    angleBetween(vector) {
+    return Math.atan2(vector.y - this.y, vector.x - this.x);
+  }
+
+  dot(vector) {
+    return this.x * vector.x + this.y * vector.y;
+  }
+
+  cross(vector) {
+    return this.x * vector.y - this.y * vector.x;
+  }
+}
+```
+
+<VectorMath />
+
+## Vectors in nature
+
+From previous examples, we can see that vectors are used to describe the location, velocity.
+For motion that appears in the real world around use, we need to add one more vector to the calculation: acceleration.
+
+$$
+\begin{aligned}
+\vec{v} &= \vec{v} + \vec{a} \\
+\vec{p} &= \vec{p} + \vec{v}
+\end{aligned}
+$$
+
+```javascript
+class Vector2D {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  add(vector) {
+    this.x += vector.x;
+    this.y += vector.y;
+  }
+}
+
+const position = new Vector2D(50, 50);
+const velocity = new Vector2D(1, 1);
+// accelerate towards the top of the screen
+const acceleration = new Vector2D(0, 0.1);
+
+const update = () => {
+    velocity.add(acceleration);
+    position.add(velocity);
+    if (position.x > width || position.x < 0) {
+        velocity.x = -velocity.x;
+    }
+    // when the ball hits the top or bottom of the screen, reverse the velocity - like a bounce
+    if (position.y > height || position.y < 0) {
+        velocity.y = -velocity.y;
+    }
+}
+
+//...draw function...
+```
+
+<VectorAccelerationCanvas />
+
+Now the ball is accelerating towards the bottom of the screen - like gravity.
+
+## Interactivity with acceleration
+
+We can use acceleration to create a simple interaction with the mouse.
+
+```javascript
+class Vector2D {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  add(vector) {
+    this.x += vector.x;
+    this.y += vector.y;
+  }
+
+  subtract(vector) {
+    this.x -= vector.x;
+    this.y -= vector.y;
+  }
+
+  normalize() {
+    const magnitude = this.magnitude();
+    this.x /= magnitude;
+    this.y /= magnitude;
+  }
+
+  magnitude() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  multiply(scalar) {
+    this.x *= scalar;
+    this.y *= scalar;
+  }
+}
+
+const mousePosition = new Vector2D(0, 0);
+const position = new Vector2D(50, 50);
+const velocity = new Vector2D(1, 1);
+const acceleration = new Vector2D(0, 0);
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const pointerMoveHandler = (event) => {
+    mousePosition.x = event.clientX;
+    mousePosition.y = event.clientY;
+}
+
+canvas.addEventListener("pointermove", pointerMoveHandler);
+
+const update = () => {
+    // calculate the direction to the mouse
+    const direction = mousePosition.subtract(position);
+    
+    // normalize the direction to 1
+    direction.normalize();
+    
+    // multiply the direction by 0.1 to slow down the acceleration
+    direction.multiply(0.1);
+
+    // set the acceleration to the direction
+    acceleration.set(direction);
+
+    velocity.add(acceleration);
+    position.add(velocity);
+
+    // wall logic
+    if (position.x > width || position.x < 0) {
+        velocity.x = -velocity.x;
+    }
+    if (position.y > height || position.y < 0) {
+        velocity.y = -velocity.y;
+    }
+}
+
+const animate = () => {
+    update();
+    draw(ctx);
+    window.requestAnimationFrame(animate);
+}
+
+animate();
+
+```
+
+<VectorInteractivityCanvas />
+
+It is important to note that we are calculating the direction to the mouse by subtracting the mouse position from the position of the object.
+We then `normalize` the direction to 1.
+
+Normalization is the process of scaling a vector to a length of 1.
+This is useful because it allows us to use the vector with 1 unit of magnitude, but still retain the direction.
+Then we multiply the direction by 0.1 to accelerate the object towards the mouse.
+
+How about if we want the object to accelerate away from the mouse?
+
+```javascript
+const direction = mousePosition.subtract(position);
+direction.normalize();
+direction.multiply(-0.1);
+```
+
+<VectorInteractAwayCanvas />
+
+Let's put multiple objects that movs away from the mouse. We can do so by creating a ball class that has a position, velocity, and acceleration, then initializing an array of balls.
+
+```javascript
+const mousePosition = new Vector2D(0, 0);
+const balls = [];
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+class Ball {
+  constructor(x, y) {
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D(0, 0);
+    this.acceleration = new Vector2D(0, 0);
+  }
+
+  update() {
+    const direction = mousePosition.subtract(this.position);
+    direction.normalize();
+    direction.multiply(-0.1);
+
+    this.acceleration.set(direction);
+
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+
+    // wall logic
+    if (this.position.x > width || this.position.x < 0) {
+      this.velocity.x = -this.velocity.x;
+    }
+    if (this.position.y > height || this.position.y < 0) {
+      this.velocity.y = -this.velocity.y;
+    }
+
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, 10, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+  }
+}
+
+
+const pointerMoveHandler = (event) => {
+  mousePosition.x = event.clientX;
+  mousePosition.y = event.clientY;
+}
+
+canvas.addEventListener("pointermove", pointerMoveHandler);
+
+for (let i = 0; i < 100; i++) {
+  balls.push(new Ball(Math.random() * width, Math.random() * height));
+}
+
+const animate = () => {
+  balls.forEach(ball => ball.update());
+  balls.forEach(ball => ball.draw(ctx));
+  window.requestAnimationFrame(animate);
+}
+
+animate();
+```
+
+<VectorInteractMultipleAwayCanvas />
+
+These balls are accelerating away from the mouse.
+
+## Conclusion
+
+Vectors are a powerful tool for describing geometrical values in the nature such as location, velocity, and acceleration.
+These values all have a magnitude and a direction. 
+By using vector math, such as normalization and multiplication, we can create interactive experiences that are based on the nature of vectors.
+
+In this chapter, we have learned about the nature of vectors and how to use them to describe motion in the real world.
+We have also learned about the different operations that can be performed on vectors and how to use them to create interactive experiences.
+
+In the next chapter, we will learn more on how to use vectors to recreate the physics of the nature - <i>Forces</i>.
