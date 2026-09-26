@@ -61,6 +61,193 @@ function drawArrowHead(
   ctx.fill();
 }
 
+/** Matches the Vector2D used throughout the vectors post. */
+export class Vector2D {
+  x: number;
+  y: number;
+
+  constructor(x = 0, y = 0) {
+    this.x = x;
+    this.y = y;
+  }
+
+  set(x: number | Vector2D, y = 0) {
+    if (typeof x === "object") {
+      this.x = x.x;
+      this.y = x.y;
+      return this;
+    }
+    this.x = x;
+    this.y = y;
+    return this;
+  }
+
+  copy() {
+    return new Vector2D(this.x, this.y);
+  }
+
+  add(vector: Vector2D) {
+    this.x += vector.x;
+    this.y += vector.y;
+    return this;
+  }
+
+  subtract(vector: Vector2D) {
+    this.x -= vector.x;
+    this.y -= vector.y;
+    return this;
+  }
+
+  multiply(scalar: number) {
+    this.x *= scalar;
+    this.y *= scalar;
+    return this;
+  }
+
+  divide(scalar: number) {
+    this.x /= scalar;
+    this.y /= scalar;
+    return this;
+  }
+
+  magnitude() {
+    return Math.hypot(this.x, this.y);
+  }
+
+  normalize() {
+    const m = this.magnitude();
+    if (m === 0) return this;
+    return this.divide(m);
+  }
+
+  limit(max: number) {
+    const m = this.magnitude();
+    if (m > max && m > 0) {
+      this.normalize();
+      this.multiply(max);
+    }
+    return this;
+  }
+
+  dot(vector: Vector2D) {
+    return this.x * vector.x + this.y * vector.y;
+  }
+
+  static sub(a: Vector2D, b: Vector2D) {
+    return new Vector2D(a.x - b.x, a.y - b.y);
+  }
+}
+
+const POSITION_RADIUS = 10;
+
+/** Ball with position / velocity / acceleration — same structure as the post. */
+export class Ball {
+  position: Vector2D;
+  velocity: Vector2D;
+  acceleration: Vector2D;
+  radius: number;
+  mass: number;
+
+  constructor(x: number, y: number, radius = POSITION_RADIUS, mass = 1) {
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D(0, 0);
+    this.acceleration = new Vector2D(0, 0);
+    this.radius = radius;
+    this.mass = mass;
+  }
+
+  /** Newton's 2nd law: a = F / m */
+  applyForce(force: Vector2D) {
+    const f = force.copy();
+    f.divide(this.mass);
+    this.acceleration.add(f);
+    return this;
+  }
+
+  /** Instantaneous impulse J — Δv = J / m (integrated F = ma over the collision). */
+  applyImpulse(impulse: Vector2D) {
+    const deltaV = impulse.copy();
+    deltaV.divide(this.mass);
+    this.velocity.add(deltaV);
+    return this;
+  }
+
+  /** Point acceleration at (or away from) a target, matching the MDX snippets. */
+  accelerateToward(target: Vector2D, strength: number) {
+    const direction = Vector2D.sub(target, this.position);
+    direction.normalize();
+    direction.multiply(strength);
+    this.acceleration.set(direction);
+  }
+
+  /**
+   * Resolve a collision using Newton's 2nd & 3rd laws:
+   * equal-and-opposite impulses J and −J, each changing velocity by J/m.
+   */
+  collide(other: Ball, restitution = 1) {
+    const normal = Vector2D.sub(other.position, this.position);
+    const distance = normal.magnitude();
+    if (distance === 0) return 0;
+    normal.normalize();
+
+    const relativeVelocity = Vector2D.sub(other.velocity, this.velocity);
+    const speedAlongNormal = relativeVelocity.dot(normal);
+    // Already separating — no impulse.
+    if (speedAlongNormal > 0) return 0;
+
+    // Impulse scalar from conservation of momentum + restitution.
+    const j =
+      (-(1 + restitution) * speedAlongNormal) /
+      (1 / this.mass + 1 / other.mass);
+
+    // Newton III: forces (impulses) are equal and opposite.
+    const impulseOnOther = normal.copy().multiply(j);
+    const impulseOnThis = impulseOnOther.copy().multiply(-1);
+
+    // Newton II: Δv = J / m
+    this.applyImpulse(impulseOnThis);
+    other.applyImpulse(impulseOnOther);
+
+    // Separate overlapping circles so they don't stick.
+    const overlap = this.radius + other.radius - distance;
+    if (overlap > 0) {
+      const correction = normal.copy().multiply(overlap / 2 + 0.5);
+      this.position.subtract(correction);
+      other.position.add(correction);
+    }
+
+    return j;
+  }
+
+  update(maxSpeed?: number) {
+    this.velocity.add(this.acceleration);
+    if (maxSpeed !== undefined) this.velocity.limit(maxSpeed);
+    this.position.add(this.velocity);
+  }
+
+  bounce(width: number, height: number, restitution = 1) {
+    const r = this.radius;
+    if (this.position.x > width - r || this.position.x < r) {
+      this.velocity.x *= -restitution;
+      this.position.x = Math.min(Math.max(this.position.x, r), width - r);
+    }
+    if (this.position.y > height - r || this.position.y < r) {
+      this.velocity.y *= -restitution;
+      this.position.y = Math.min(Math.max(this.position.y, r), height - r);
+    }
+  }
+
+  draw(ctx: CanvasRenderingContext2D, fill: string, stroke: string) {
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+}
+
 export function VectorGraph({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -237,7 +424,6 @@ export function VectorGraph({ className }: { className?: string }) {
 
 const POSITION_X = 50;
 const POSITION_Y = 50;
-const POSITION_RADIUS = 10;
 
 export function VectorLocationCanvas({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -255,20 +441,22 @@ export function VectorLocationCanvas({ className }: { className?: string }) {
     let color = "#1e1e1e";
     let primary = "#f75d5d";
     let muted = "#9a9a9a";
+    const ball = new Ball(POSITION_X, POSITION_Y);
 
     const draw = () => {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
       if (width <= 0 || height <= 0) return;
 
-      // Canvas coordinates: origin at top-left, y grows downward — same as the snippet.
+      const { x, y } = ball.position;
+
       ctx.setLineDash([5, 4]);
       ctx.strokeStyle = muted;
       ctx.lineWidth = 1.25;
       ctx.beginPath();
-      ctx.moveTo(0, POSITION_Y);
-      ctx.lineTo(POSITION_X, POSITION_Y);
-      ctx.lineTo(POSITION_X, 0);
+      ctx.moveTo(0, y);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x, 0);
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -276,36 +464,27 @@ export function VectorLocationCanvas({ className }: { className?: string }) {
       ctx.font = "500 11px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText(`x = ${POSITION_X}`, POSITION_X / 2 - 12, POSITION_Y - 6);
+      ctx.fillText(`x = ${x}`, x / 2 - 12, y - 6);
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(`y = ${POSITION_Y}`, POSITION_X + 8, POSITION_Y / 2);
+      ctx.fillText(`y = ${y}`, x + 8, y / 2);
 
       ctx.strokeStyle = primary;
       ctx.fillStyle = primary;
       ctx.lineWidth = 1.75;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.lineTo(POSITION_X, POSITION_Y);
+      ctx.lineTo(x, y);
       ctx.stroke();
-      drawArrowHead(ctx, 0, 0, POSITION_X, POSITION_Y, 10);
+      drawArrowHead(ctx, 0, 0, x, y, 10);
 
-      ctx.beginPath();
-      ctx.arc(POSITION_X, POSITION_Y, POSITION_RADIUS, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      ball.draw(ctx, primary, color);
 
       ctx.fillStyle = primary;
       ctx.font = "500 12px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
-      ctx.fillText(
-        `position = (${POSITION_X}, ${POSITION_Y})`,
-        POSITION_X + POSITION_RADIUS + 8,
-        POSITION_Y + 4,
-      );
+      ctx.fillText(`position = (${x}, ${y})`, x + ball.radius + 8, y + 4);
 
       ctx.fillStyle = muted;
       ctx.font = "500 11px ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -385,18 +564,17 @@ export function VectorVelocityCanvas({ className }: { className?: string }) {
     let raf = 0;
     let running = true;
     let visible = false;
-    let x = START_X;
-    let y = START_Y;
-    let vx = VELOCITY_X;
-    let vy = VELOCITY_Y;
+    const ball = new Ball(START_X, START_Y);
+    ball.velocity.set(VELOCITY_X, VELOCITY_Y);
 
     const draw = () => {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
       if (width <= 0 || height <= 0) return;
 
-      const tipX = x + vx * VELOCITY_ARROW_SCALE;
-      const tipY = y + vy * VELOCITY_ARROW_SCALE;
+      const { x, y } = ball.position;
+      const tipX = x + ball.velocity.x * VELOCITY_ARROW_SCALE;
+      const tipY = y + ball.velocity.y * VELOCITY_ARROW_SCALE;
 
       ctx.strokeStyle = muted;
       ctx.fillStyle = muted;
@@ -410,15 +588,13 @@ export function VectorVelocityCanvas({ className }: { className?: string }) {
       ctx.font = "500 11px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText(`velocity = (${vx}, ${vy})`, tipX + 6, tipY - 4);
+      ctx.fillText(
+        `velocity = (${ball.velocity.x}, ${ball.velocity.y})`,
+        tipX + 6,
+        tipY - 4,
+      );
 
-      ctx.beginPath();
-      ctx.arc(x, y, POSITION_RADIUS, 0, Math.PI * 2);
-      ctx.fillStyle = primary;
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      ball.draw(ctx, primary, color);
 
       ctx.fillStyle = primary;
       ctx.font = "500 12px ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -426,30 +602,22 @@ export function VectorVelocityCanvas({ className }: { className?: string }) {
       ctx.textBaseline = "top";
       ctx.fillText(
         `position = (${Math.round(x)}, ${Math.round(y)})`,
-        x + POSITION_RADIUS + 8,
+        x + ball.radius + 8,
         y + 4,
       );
     };
 
     const update = () => {
-      x += vx;
-      y += vy;
-
-      if (x > width - POSITION_RADIUS || x < POSITION_RADIUS) {
-        vx *= -1;
-        x = Math.min(Math.max(x, POSITION_RADIUS), width - POSITION_RADIUS);
-      }
-      if (y > height - POSITION_RADIUS || y < POSITION_RADIUS) {
-        vy *= -1;
-        y = Math.min(Math.max(y, POSITION_RADIUS), height - POSITION_RADIUS);
-      }
+      // position.add(velocity) — acceleration stays zero
+      ball.acceleration.set(0, 0);
+      ball.update();
+      ball.bounce(width, height);
     };
 
     const reset = () => {
-      x = START_X;
-      y = START_Y;
-      vx = VELOCITY_X;
-      vy = VELOCITY_Y;
+      ball.position.set(START_X, START_Y);
+      ball.velocity.set(VELOCITY_X, VELOCITY_Y);
+      ball.acceleration.set(0, 0);
       draw();
     };
 
@@ -484,14 +652,7 @@ export function VectorVelocityCanvas({ className }: { className?: string }) {
       color = styles.color || color;
       primary = styles.getPropertyValue("--primary").trim() || primary;
       muted = styles.getPropertyValue("--muted-foreground").trim() || muted;
-      x = Math.min(
-        Math.max(x, POSITION_RADIUS),
-        Math.max(width - POSITION_RADIUS, POSITION_RADIUS),
-      );
-      y = Math.min(
-        Math.max(y, POSITION_RADIUS),
-        Math.max(height - POSITION_RADIUS, POSITION_RADIUS),
-      );
+      ball.bounce(width, height);
       draw();
     });
 
@@ -596,22 +757,20 @@ export function VectorAccelerationCanvas({
     let raf = 0;
     let running = true;
     let visible = false;
-    let x = START_X;
-    let y = START_Y;
-    let vx = VELOCITY_X;
-    let vy = VELOCITY_Y;
-    const ax = ACCEL_X;
-    const ay = ACCEL_Y;
+    const ball = new Ball(START_X, START_Y);
+    ball.velocity.set(VELOCITY_X, VELOCITY_Y);
+    const gravity = new Vector2D(ACCEL_X, ACCEL_Y);
 
     const draw = () => {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
       if (width <= 0 || height <= 0) return;
 
-      const velTipX = x + vx * VELOCITY_ARROW_SCALE;
-      const velTipY = y + vy * VELOCITY_ARROW_SCALE;
-      const accTipX = x + ax * ACCEL_ARROW_SCALE;
-      const accTipY = y + ay * ACCEL_ARROW_SCALE;
+      const { x, y } = ball.position;
+      const velTipX = x + ball.velocity.x * VELOCITY_ARROW_SCALE;
+      const velTipY = y + ball.velocity.y * VELOCITY_ARROW_SCALE;
+      const accTipX = x + gravity.x * ACCEL_ARROW_SCALE;
+      const accTipY = y + gravity.y * ACCEL_ARROW_SCALE;
 
       ctx.strokeStyle = muted;
       ctx.fillStyle = muted;
@@ -625,7 +784,7 @@ export function VectorAccelerationCanvas({
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
       ctx.fillText(
-        `velocity = (${vx.toFixed(1)}, ${vy.toFixed(1)})`,
+        `velocity = (${ball.velocity.x.toFixed(1)}, ${ball.velocity.y.toFixed(1)})`,
         velTipX + 6,
         velTipY - 4,
       );
@@ -639,15 +798,13 @@ export function VectorAccelerationCanvas({
       ctx.stroke();
       drawArrowHead(ctx, x, y, accTipX, accTipY, 8);
       ctx.textBaseline = "top";
-      ctx.fillText(`acceleration = (${ax}, ${ay})`, accTipX + 6, accTipY + 4);
+      ctx.fillText(
+        `acceleration = (${gravity.x}, ${gravity.y})`,
+        accTipX + 6,
+        accTipY + 4,
+      );
 
-      ctx.beginPath();
-      ctx.arc(x, y, POSITION_RADIUS, 0, Math.PI * 2);
-      ctx.fillStyle = primary;
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      ball.draw(ctx, primary, color);
 
       ctx.fillStyle = color;
       ctx.font = "500 12px ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -655,33 +812,21 @@ export function VectorAccelerationCanvas({
       ctx.textBaseline = "top";
       ctx.fillText(
         `position = (${Math.round(x)}, ${Math.round(y)})`,
-        x + POSITION_RADIUS + 8,
-        y + POSITION_RADIUS + 4,
+        x + ball.radius + 8,
+        y + ball.radius + 4,
       );
     };
 
     const update = () => {
-      // velocity += acceleration; position += velocity
-      vx += ax;
-      vy += ay;
-      x += vx;
-      y += vy;
-
-      if (x > width - POSITION_RADIUS || x < POSITION_RADIUS) {
-        vx *= -1;
-        x = Math.min(Math.max(x, POSITION_RADIUS), width - POSITION_RADIUS);
-      }
-      if (y > height - POSITION_RADIUS || y < POSITION_RADIUS) {
-        vy *= -1;
-        y = Math.min(Math.max(y, POSITION_RADIUS), height - POSITION_RADIUS);
-      }
+      ball.acceleration.set(gravity);
+      ball.update();
+      ball.bounce(width, height);
     };
 
     const reset = () => {
-      x = START_X;
-      y = START_Y;
-      vx = VELOCITY_X;
-      vy = VELOCITY_Y;
+      ball.position.set(START_X, START_Y);
+      ball.velocity.set(VELOCITY_X, VELOCITY_Y);
+      ball.acceleration.set(0, 0);
       draw();
     };
 
@@ -716,14 +861,7 @@ export function VectorAccelerationCanvas({
       color = styles.color || color;
       primary = styles.getPropertyValue("--primary").trim() || primary;
       muted = styles.getPropertyValue("--muted-foreground").trim() || muted;
-      x = Math.min(
-        Math.max(x, POSITION_RADIUS),
-        Math.max(width - POSITION_RADIUS, POSITION_RADIUS),
-      );
-      y = Math.min(
-        Math.max(y, POSITION_RADIUS),
-        Math.max(height - POSITION_RADIUS, POSITION_RADIUS),
-      );
+      ball.bounce(width, height);
       draw();
     });
 
@@ -849,14 +987,8 @@ function VectorPointerAccelCanvas({
     let raf = 0;
     let running = true;
     let visible = false;
-    let x = START_X;
-    let y = START_Y;
-    let vx = 0;
-    let vy = 0;
-    let ax = 0;
-    let ay = 0;
-    let mouseX = START_X + 120;
-    let mouseY = START_Y + 40;
+    const ball = new Ball(START_X, START_Y);
+    const mouse = new Vector2D(START_X + 120, START_Y + 40);
     let hasPointer = false;
 
     const draw = () => {
@@ -864,28 +996,30 @@ function VectorPointerAccelCanvas({
       ctx.clearRect(0, 0, width, height);
       if (width <= 0 || height <= 0) return;
 
+      const { x, y } = ball.position;
+
       if (hasPointer) {
         ctx.setLineDash([4, 3]);
         ctx.strokeStyle = muted;
         ctx.lineWidth = 1.25;
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.lineTo(mouseX, mouseY);
+        ctx.lineTo(mouse.x, mouse.y);
         ctx.stroke();
         ctx.setLineDash([]);
 
         ctx.beginPath();
-        ctx.arc(mouseX, mouseY, 5, 0, Math.PI * 2);
+        ctx.arc(mouse.x, mouse.y, 5, 0, Math.PI * 2);
         ctx.fillStyle = muted;
         ctx.fill();
       }
 
-      const velTipX = x + vx * VELOCITY_ARROW_SCALE;
-      const velTipY = y + vy * VELOCITY_ARROW_SCALE;
-      const accTipX = x + ax * INTERACTIVE_ACCEL_SCALE;
-      const accTipY = y + ay * INTERACTIVE_ACCEL_SCALE;
+      const velTipX = x + ball.velocity.x * VELOCITY_ARROW_SCALE;
+      const velTipY = y + ball.velocity.y * VELOCITY_ARROW_SCALE;
+      const accTipX = x + ball.acceleration.x * INTERACTIVE_ACCEL_SCALE;
+      const accTipY = y + ball.acceleration.y * INTERACTIVE_ACCEL_SCALE;
 
-      if (Math.hypot(vx, vy) > 0.05) {
+      if (ball.velocity.magnitude() > 0.05) {
         ctx.strokeStyle = muted;
         ctx.fillStyle = muted;
         ctx.lineWidth = 1.5;
@@ -898,13 +1032,13 @@ function VectorPointerAccelCanvas({
         ctx.textAlign = "left";
         ctx.textBaseline = "bottom";
         ctx.fillText(
-          `velocity = (${vx.toFixed(1)}, ${vy.toFixed(1)})`,
+          `velocity = (${ball.velocity.x.toFixed(1)}, ${ball.velocity.y.toFixed(1)})`,
           velTipX + 6,
           velTipY - 4,
         );
       }
 
-      if (Math.hypot(ax, ay) > 0.001) {
+      if (ball.acceleration.magnitude() > 0.001) {
         ctx.strokeStyle = primary;
         ctx.fillStyle = primary;
         ctx.lineWidth = 1.75;
@@ -919,13 +1053,7 @@ function VectorPointerAccelCanvas({
         ctx.fillText(accelLabel, accTipX + 6, accTipY + 4);
       }
 
-      ctx.beginPath();
-      ctx.arc(x, y, POSITION_RADIUS, 0, Math.PI * 2);
-      ctx.fillStyle = primary;
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      ball.draw(ctx, primary, color);
 
       ctx.fillStyle = color;
       ctx.font = "500 12px ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -933,49 +1061,28 @@ function VectorPointerAccelCanvas({
       ctx.textBaseline = "top";
       ctx.fillText(
         `position = (${Math.round(x)}, ${Math.round(y)})`,
-        x + POSITION_RADIUS + 8,
-        y + POSITION_RADIUS + 4,
+        x + ball.radius + 8,
+        y + ball.radius + 4,
       );
     };
 
     const update = () => {
-      const dx = mouseX - x;
-      const dy = mouseY - y;
-      const mag = Math.hypot(dx, dy) || 1;
-      ax = (dx / mag) * INTERACTIVE_ACCEL * sign;
-      ay = (dy / mag) * INTERACTIVE_ACCEL * sign;
-
-      vx += ax;
-      vy += ay;
-
-      const speed = Math.hypot(vx, vy);
-      if (speed > INTERACTIVE_MAX_SPEED) {
-        vx = (vx / speed) * INTERACTIVE_MAX_SPEED;
-        vy = (vy / speed) * INTERACTIVE_MAX_SPEED;
-      }
-
-      x += vx;
-      y += vy;
-
-      if (x > width - POSITION_RADIUS || x < POSITION_RADIUS) {
-        vx *= -0.9;
-        x = Math.min(Math.max(x, POSITION_RADIUS), width - POSITION_RADIUS);
-      }
-      if (y > height - POSITION_RADIUS || y < POSITION_RADIUS) {
-        vy *= -0.9;
-        y = Math.min(Math.max(y, POSITION_RADIUS), height - POSITION_RADIUS);
-      }
+      ball.accelerateToward(mouse, INTERACTIVE_ACCEL * sign);
+      ball.update(INTERACTIVE_MAX_SPEED);
+      ball.bounce(width, height, 0.9);
     };
 
     const reset = () => {
-      x = width > 0 ? width * 0.25 : START_X;
-      y = height > 0 ? height * 0.35 : START_Y;
-      vx = 0;
-      vy = 0;
-      ax = 0;
-      ay = 0;
-      mouseX = width > 0 ? width * 0.7 : START_X + 120;
-      mouseY = height > 0 ? height * 0.55 : START_Y + 40;
+      ball.position.set(
+        width > 0 ? width * 0.25 : START_X,
+        height > 0 ? height * 0.35 : START_Y,
+      );
+      ball.velocity.set(0, 0);
+      ball.acceleration.set(0, 0);
+      mouse.set(
+        width > 0 ? width * 0.7 : START_X + 120,
+        height > 0 ? height * 0.55 : START_Y + 40,
+      );
       draw();
     };
 
@@ -983,8 +1090,7 @@ function VectorPointerAccelCanvas({
 
     const onPointerMove = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mouseX = event.clientX - rect.left;
-      mouseY = event.clientY - rect.top;
+      mouse.set(event.clientX - rect.left, event.clientY - rect.top);
       hasPointer = true;
     };
 
@@ -1028,14 +1134,7 @@ function VectorPointerAccelCanvas({
       if (first) {
         reset();
       } else {
-        x = Math.min(
-          Math.max(x, POSITION_RADIUS),
-          Math.max(width - POSITION_RADIUS, POSITION_RADIUS),
-        );
-        y = Math.min(
-          Math.max(y, POSITION_RADIUS),
-          Math.max(height - POSITION_RADIUS, POSITION_RADIUS),
-        );
+        ball.bounce(width, height);
         draw();
       }
     });
@@ -1130,13 +1229,6 @@ export function VectorInteractAwayCanvas({
 
 const MULTI_BALL_COUNT = 100;
 
-type FleeBall = {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-};
-
 export function VectorInteractMultipleAwayCanvas({
   className,
 }: {
@@ -1164,22 +1256,20 @@ export function VectorInteractMultipleAwayCanvas({
     let raf = 0;
     let running = true;
     let visible = false;
-    let mouseX = 0;
-    let mouseY = 0;
+    const mouse = new Vector2D(0, 0);
     let hasPointer = false;
-    let balls: FleeBall[] = [];
+    let balls: Ball[] = [];
 
     const spawnBalls = () => {
-      balls = Array.from({ length: MULTI_BALL_COUNT }, () => ({
-        x:
+      balls = Array.from({ length: MULTI_BALL_COUNT }, () => {
+        const ball = new Ball(
           Math.random() * Math.max(width - POSITION_RADIUS * 2, 1) +
-          POSITION_RADIUS,
-        y:
+            POSITION_RADIUS,
           Math.random() * Math.max(height - POSITION_RADIUS * 2, 1) +
-          POSITION_RADIUS,
-        vx: 0,
-        vy: 0,
-      }));
+            POSITION_RADIUS,
+        );
+        return ball;
+      });
     };
 
     const draw = () => {
@@ -1189,7 +1279,7 @@ export function VectorInteractMultipleAwayCanvas({
 
       if (hasPointer) {
         ctx.beginPath();
-        ctx.arc(mouseX, mouseY, 6, 0, Math.PI * 2);
+        ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
         ctx.fillStyle = muted;
         ctx.fill();
         ctx.strokeStyle = color;
@@ -1198,13 +1288,7 @@ export function VectorInteractMultipleAwayCanvas({
       }
 
       for (const ball of balls) {
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, POSITION_RADIUS, 0, Math.PI * 2);
-        ctx.fillStyle = primary;
-        ctx.fill();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        ball.draw(ctx, primary, color);
       }
 
       ctx.fillStyle = muted;
@@ -1220,45 +1304,15 @@ export function VectorInteractMultipleAwayCanvas({
 
     const update = () => {
       for (const ball of balls) {
-        const dx = mouseX - ball.x;
-        const dy = mouseY - ball.y;
-        const mag = Math.hypot(dx, dy) || 1;
-        const ax = (dx / mag) * INTERACTIVE_ACCEL * -1;
-        const ay = (dy / mag) * INTERACTIVE_ACCEL * -1;
-
-        ball.vx += ax;
-        ball.vy += ay;
-
-        const speed = Math.hypot(ball.vx, ball.vy);
-        if (speed > INTERACTIVE_MAX_SPEED) {
-          ball.vx = (ball.vx / speed) * INTERACTIVE_MAX_SPEED;
-          ball.vy = (ball.vy / speed) * INTERACTIVE_MAX_SPEED;
-        }
-
-        ball.x += ball.vx;
-        ball.y += ball.vy;
-
-        if (ball.x > width - POSITION_RADIUS || ball.x < POSITION_RADIUS) {
-          ball.vx *= -0.9;
-          ball.x = Math.min(
-            Math.max(ball.x, POSITION_RADIUS),
-            width - POSITION_RADIUS,
-          );
-        }
-        if (ball.y > height - POSITION_RADIUS || ball.y < POSITION_RADIUS) {
-          ball.vy *= -0.9;
-          ball.y = Math.min(
-            Math.max(ball.y, POSITION_RADIUS),
-            height - POSITION_RADIUS,
-          );
-        }
+        ball.accelerateToward(mouse, -INTERACTIVE_ACCEL);
+        ball.update(INTERACTIVE_MAX_SPEED);
+        ball.bounce(width, height, 0.9);
       }
     };
 
     const reset = () => {
       spawnBalls();
-      mouseX = width * 0.5;
-      mouseY = height * 0.5;
+      mouse.set(width * 0.5, height * 0.5);
       draw();
     };
 
@@ -1266,8 +1320,7 @@ export function VectorInteractMultipleAwayCanvas({
 
     const onPointerMove = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mouseX = event.clientX - rect.left;
-      mouseY = event.clientY - rect.top;
+      mouse.set(event.clientX - rect.left, event.clientY - rect.top);
       hasPointer = true;
     };
 
@@ -1312,14 +1365,7 @@ export function VectorInteractMultipleAwayCanvas({
         reset();
       } else {
         for (const ball of balls) {
-          ball.x = Math.min(
-            Math.max(ball.x, POSITION_RADIUS),
-            Math.max(width - POSITION_RADIUS, POSITION_RADIUS),
-          );
-          ball.y = Math.min(
-            Math.max(ball.y, POSITION_RADIUS),
-            Math.max(height - POSITION_RADIUS, POSITION_RADIUS),
-          );
+          ball.bounce(width, height);
         }
         draw();
       }

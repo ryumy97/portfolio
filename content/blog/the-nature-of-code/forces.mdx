@@ -1,0 +1,241 @@
+---
+title: The nature of the code - Forces
+date: "2026-09-26 21:15"
+description: 2.0 Forces - The nature of code by Daniel Shiffman
+tags: The nature of code, Vectors, Physics
+---
+
+import { DragCanvas, NewtonFirstLaw, NewtonFirstLawForce, NewtonThirdLaw, SimpleWind } from "@/components/blog/the-nature-of-code/forces"
+
+
+## Forces
+
+Before we dive into the forces, we first need to know about the physics in real world.
+
+## Newton's Laws of Motion
+
+Newton's Laws of Motion are three laws that describe the motion of objects.
+
+### First Law
+
+"An object at rest will stay at rest, and an object in motion will stay in motion with the same speed 
+and in the same direction unless acted upon by an external force."
+
+<NewtonFirstLaw />
+
+This is the exmaple of objects at rest.
+Both objects have no external force acting on them - they stay at rest.
+
+You might ask why the right object is moving? Isn't this breaking the first law?
+
+The answer is that the right object is moving because of the constant velocity.
+This constant velocity applied does not change, and stay in motion with the same speed and direction - thus is not breaking the first law.
+
+<NewtonFirstLawForce />
+
+This example shows the object is moving when clicked (applying external force to the object).
+Notice when the object is clicked, the velocity changes - applying single push force to the object.
+
+Also notice when the object hitting the wall, the velocity changes.
+This should also be explained by the first law - thus we know that there was an external force acting on the object.
+
+
+### Second Law
+
+"The acceleration of an object is directly proportional to the net force acting on it and inversely proportional to its mass."
+
+$$
+a = F / m
+$$
+thus,
+$$
+F = m a
+$$
+
+<SimpleWind />
+
+In this example, two objects are dropped from the same height but with different masses.
+When the objects are dropped, there is only one force acting on them - the gravity.
+
+The gravity makes the objects to accelerate towards the ground with the constant acceleration.
+In real world, the acceleration is $9.8 m/s^2$. In this example, I have set the acceleration to $0.1 \text{units per frame}^2$ (increasing velocity by 0.1 per frame).
+
+Notice how both objects are having same accelerations but different mass. This would mean that the object with more mass will have more force acting on it.
+
+$$
+F = m g
+$$
+$$
+\text{where} \quad g = 9.8 m/s^2
+$$
+
+When we apply wind force to the objects, the objects will accelerate towards the wind.
+The wind force is applied to the objects with the same force.
+Since they have different masses, the objects will have different accelerations.
+
+Going back to the Vector class that we created in the previous blog post, we can use the vector to represent the force.
+
+```javascript
+class Ball {
+  constructor(x, y, mass = 1) {
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D(0, 0);
+    this.acceleration = new Vector2D(0, 0);
+    this.mass = mass;
+  }
+
+  applyForce(force) {
+    // F = m a => a = F / m
+    const accelerationApplied = force.copy().divide(this.mass);;
+    this.acceleration.add(accelerationApplied);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+  }
+}
+
+const object1 = new Ball(100, 100, 1);
+const object2 = new Ball(100, 200, 2);
+
+const windForce = new Vector2D(0, 0);
+const getGravityAppliedForce = (mass) => new Vector2D(0, 0.1 * mass);
+
+function onPointerDown() {
+  windForce.set(0.1, 0);
+}
+
+function onPointerUp() {
+  windForce.set(0, 0);
+}
+
+function update() {
+  object1.applyForce(getGravityAppliedForce(object1.mass));
+  object2.applyForce(getGravityAppliedForce(object2.mass));
+  object1.applyForce(windForce);
+  object2.applyForce(windForce);
+
+  object1.update();
+  object2.update();
+}
+```
+
+### Newton's Third Law
+
+"For every action, there is an equal and opposite reaction."
+
+This means that if when an object exerts a force on another object, 
+the same force is exerted to that object in the opposite direction.
+
+```javascript
+const object1 = new Ball(100, 100, 1);
+const object2 = new Ball(100, 200, 2);
+
+const force = new Vector2D(0.1, 0);
+
+// object2 exerts a force on object1
+object2.applyForce(force);
+// object1 exerts a force on object2
+object1.applyForce(force.copy().multiply(-1));
+```
+
+### Friction
+
+Thinking about how a ball moves on the ground in real world, the ball will bounce back when it hits the ground.
+The first drop will be the highest, and the subsequent drops will be lower and lower.
+
+There can be number of reasons for the ball to bounce back with decreasing height.
+
+One of the reasons is the friction between the air and the ball.
+
+Thi friction is called "air resistance" or "drag". It is a force that opposes the motion of the object. 
+That means we need to calculate the friction force based on the velocity of the object.
+
+Here is the formula for the drag:
+$$
+\text {Drag} = \frac{1}{2} \rho v^2 A C_d
+$$
+
+where:
+- $\rho$ is the density of the air
+- $v$ is the velocity of the object
+- $A$ is the area of the object
+- $C_d$ is the drag coefficient
+
+The drag coefficient is a dimensionless number that depends on the shape of the object.
+
+Since we are not simulating the real world, we don't need to calculate the density of the air, area of the object, and the drag coefficient.
+The density of the air and drag coefficient are constant values that we can set as environment variables.
+The area of the object can be calculated <br/> - or as long as we use the values we set makes sense, we can set all these values as a constant variable.
+
+$$
+\text {Drag} = v^2 \times \text {drag coefficient}
+$$
+
+
+```javascript
+class Ball {
+  constructor(x, y, mass = 1) {
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D(0, 0);
+    this.acceleration = new Vector2D(0, 0);
+    this.mass = mass;
+  }
+
+  applyForce(force) {
+    // F = m a => a = F / m
+    const accelerationApplied = force.copy().divide(this.mass);;
+    this.acceleration.add(accelerationApplied);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+  }
+}
+
+const object1 = new Ball(100, 100, 1);
+const object2 = new Ball(100, 200, 2);
+
+const windForce = new Vector2D(0.1, 0);
+const getGravityAppliedForce = (mass) => new Vector2D(0, 0.1 * mass);
+const getDragAppliedForce = (ball) => {
+  const dragForce = ball.velocity.copy();
+  const speed = ball.velocity.magnitude();
+  const dragMag = speed * speed * 0.01;
+
+  // multiply by -1 to reverse the direction
+  // normalize to 1
+  // multiply by the drag magnitude
+  dragForce.multiply(-1).normalize().multiply(dragMag);
+  
+  return dragForce;
+}
+
+function update() {
+  object1.applyForce(getDragAppliedForce(object1));
+  object2.applyForce(getDragAppliedForce(object2));
+
+  object1.applyForce(getGravityAppliedForce(object1.mass));
+  object2.applyForce(getGravityAppliedForce(object2.mass));
+
+  object1.applyForce(windForce);
+  object2.applyForce(windForce);
+
+  object1.update();
+  object2.update();
+}
+```
+
+<DragCanvas />
+
+As you can see, the objects are slowing down and eventually stop moving.
+
+## Summary
+
+We have learned how to apply various forces to objects in the canvas.
+
+We have created and applied forces like gravity that has dependent variables like mass, wind that depends on the pointer events, and drag that depends on the current motion of the object.
+
+Next, we will try to apply these forces to create autonomous objects.
