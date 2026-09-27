@@ -1,13 +1,13 @@
 "use client";
 
+import { Play, RotateCcw, Square } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Ball, Vector2D } from "@/components/blog/the-nature-of-code/vectors";
 import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
 import { CVSubHeading } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { CANVAS_STYLE, observeCanvasPixelSize } from "@/lib/webgl";
-import { Play, RotateCcw, Square } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
 function getOverflowRoot(element: Element): Element | null {
   let parent = element.parentElement;
