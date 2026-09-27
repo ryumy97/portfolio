@@ -36,8 +36,14 @@ const components = {
   hr: () => <hr className="my-10 border-border" />,
   strong: ({ children }) => <strong className="font-bold">{children}</strong>,
   em: ({ children }) => <em className="italic">{children}</em>,
-  pre: ({ children }) => (
-    <pre className="mt-4 overflow-x-auto rounded-md bg-muted px-4 py-3 font-mono text-[min(max(1.1vw,13px),15px)] leading-[1.55em]">
+  pre: ({ children, className, ...props }) => (
+    <pre
+      {...props}
+      className={cn(
+        "mt-4 overflow-x-auto rounded-md bg-muted px-4 py-3 font-mono text-[min(max(1.1vw,13px),15px)] leading-[1.55em] [&_code]:grid [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-[length:inherit] [&_code]:leading-[inherit]",
+        className,
+      )}
+    >
       {children}
     </pre>
   ),

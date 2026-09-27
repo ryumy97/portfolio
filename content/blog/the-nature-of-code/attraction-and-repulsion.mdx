@@ -1,0 +1,195 @@
+---
+title: The nature of the code - Attraction and Repulsion
+date: "2026-09-27 18:17"
+description: 2.1 Forces | Attraction and Repulsion - The nature of code by Daniel Shiffman
+tags: The nature of code, Vectors, Physics
+---
+
+import { ArrowAttractors, Repulsion, SolarSystem } from "@/components/blog/the-nature-of-code/attraction-and-repulsion"
+
+## Attraction and Repulsion
+
+Let's make a simple autonomous objects that moves depending on the environment.
+
+Attraction and Repulsion are forces that act on the objects based on the distance between the objects.
+
+Using this techniques will make objects to move more "lively" and "organic" as it would move based on other factors in the environment.
+
+### Attraction
+
+Gravity is common example of attraction. Previously we've created example of gravity by applying a force to an object downwards.
+However, if we think about how gravity works, it's not just a single force pulling the object downwards.
+
+Think of Solar System. The earth revolves around the sun due to the gravity of the sun, and the moon also revolves around the earth due to the gravity of the earth.
+
+<SolarSystem />
+
+Gravity is actually a force that pulls two system together towards their center of mass.
+The earth is just too big that it overwhelms all other gravitational forces.
+This example shows how 3 different objects can be influenced by gravity. 
+Their mass is so different that heavy objects like the sun are barely accelerating towards the earth.
+
+Gravity applied to 2 system is:
+
+$$
+F = G \frac{m_1 m_2}{r^2}
+$$
+
+then, acceleration of the m_1 object is:
+
+$$
+F = m_1 a = m_1 G \frac{m_2}{r^2}
+$$
+
+the acceleration of the m_2 object is:
+
+$$
+F = m_2 a = m_2 G \frac{m_1}{r^2}
+$$
+
+Notice that acceleration on $m_1$ is proportional to the mass of $m_2$, and acceleration on $m_2$ is proportional to the mass of $m_1$ — a heavier body barely moves, while a lighter body is yanked harder.
+
+We can treat the Earth and Moon as a single system pulling on the Sun, then separately attract Earth and Moon to each other.
+
+```javascript
+class Ball {
+  constructor(x, y, mass = 1) {
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D(0, 0);
+    this.acceleration = new Vector2D(0, 0);
+    this.mass = mass;
+  }
+
+  applyForce(force) {
+    // F = m a => a = F / m
+    const accelerationApplied = force.copy().divide(this.mass);
+    this.acceleration.add(accelerationApplied);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+  }
+}
+
+const sun = new Ball(100, 100, 1);
+const earth = new Ball(100, 200, 2);
+const moon = new Ball(100, 300, 0.1);
+
+const G = 0.1;
+
+function update() {
+  // --- Sun ↔ (Earth + Moon) as two systems ---
+  const earthMoonSystemMass = earth.mass + moon.mass;
+  // COM = (m_e * p_e + m_m * p_m) / (m_e + m_m)
+  const earthMoonCenterOfMass = earth.position
+    .copy()
+    .multiply(earth.mass)
+    .add(moon.position.copy().multiply(moon.mass))
+    .divide(earthMoonSystemMass);
+
+  const toEarthMoon = earthMoonCenterOfMass.copy().subtract(sun.position);
+  const sunEarthMoonDistance = toEarthMoon.magnitude();
+  const gravityOnSun = toEarthMoon
+    .normalize()
+    .multiply(
+      (G * sun.mass * earthMoonSystemMass) /
+        (sunEarthMoonDistance * sunEarthMoonDistance)
+    );
+  // Newton III — equal and opposite on the Earth–Moon system
+  const gravityOnEarthMoonSystem = gravityOnSun.copy().multiply(-1);
+
+  sun.applyForce(gravityOnSun);
+  // Share the system force by mass so Earth and Moon get the same acceleration
+  earth.applyForce(
+    gravityOnEarthMoonSystem.copy().multiply(earth.mass / earthMoonSystemMass)
+  );
+  moon.applyForce(
+    gravityOnEarthMoonSystem.copy().multiply(moon.mass / earthMoonSystemMass)
+  );
+
+  // --- Earth ↔ Moon ---
+  const toMoon = moon.position.copy().subtract(earth.position);
+  const earthMoonDistance = toMoon.magnitude();
+  const gravityOnEarth = toMoon
+    .normalize()
+    .multiply(
+      (G * earth.mass * moon.mass) /
+        (earthMoonDistance * earthMoonDistance)
+    );
+  const gravityOnMoon = gravityOnEarth.copy().multiply(-1);
+
+  earth.applyForce(gravityOnEarth);
+  moon.applyForce(gravityOnMoon);
+
+  sun.update();
+  earth.update();
+  moon.update();
+}
+```
+
+### Repulsion
+
+Repulsion is a force that pushes two objects away from each other.
+Attraction pulls along the vector toward the other body; repulsion is the same math with the direction flipped — multiply the force by $-1$, or build the vector the other way around (`ball − pointer` instead of `pointer − ball`).
+
+$$
+F = -G \frac{m_1 m_2}{r^2}
+$$
+
+Let's create many floating balls that push away from the mouse cursor.
+
+<Repulsion />
+
+```javascript
+const balls = [
+  new Ball(40, 40, 1),
+  new Ball(80, 60, 1),
+  // ...
+];
+
+const G = 40;
+const pointer = new Vector2D(0, 0);
+
+function update() {
+  for (const ball of balls) {
+    // Away from the cursor — opposite direction of attraction
+    const force = pointer.copy().subtract(ball.position);
+    const distance = force.magnitude();
+    const repulsionForce = force
+      .copy()
+      .multiply(-1)
+      .normalize()
+      .multiply((G * ball.mass) / (distance * distance));
+
+    ball.applyForce(repulsionForce);
+    ball.update();
+  }
+}
+```
+
+
+## Examples - Predators and Prey
+
+From those simple attraction and repulsion rules, we can create an interesting autonomous objects.
+
+<ArrowAttractors />
+
+We have created 2 types of objects:
+
+Prey and Predators.
+
+Predators are represented by blue arrows.
+Prey are represented by red arrows.
+
+We have simple rules for the behavior of the objects:
+- Predators are attracted to prey.
+- Prey are repelled by predators.
+- Cursor repels prey.
+- Click adds an attractor that attracts the prey.
+- When Predator catches Prey, Prey is removed from the scene and respawns at a random position.
+
+## Conclusion
+
+We have looked at how to create a simple autonomous objects using attraction and repulsion forces.
+As we saw, these techniques makes objects to have motions that are more "lively" and "organic".

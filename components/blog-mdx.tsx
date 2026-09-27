@@ -1,4 +1,5 @@
 import type { MDXContent } from "mdx/types";
+import "./blog-code.css";
 import "./blog-katex.css";
 
 export function BlogMdx({ Content }: { Content: MDXContent }) {

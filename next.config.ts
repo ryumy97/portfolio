@@ -79,7 +79,19 @@ const withMDX = createMDX({
       "remark-gfm",
       "remark-math",
     ],
-    rehypePlugins: ["rehype-katex"],
+    rehypePlugins: [
+      "rehype-katex",
+      [
+        "rehype-pretty-code",
+        {
+          theme: {
+            light: "github-light",
+            dark: "github-dark",
+          },
+          keepBackground: false,
+        },
+      ],
+    ],
   },
 });
 

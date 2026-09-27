@@ -1,0 +1,18 @@
+/* Dual-theme tokens from rehype-pretty-code / Shiki */
+code[data-theme*=" "],
+code[data-theme*=" "] span {
+  color: var(--shiki-light);
+}
+
+:is(.dark, .ink, .cobalt, .coral) code[data-theme*=" "],
+:is(.dark, .ink, .cobalt, .coral) code[data-theme*=" "] span {
+  color: var(--shiki-dark);
+}
+
+figure[data-rehype-pretty-code-figure] {
+  margin-top: 1rem;
+}
+
+figure[data-rehype-pretty-code-figure] > pre {
+  margin-top: 0;
+}
