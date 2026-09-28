@@ -1,0 +1,284 @@
+---
+title: The nature of the code - Oscillation
+date: "2026-09-27 18:20"
+description: 3.0 Oscillation | Angles - The nature of code by Daniel Shiffman
+tags: The nature of code, Oscillation
+---
+
+import { BoxCanvas, BoxPointerEventsCanvas, DegreesAndRadiansCanvas, PiCanvas, PointToTargetCanvas, SineCosineTangentCanvas, SohcahtoaCanvas, TriangleAngleCanvas } from "@/components/blog/the-nature-of-code/oscillation-angles"
+
+## Oscillation
+
+To understand oscillation, we need to understand trigonometry.
+Let's start with angles.
+
+## Angles
+
+Angles are the measurements of rotation.
+
+$\pi$ is a mathematical constant that is the ratio of the circumference of a circle to its diameter.
+$$
+\pi = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
+$$
+
+<PiCanvas />
+
+That means that a circumference of a circle is $pi$ times the diameter.
+or $C = \pi \times d$
+or $C = 2 \pi r$ (diameter is 2 times the radius)
+
+
+## Degrees and Radians
+
+**Degrees** are a unit of angle, that measures a full rotation as 360 degrees.<br/>
+**Radians** are a unit of angle, that measures a full rotation as 2π radians.
+
+<DegreesAndRadiansCanvas />
+
+We can convert degrees to radians and vice versa using the following formulas:
+$$
+1 \text{ radian} = \frac{180}{\pi} \text{ degrees}
+$$
+
+$$
+1 \text{ degree} = \frac{\pi}{180} \text{ radians}
+$$
+
+```javascript
+function degreesToRadians(degrees) {
+  return degrees * (Math.PI / 180);
+}
+
+function radiansToDegrees(radians) {
+  return radians * (180 / Math.PI);
+}
+```
+
+## Angular motion
+
+Let's animate rotation.
+
+Rotation is the motion of an object around a fixed point. For example, we are going to rotate a box around its center.
+
+```javascript
+class Box {
+    constructor(x, y, size) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.angle = 0;
+    }
+
+    update() {
+        this.angle += 0.01;
+    }
+    
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        ctx.restore();
+    }
+
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const box = new Box(100, 100, 100);
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    box.update();
+    box.draw(ctx);
+    requestAnimationFrame(animate);
+}
+```
+
+<BoxCanvas />
+
+See the familiarity? We are adding angle per frame which is very similar to modelling velocity in previous examples.
+
+Let's create a figet spinner that will spin around it center on pointer events.
+Pressing will add a angular acceleration, and releasing will remove it.
+
+```javascript
+class Box {
+    constructor(x, y, size) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        
+        this.angle = 0;
+        this.aVelocity = 0;
+        this.aAcceleration = 0;
+    }
+
+    update() {
+        this.aVelocity += this.aAcceleration;
+        this.aVelocity *= 0.99; // friction slows the spinner down
+        this.angle += this.aVelocity;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        ctx.restore();
+    }
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const box = new Box(100, 100, 100);
+
+let pointerDown = false;
+canvas.addEventListener('pointerdown', () => {
+    pointerDown = true;
+});
+canvas.addEventListener('pointerup', () => {
+    pointerDown = false;
+});
+
+const dragCoefficient = 0.01;
+let friction;
+
+function animate() {
+    box.aAcceleration = pointerDown ? 0.002 : 0;
+    friction = box.aVelocity * box.aVelocity * dragCoefficient * -1;
+    box.aAcceleration += friction;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    box.update();
+    box.draw(ctx);
+    requestAnimationFrame(animate);
+}
+```
+
+<BoxPointerEventsCanvas />
+
+## Sine, Cosine and Tangent
+
+Sine, cosine and tangent are trigonometric functions that are used to find the ratio of the sides of a right triangle.
+
+Sine represents the ratio of the opposite side to the hypotenuse. <br/>
+Cosine represents the ratio of the adjacent side to the hypotenuse. <br/>
+Tangent represents the ratio of the opposite side to the adjacent side.
+
+Using those functions we can calculate the sides of a right triangle given an angle and one side.
+
+<SohcahtoaCanvas />
+
+```javascript
+Math.sin(angle); // returns the sine of the angle
+Math.cos(angle); // returns the cosine of the angle
+Math.tan(angle); // returns the tangent of the angle
+```
+
+Since we know how to use vectors, we know how to calculate opposite, adjacent and hypotenuse.
+This also means using Sine, Cosine and Tangent we can calculate the angles as well using inverse functions or called *arc functions*.
+
+$$
+\arctan(x) \text{ or } \tan^{-1}(x) 
+$$
+$$
+\theta = \arctan(\frac{opposite}{adjacent})
+$$
+$$
+\arccos(x) \text{ or } \cos^{-1}(x) 
+$$
+$$
+\theta = \arccos(\frac{adjacent}{hypotenuse})
+$$
+$$
+\arcsin(x) \text{ or } \sin^{-1}(x) 
+$$
+$$
+\theta = \arcsin(\frac{opposite}{hypotenuse})
+$$
+
+<TriangleAngleCanvas />
+
+In javascript:
+
+```javascript
+Math.atan2(opposite, adjacent); // atan2 is favoured over atan because it returns the angle in the correct quadrant and capture edge cases like 0, 0.
+Math.acos(adjacent / hypotenuse);
+Math.asin(opposite / hypotenuse);
+```
+
+## Pointing to a target
+
+Let's create a program that will point a arrow to the direction of the movement.
+
+```javascript
+class Arrow {
+    constructor(position, size) {
+        this.position = position;
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.size = size;
+
+        this.angle = 0;
+    }
+
+    update() {
+        this.velocity.add(this.acceleration);
+        this.velocity.limit(6);
+        this.position.add(this.velocity);
+        this.acceleration.set(0, 0);
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.moveTo(this.size, 0);
+        ctx.lineTo(-this.size / 2, this.size / 2);
+        ctx.lineTo(-this.size / 2, -this.size / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const arrow = new Arrow(new Vector2D(100, 100), 10);
+const target = new Vector2D(0, 0);
+
+canvas.addEventListener('pointermove', (event) => {
+    target.set(event.offsetX, event.offsetY);
+});
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const attraction = target.copy().subtract(arrow.position);
+    attraction.normalize().multiply(0.25);
+    arrow.acceleration.add(attraction);
+
+    arrow.update();
+
+    // Face the direction of movement
+    arrow.angle = Math.atan2(arrow.velocity.y, arrow.velocity.x);
+
+    arrow.draw(ctx);
+    requestAnimationFrame(animate);
+}
+```
+
+<PointToTargetCanvas />
+
+## Conclusion
+
+In this chapter we learned about angles and how to use them to create rotation.
+We had a look at how animating rotating motion works, and how it's similar to animating movement in space.
+Trigonometry allows us to calculate the angles that we want, for example pointing to a target.
+
+We will continue with actual oscillating motion in the next chapter.
