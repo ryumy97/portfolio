@@ -1,0 +1,100 @@
+---
+title: The nature of the code - Oscillation
+date: "2026-09-29 01:50"
+description: 3.1 Oscillation | Waves - The nature of code by Daniel Shiffman
+tags: The nature of code, Oscillation
+---
+
+import { AmplitudePeriodCanvas, SineWaveCanvas } from "@/components/blog/the-nature-of-code/oscillation-waves"
+import { DegreesAndRadiansCanvas } from "@/components/blog/the-nature-of-code/oscillation-angles"
+
+## Oscillation
+
+The oscillation is the motion of an object with a periodic movement between two points.
+Looking back on the angles, the sine and cosine waves are periodic movements between -1 and 1.
+
+<AmplitudePeriodCanvas />
+
+Notice how the ball is maving up and down with repeating uniform motion.
+This is known as simple harmonic motion "the periodic sinusoidal oscillation of an object".
+
+Simple harmonic motion can be expressed as any location as a function of time, with the following tow elements:
+
+- Amplitude: The maximum displacement from the equilibrium position.
+- Period: The time it takes to complete one full oscillation.
+
+We can express this motion as:
+$$
+y = A \sin(\omega t + \phi)
+$$
+$$
+\omega = \frac{2\pi}{T}
+$$
+
+where:
+
+- $y$ is the position of the object at time $t$
+- $A$ is the amplitude
+- $\omega$ is the angular frequency
+- $\phi$ is the phase shift
+- $T$ is the period
+
+Previous post when we where learning about angles, we know how sine function outputs ratio of Opposite over Hypotenuse.
+
+<DegreesAndRadiansCanvas />
+
+When the angle is 0, the ratio is 0, we can imagine the opposite side is 0 and the hypotenuse is 1 when the radius of the circle is 1. 
+The hypotenuse is the radius of the circle.
+
+Increasing the angle will increate the ratio of the opposite over the hypotenuse as the opposite side is increasing.
+Since the hypotenuse is the radius of the circle and does not change, the opposite side is the only thing that is increasing.
+
+After the angle is 90 degrees, the angle goes over 90 degrees and the opposite side is decreasing.
+
+With the same rate of angle increase, the opposite side is decreasing at the same rate when the angle is over 90 degrees.
+
+You can see if we keep increasing the angle, the y value where the dot is located will go up and down with a repeating pattern.
+
+## Waves
+
+We've already seen a sine wave above. Let's learn how to paint them.
+
+Instead of increasing the angle over time, we increase the angle over space.
+For every pixel along the x axis, we add a small amount to the angle and use the sine of that angle as the y position.
+
+```javascript
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const amplitude = 80;
+const angleVelocity = 0.05; // how much the angle increases per pixel along x
+let startAngle = 0;
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let angle = startAngle;
+    ctx.beginPath();
+    for (let x = 0; x <= canvas.width; x++) {
+        const y = canvas.height / 2 + amplitude * Math.sin(angle);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+        angle += angleVelocity;
+    }
+    ctx.stroke();
+
+    startAngle += 0.02; // shift where the wave starts so it moves
+    requestAnimationFrame(animate);
+}
+
+animate();
+```
+
+This will create a sine wave.
+
+<SineWaveCanvas />
+
+## Conclusion
+
+In this chapter, we have learned how to draw waves from sine waves.
+Next chapter we will learn how to combine what we learnt about oscillation and forces to create a model that are found in nature - Pendulums.
