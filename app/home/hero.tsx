@@ -1,6 +1,6 @@
+import dynamic from "next/dynamic";
 import { Grid } from "@/components/ui/grid";
 import { PageDescription, Title } from "@/components/ui/typography";
-import dynamic from "next/dynamic";
 
 const HeadCanvas = dynamic(() =>
   import("./hero-canvas").then((mod) => mod.default),

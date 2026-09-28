@@ -1,8 +1,8 @@
 "use client";
 
-import HomeHeadScene from "@/components/three/scene/home-head-scene";
 import { Canvas } from "@react-three/fiber";
 import { useRef } from "react";
+import HomeHeadScene from "@/components/three/scene/home-head-scene";
 
 const HeroCanvas = () => {
   const ref = useRef<HTMLDivElement>(null);
