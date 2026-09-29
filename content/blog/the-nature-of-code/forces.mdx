@@ -5,7 +5,7 @@ description: 2.0 Forces - The nature of code by Daniel Shiffman
 tags: The nature of code, Vectors, Physics
 ---
 
-import { DragCanvas, NewtonFirstLaw, NewtonFirstLawForce, NewtonThirdLaw, SimpleWind } from "@/components/blog/the-nature-of-code/forces"
+import { DecayExampleCanvas, DragCanvas, NewtonFirstLaw, NewtonFirstLawForce, NewtonThirdLaw, SimpleWind } from "@/components/blog/the-nature-of-code/forces"
 
 
 ## Forces
@@ -231,6 +231,47 @@ function update() {
 <DragCanvas />
 
 As you can see, the objects are slowing down and eventually stop moving.
+
+## Simple friction
+
+From above using the knowledge of physics, we have calculated the drag and friction forces.
+
+We know that these are dependent on the velocity of the object, and it is a opposite direction to the current motion of the object.
+
+We can simplify the friction as to decay of the velocity of the object that is proportional to the velocity of the object.
+
+$$
+v = v_0 - \text{decay rate} \cdot v
+$$
+
+where:
+- $v_0$ is the initial velocity
+- $\text{decay rate}$ is the amount of decay per second
+
+```javascript
+class Ball {
+  constructor(x, y, mass = 1) {
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D(0, 0);
+    this.acceleration = new Vector2D(0, 0);
+    this.mass = mass;
+  }
+
+  applyForce(force) {
+    // F = m a => a = F / m
+    const accelerationApplied = force.copy().divide(this.mass);;
+    this.acceleration.add(accelerationApplied);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.velocity.multiply(0.995); // decay rate of 0.005
+    this.position.add(this.velocity);
+  }
+}
+```
+
+<DecayExampleCanvas />
 
 ## Summary
 

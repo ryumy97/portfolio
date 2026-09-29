@@ -1057,6 +1057,243 @@ export function DragCanvas({ className }: { className?: string }) {
   );
 }
 
+const DECAY_MASS_A = 1;
+const DECAY_MASS_B = 2;
+const DECAY_RADIUS_A = 12 * DECAY_MASS_A;
+const DECAY_RADIUS_B = 12 * DECAY_MASS_B;
+const DECAY = 0.995;
+
+/** Same scene as the drag sketch, but friction is a flat velocity decay: v *= 0.995. */
+export function DecayExampleCanvas({ className }: { className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const resetRef = useRef(() => {});
+  const playingRef = useRef(true);
+  const [playing, setPlaying] = useState(true);
+  playingRef.current = playing;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let color = "#1e1e1e";
+    let primary = "#f75d5d";
+    let muted = "#9a9a9a";
+    let raf = 0;
+    let running = true;
+    let visible = false;
+    let windOn = false;
+
+    const ballA = new Ball(0, 0, DECAY_RADIUS_A, DECAY_MASS_A);
+    const ballB = new Ball(0, 0, DECAY_RADIUS_B, DECAY_MASS_B);
+    const wind = new Vector2D(0.1, 0);
+    const gravity = new Vector2D(0, 0);
+
+    const layout = () => {
+      const dropBottom = 8 + 2 * Math.max(ballA.radius, ballB.radius);
+      ballA.position.set(width * 0.35, dropBottom - ballA.radius);
+      ballA.velocity.set(0, 0);
+      ballA.acceleration.set(0, 0);
+      ballB.position.set(width * 0.65, dropBottom - ballB.radius);
+      ballB.velocity.set(0, 0);
+      ballB.acceleration.set(0, 0);
+      windOn = false;
+    };
+
+    const drawLabeledBall = (ball: Ball, label: string) => {
+      drawVelocityArrow(ctx, ball.position, ball.velocity, muted, 10);
+      ball.draw(ctx, primary, color);
+
+      ctx.fillStyle = color;
+      ctx.font = "500 12px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(label, ball.position.x, ball.position.y + ball.radius + 8);
+      ctx.fillStyle = muted;
+      ctx.font = "500 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.fillText(
+        `m = ${ball.mass}`,
+        ball.position.x,
+        ball.position.y + ball.radius + 24,
+      );
+    };
+
+    const draw = () => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      if (width <= 0 || height <= 0) return;
+
+      ctx.fillStyle = muted;
+      ctx.font = "500 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(`v = v × ${DECAY}  ·  gravity = (0, 0.1 · m)`, 12, 12);
+      ctx.fillText(
+        windOn ? "wind ON  ·  click held" : "click for wind = (0.1, 0)",
+        12,
+        28,
+      );
+
+      drawLabeledBall(ballA, "A");
+      drawLabeledBall(ballB, "B");
+    };
+
+    const updateBall = (ball: Ball) => {
+      ball.acceleration.set(0, 0);
+      gravity.set(0, 0.1 * ball.mass);
+      ball.applyForce(gravity);
+      if (windOn) ball.applyForce(wind);
+
+      ball.velocity.add(ball.acceleration);
+      ball.velocity.multiply(DECAY);
+      ball.position.add(ball.velocity);
+      ball.bounce(width, height);
+    };
+
+    const update = () => {
+      updateBall(ballA);
+      updateBall(ballB);
+    };
+
+    const reset = () => {
+      layout();
+      draw();
+    };
+
+    resetRef.current = reset;
+
+    const onPointerDown = () => {
+      windOn = true;
+      draw();
+    };
+    const onPointerEnd = () => {
+      windOn = false;
+      draw();
+    };
+
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointerup", onPointerEnd);
+    canvas.addEventListener("pointercancel", onPointerEnd);
+    canvas.addEventListener("pointerleave", onPointerEnd);
+
+    const tick = () => {
+      raf = 0;
+      if (!running || !visible) return;
+      if (playingRef.current) {
+        update();
+        draw();
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const startLoop = () => {
+      if (!running || !visible || raf) return;
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const stopLoop = () => {
+      if (!raf) return;
+      window.cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
+      const first = width === 0 || height === 0;
+      dpr = size.w / Math.max(canvas.clientWidth, 1);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      const styles = getComputedStyle(canvas);
+      color = styles.color || color;
+      primary = styles.getPropertyValue("--primary").trim() || primary;
+      muted = styles.getPropertyValue("--muted-foreground").trim() || muted;
+      if (first) {
+        reset();
+      } else {
+        ballA.bounce(width, height);
+        ballB.bounce(width, height);
+        draw();
+      }
+    });
+
+    const disconnectVisibility = observeElementVisible(canvas, (isVisible) => {
+      visible = isVisible;
+      if (visible) {
+        startLoop();
+        return;
+      }
+      stopLoop();
+    });
+
+    return () => {
+      running = false;
+      stopLoop();
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointerup", onPointerEnd);
+      canvas.removeEventListener("pointercancel", onPointerEnd);
+      canvas.removeEventListener("pointerleave", onPointerEnd);
+      disconnectVisibility();
+      disconnectResize();
+      resetRef.current = () => {};
+    };
+  }, []);
+
+  return (
+    <div
+      className={cn(
+        "relative mt-6 w-full overflow-hidden border border-border bg-background text-foreground",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-3">
+        <CVSubHeading className="uppercase text-muted-foreground">
+          Decay · simple friction
+        </CVSubHeading>
+        <div className="flex items-center gap-2">
+          <PointerEventHandler asChild type="hide">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-background"
+              aria-label={playing ? "Stop decay sketch" : "Play decay sketch"}
+              onClick={() => setPlaying((current) => !current)}
+            >
+              {playing ? <Square /> : <Play />}
+            </Button>
+          </PointerEventHandler>
+          <PointerEventHandler asChild type="hide">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-background"
+              aria-label="Reset decay sketch"
+              onClick={() => resetRef.current()}
+            >
+              <RotateCcw />
+            </Button>
+          </PointerEventHandler>
+        </div>
+      </div>
+      <PointerEventHandler asChild type="hide">
+        <div className="relative aspect-2/1 w-full touch-none">
+          <canvas
+            ref={canvasRef}
+            aria-label="Two balls falling with gravity while their velocity decays by 0.995 each frame; click and hold to apply wind"
+            className="h-full w-full cursor-crosshair"
+            style={CANVAS_STYLE}
+          />
+        </div>
+      </PointerEventHandler>
+    </div>
+  );
+}
+
 const MASS_A = 1;
 const MASS_B = 1;
 const RADIUS_A = 12 * MASS_A;

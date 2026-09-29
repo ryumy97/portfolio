@@ -1,0 +1,153 @@
+---
+title: The nature of the code - Oscillation | Pendulum
+date: "2026-09-29 09:38"
+description: 3.2 Oscillation | Pendulum - The nature of code by Daniel Shiffman
+tags: The nature of code, Oscillation
+---
+
+import { PendulumCanvas, PolarAndCartesianCanvas } from "@/components/blog/the-nature-of-code/oscillation-pendulum"
+
+## Pendulum
+
+The Pendulum is a simple and good example of oscillation.
+It is a weight suspended from a pivot by a string or rod, and it swings back and forth under the influence of gravity.
+
+We know that the weight is applied with a force of gravity pulling down vertically.
+We also know that the motion of the weight is accelerating to perpendicular to the angle of the string.
+
+If the acceleration is perpendicular to the angle of the string, we know that the force is applied are canceled out in the direction of the string.
+So we need to find the force applied to the weight to reproduce the motion of the Pendulum.
+
+Let's define:
+
+$\theta$ = Angle of the string. <br/>
+$F_s$ = Force applied to the weight by the string. <br/>
+$F_g$ = Force applied to the weight by gravity. <br/>
+$F_p$ = Force applied to the weight that is perpendicular to the string. - this is the force that is causing the weight to accelerate perpendicular to the string. <br/>
+$F_d$ = Force applied to the weight that is applied to the direction of the string. - this is the force that is cancelling out the force of string <br/>
+
+We define the force $F_g$ to have two components: $F_p$ and $F_d$.
+
+$$
+F_g^2 = F_p^2 + F_d^2
+$$
+
+$$
+F_d = -F_s
+$$
+
+We know that F_g is the hypotenuse of the right triangle formed by $F_p$ and $F_d$.
+
+We want to find the force $F_p$. Since $F_p$ is perpendicular to the string, we can use the following equation:
+
+$$
+F_p = F_g \sin(\theta)
+$$
+
+Since $F_g$ is the force of gravity, we can use the following equation:
+
+$$
+F_g = mg
+$$
+
+Using $F = ma$, the mass cancels out and the acceleration along the swing is:
+
+$$
+a = g \sin(\theta)
+$$
+
+The weight moves along an arc, so we convert this into angular acceleration by dividing by the length of the string $r$.
+It is negative because the force always pulls the weight back toward the rest position.
+
+$$
+\alpha = -\frac{g}{r} \sin(\theta)
+$$
+
+In javascript:
+
+```javascript
+class Pendulum {
+    constructor(pivot, r, angle) {
+        this.pivot = pivot; // Vector2D
+        this.r = r;         // length of the string
+        this.angle = angle;
+        this.angularVelocity = 0;
+        this.angularAcceleration = 0;
+        this.damping = 0.995; // a little simple friction so it slowly comes to rest
+    }
+
+    update(gravity) {
+        this.angularAcceleration = (-gravity / this.r) * Math.sin(this.angle);
+        this.angularVelocity += this.angularAcceleration;
+        this.angularVelocity *= this.damping;
+        this.angle += this.angularVelocity;
+    }
+
+    draw(ctx) {
+        // Polar to cartesian: angle 0 is straight down
+        const x = this.pivot.x + this.r * Math.sin(this.angle);
+        const y = this.pivot.y + this.r * Math.cos(this.angle);
+
+        ctx.beginPath();
+        ctx.moveTo(this.pivot.x, this.pivot.y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(x, y, 14, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const pendulum = new Pendulum(new Vector2D(canvas.width / 2, 30), 150, Math.PI / 4);
+const gravity = 0.4;
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pendulum.update(gravity);
+    pendulum.draw(ctx);
+    requestAnimationFrame(animate);
+}
+
+animate();
+```
+
+Drag the weight to change the angle and let go to see it swing.
+The forces show how gravity $F_g$ splits into $F_p$, which swings the weight, and $F_d$, which is cancelled out by the string $F_s$.
+
+<PendulumCanvas />
+
+## Where do we draw the weight? - Polar to Cartesian
+
+There are two ways to represent a point in a plane: Polar and Cartesian coordinates.
+What we have been using so far is Cartesian coordinates. using x and y coordinates.
+
+Polar coordinates are represented by a distance from the origin and an angle from the x-axis.
+$r$ is the distance from the origin and $\theta$ is the angle from the x-axis.
+
+<PolarAndCartesianCanvas />
+
+We can use the following equation to convert the polar coordinates to Cartesian coordinates:
+
+$$
+x = r \cos(\theta)
+$$
+
+$$
+y = r \sin(\theta)
+$$
+
+From the pivot location, we can calculate the position of the weight in Cartesian coordinates:
+```javascript
+// Polar to cartesian: angle 0 is straight down
+const x = this.pivot.x + this.r * Math.sin(this.angle);
+const y = this.pivot.y + this.r * Math.cos(this.angle);
+```
+
+## Summary
+
+We have looked how to animate a pendulum motion using the trigonometric functions to derive equations and calculate the angular acceleration and velocity that we care about.
+We also have looked at how to convert polar coordinates to Cartesian coordinates to draw the pendulum on the canvas using trigonometric functions.
