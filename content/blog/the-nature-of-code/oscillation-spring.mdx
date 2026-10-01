@@ -1,0 +1,161 @@
+---
+title: The nature of the code - Oscillation | Spring
+date: "2026-09-29 10:58"
+description: 3.3 Oscillation | Spring - The nature of code by Daniel Shiffman
+tags: The nature of code, Oscillation
+---
+
+import { DampedOscillatorGraph, SpringCanvas, SpringDampCanvas, SpringEasingGraph } from "@/components/blog/the-nature-of-code/oscillation-spring"
+
+## Spring
+
+If Pendulum is connected to a spring, using sine wave to calculate the bouncy motion is not enough.
+We need to calculate the forces of a speing.
+
+The force of a spring is calculated according to the Hooke's law, named after Robert Hooke.
+Hooke's law was discovered in 1676 by Robert Hooke, who was an English scientist and mathematician.
+It states the force of a spring is proportional to the displacement of the spring from its equilibrium position.
+
+$$
+F_{spring} = -k \cdot x
+$$
+
+Where:
+- $F_spring$ is the force of the spring
+- $k$ is the spring constant
+- $x$ is the displacement of the spring from its equilibrium position
+
+```javascript
+class Ball {
+    constructor(x, y, mass, radius) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.mass = mass;
+        this.radius = radius;
+    }
+
+    applyForce(force) {
+        const accelerationApplied = force.copy().divide(this.mass);
+        this.acceleration.add(accelerationApplied);
+    }
+
+    update() {
+        this.velocity.add(this.acceleration);
+        this.position.add(this.velocity);
+        this.acceleration.set(0, 0);
+    }
+
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
+class Spring {
+    connected: Ball;
+
+    constructor(anchor,restLength, k = 0.01) {
+        this.anchor = anchor;
+        this.restLength = restLength;
+        this.k = k;
+    }
+
+    connect(connected: Ball) {
+        this.connected = connected;
+    }
+
+    update() {
+        const dir = this.connected.position.copy().subtract(this.anchor);
+        const distance = dir.copy().magnitude();
+        
+        const xMag = distance - this.restLength;
+        const normalizedDir = dir.copy().normalize();
+
+        const force = normalizedDir.multiply(- this.k * xMag);
+
+        this.connected.applyForce(force);
+    }
+
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.moveTo(this.anchor.x, this.anchor.y);
+        ctx.lineTo(this.connected.position.x, this.connected.position.y);
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+        ctx.closePath();
+    }
+}
+
+const ball = new Ball(window.innerWidth / 2, window.innerHeight / 2, 1, 10);
+const spring = new Spring(
+    new Vector2D(window.innerWidth / 2, 0), 
+    window.innerHeight / 2, 
+    0.01
+);
+
+spring.connect(ball);
+
+const gravity = new Vector2D(0, 0.1);
+
+function animate() {
+    ball.applyForce(gravity);
+
+    spring.update();
+    ball.update();
+    
+    spring.draw(ctx);
+    ball.draw(ctx);
+
+    window.requestAnimationFrame(animate);
+}
+
+window.requestAnimationFrame(animate);
+```
+
+<SpringCanvas />
+
+## Why does this work?
+
+The spring force is proportional to the displacement of the spring from it's equilibrium (resting) position.
+Therefore, the spring force is always pulling the ball back to it's resting position, accelerating pass the equilibrium - which then force will be applied again to opposite direction towards the equilibrium.
+
+This creates a cycle of acceleration and deceleration, creating a oscillatory motion.
+
+## Simple Damping
+
+Let's apply damping to the spring to cool it down.
+
+Just like the simple friction from the forces post, we shrink the velocity a little every frame.
+The spring still pulls the ball back toward the resting position, but each swing loses some speed, so the bounce gets smaller until the ball settles.
+
+<SpringDampCanvas />
+
+Since there is no velcocity in the spring, we need to apply the damping to the ball's velocity.
+```javascript
+function update() {
+    ball.applyForce(gravity);
+
+    if (damping < 1) {
+        ball.velocity.multiply(damping);
+    }
+
+    spring.update();
+    ball.update();
+
+    spring.draw(ctx);
+    ball.draw(ctx);
+
+    window.requestAnimationFrame(animate);
+}
+
+window.requestAnimationFrame(animate);
+```
+
+## Summary
+
+We have learned how to create a spring animations using vectors that we have learned.
+With applying damping to the spring, we could make the spring to settle down naturally.

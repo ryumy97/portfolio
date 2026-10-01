@@ -398,6 +398,8 @@ class Ball {
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 10, 0, 2 * Math.PI);
     ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
   }
 }
 
