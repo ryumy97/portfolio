@@ -1,12 +1,12 @@
 "use client";
 
+import { Play, RotateCcw, Square } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { PointerEventHandler } from "@/components/pointer";
 import { Button } from "@/components/ui/button";
 import { CVSubHeading } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { CANVAS_STYLE, observeCanvasPixelSize } from "@/lib/webgl";
-import { Play, RotateCcw, Square } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
 const VX = 10;
 const VY = 10;
