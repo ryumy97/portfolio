@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { BlogMdx } from "@/components/blog-mdx";
 import { BlogPostFooter } from "@/components/blog-post-footer";
 import { BlogTagList } from "@/components/blog-tags";
@@ -17,6 +15,8 @@ import {
   getBlogPost,
   getBlogPosts,
 } from "@/lib/blog";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 function slugFromParams(slug: string | string[]) {
   return Array.isArray(slug) ? slug.join("/") : slug;
@@ -58,7 +58,7 @@ export default async function BlogPostPage({
   return (
     <PageLayer>
       <SmoothScroll>
-        <Grid className="w-full max-md:p-4 pt-36 pb-24">
+        <Grid className="w-full max-md:p-12 max-md:pt-8 pt-36 pb-24">
           <article className="col-start-2 col-end-9 md:col-end-7">
             <PointerEventHandler asChild type="underline">
               <Button variant="ghost" size="nav" asChild>

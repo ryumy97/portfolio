@@ -1,0 +1,729 @@
+---
+title: Damped Harmonic Oscillator | 2026
+date: "2026-10-04 11:50"
+description: How to create a spring easing function using the damped harmonic oscillator.
+tags: Spring, Easing
+---
+
+import { DampedOscillatorGraph, DampingSpring, SpringEasingGraph, SpringFollowGraph } from "@/components/blog/study/2026/damped-harmonic-oscillator"
+
+## Damped Harmonic Oscillator
+
+From the previous post about springs as a topic of the nature of the code [The nature of the code - Oscillation | Spring](/blog/the-nature-of-the-code/oscillation-spring.mdx), 
+We have looked at how to calculate the forces applied to a weight attached to a spring - displaying the motion of spring.
+
+Instead of calculating the next location of the weight by frames, what if we want to know the position of the weight at any given time?
+What if we want to know what would happen if we change the mass of the weight or the different constants?
+
+We can model the motion of the weight using the differential equation - which we call it Damped Harmonic Oscillator.
+
+Let's learn how that works
+
+## Forces
+
+These are the forces acting on the weight:
+
+- Spring force: $F_{spring} = -k \cdot x$
+- Damping force: $F_{damping} = -c \cdot v$
+
+The spring force pulls the weight back toward the resting position, and the damping force pushes against the motion - the faster the weight moves, the stronger it is.
+
+We know that the force applied to the weight is equal to the mass of the weight times the acceleration of the weight. $F_{net} = m \cdot a$.
+
+So we can write the equation as:
+
+$$
+F_{net} = F_{spring} + F_{damping}
+$$
+
+$$
+m \cdot a = -k \cdot x - c \cdot v
+$$
+
+The acceleration is the second derivative of the position.
+The velocity is the first derivative of the position.
+So we can write the equation as:
+
+$$
+m \frac{d^2x}{dt^2} = -kx - c\frac{dx}{dt}
+$$
+
+$$
+m \frac{d^2x}{dt^2} + c\frac{dx}{dt} + kx = 0
+$$
+
+To make the math cleaner, we divide everything by mass ($m$):
+
+$$
+\frac{d^2x}{dt^2} + \frac{c}{m}\frac{dx}{dt} + \frac{k}{m}x = 0
+$$
+
+and redefine our constants:
+
+- $\omega_0 = \sqrt{\frac{k}{m}}$ (the natural frequency of the spring)
+- $\gamma = \frac{c}{2m}$ (the damping coefficient / friction factor)
+
+Since $\frac{k}{m} = \omega_0^2$ and $\frac{c}{m} = 2\gamma$, this leaves us with the standard form:
+
+$$
+\frac{d^2x}{dt^2} + 2\gamma\frac{dx}{dt} + \omega_0^2x = 0
+$$
+
+## Solving differentials
+
+To solve the differential equation, we need to find a function that satisfies the equation.
+
+Which means -
+"What function, when you add it to its first derivative (velocity) and its second derivative (acceleration), completely cancels out to equal zero at every single moment in time?"
+
+We can substitute $x(t) = e^{rt}$ into the equation, since the derivatives of $e^{rt}$ are just multiples of itself:
+
+$$
+\frac{d^2x}{dt^2} = r^2e^{rt}, \quad \frac{dx}{dt} = re^{rt}, \quad x(t) = e^{rt}
+$$
+
+Substituting it into the equation, we get:
+
+$$
+r^2e^{rt} + 2\gamma re^{rt} + \omega_0^2e^{rt} = 0
+$$
+
+Simplifying:
+
+$$
+e^{rt}(r^2 + 2\gamma r + \omega_0^2) = 0
+$$
+
+$$
+r^2 + 2\gamma r + \omega_0^2 = 0
+$$
+
+This is a quadratic equation. We can solve it using the quadratic formula:
+
+$$
+r = \frac{-2\gamma \pm \sqrt{(2\gamma)^2 - 4\omega_0^2}}{2}
+$$
+
+$$
+r = -\gamma \pm \sqrt{\gamma^2 - \omega_0^2}
+$$
+
+This yields to two roots: $r_1$ and $r_2$.
+
+$$
+r_1 = -\gamma + \sqrt{\gamma^2 - \omega_0^2}
+$$
+$$
+r_2 = -\gamma - \sqrt{\gamma^2 - \omega_0^2}
+$$
+
+Since $x(t) = e^{rt}$, we can write the position equation as:
+
+$$
+x(t) = Ae^{r_1t} + Be^{r_2t}
+$$
+
+Where A and B are arbitrary constants.
+
+{/* $$
+x(t) = Ae^{r_1t} + Be^{r_2t}
+$$
+
+$$
+x(t) = Ae^{(-\gamma + \sqrt{\gamma^2 - \omega_0^2}) t} + Be^{(-\gamma - \sqrt{\gamma^2 - \omega_0^2}) t}
+$$
+
+$$
+x(t) = Ae^{-\gamma t}e^{\sqrt{\gamma^2 - \omega_0^2} t} + Be^{-\gamma t}e^{-\sqrt{\gamma^2 - \omega_0^2} t}
+$$
+
+$$
+x(t) = e^{-\gamma t}(Ae^{\sqrt{\gamma^2 - \omega_0^2} t} + Be^{-\sqrt{\gamma^2 - \omega_0^2} t})
+$$
+
+We can define $\omega_d = \sqrt{\omega_0^2 - \gamma^2}$, which results in $r_1 = -\gamma + i\omega_d$ and $r_2 = -\gamma - i\omega_d$.
+
+So that we can use Euler's formula $e^{i \theta} = \cos\theta + i\sin\theta$, we can rewrite the equation as:
+
+$$
+x(t) = e^{-\gamma t}(Ae^{i\omega_d t} + Be^{-i\omega_d t})
+$$
+
+$$
+x(t) = e^{-\gamma t}(A(\cos(\omega_d t) + i\sin(\omega_d t)) + B(\cos(\omega_d t) - i\sin(\omega_d t)))
+$$
+
+$$
+x(t) = e^{-\gamma t}((A + B)\cos(\omega_d t) + i(A - B)\sin(\omega_d t))
+$$
+
+Since $A$ and $B$ are arbitrary constants, we can define $D = A + B$ and $E = A - B$, so that we can rewrite the equation as:
+
+$$
+x(t) = e^{-\gamma t}(D\cos(\omega_d t) + E\sin(\omega_d t))
+$$
+
+ */}
+
+
+## Three kinds of motion
+
+There are three kinds of motion, "Underdamped", "Critically Damped" and "Overdamped".
+
+### Underdamped
+
+When we think of a spring, we imagine it bouncing back and forth, then overtime reducing it's amplitude until it stops.
+
+This is called underdamped motion. 
+
+<DampingSpring />
+
+When $\gamma < \omega_0$, the value under the square root is negative, giving us $\sqrt{-1} = i$.
+We will pull out the imaginary unit $i$ and rewrite the equation as:
+
+$$
+r = -\gamma \pm \sqrt{\gamma^2 - \omega_0^2}
+$$
+
+$$
+r = -\gamma \pm i\omega _{d}
+$$
+
+where $\omega_d = \sqrt{\omega_0^2 - \gamma^2}$.
+
+Putting it back into the equation, we get:
+
+$$
+x(t) = Ae^{r_1t} + Be^{r_2t}
+$$
+
+$$
+x(t) = Ae^{(-\gamma + i\omega_d)t} + Be^{(-\gamma - i\omega_d)t}
+$$
+
+$$
+x(t) = Ae^{-\gamma t}e^{i\omega_d t} + Be^{-\gamma t}e^{-i\omega_d t}
+$$
+
+$$
+x(t) = e^{-\gamma t}(Ae^{i\omega_d t} + Be^{-i\omega_d t})
+$$
+
+Applying Euler's formula $e^{i \theta} = \cos\theta + i\sin\theta$, we get:
+
+$$
+x(t) = e^{-\gamma t}(A(\cos(\omega_d t) + i\sin(\omega_d t)) + B(\cos(\omega_d t) - i\sin(\omega_d t)))
+$$
+
+$$
+x(t) = e^{-\gamma t}((A + B)\cos(\omega_d t) + i(A - B)\sin(\omega_d t))
+$$
+
+Since $A$ and $B$ are arbitrary constants
+we can redefine $D = A + B$ and $E = i(A - B)$, so that we can rewrite the equation as:
+
+$$
+x(t) = e^{-\gamma t}(D\cos(\omega_d t) + E\sin(\omega_d t))
+$$
+
+We can merge $D\cos(\omega_d t)$ and $E\sin(\omega_d t)$.
+
+Imagine a right angle triangle with sides $D$ and $E$, we can define the hypotenuse as $C$ and the angle as $\phi$.
+
+$$
+C = \sqrt{D^2 + E^2}
+$$
+
+$$
+cos(\phi) = \frac{D}{C}
+$$
+
+$$
+sin(\phi) = - \frac{E}{C}
+$$
+
+Then,
+
+$$
+D = C   cos(\phi)
+$$
+
+$$
+E = -C\sin(\phi)
+$$
+
+$$
+x(t) = e^{-\gamma t}(C\cos(\phi)\cos(\omega_d t) - C \sin(\phi)\sin(\omega_d t))
+$$
+
+$$
+x(t) = e^{-\gamma t}(C(\cos(\phi)\cos(\omega_d t) - \sin(\phi)\sin(\omega_d t)))
+$$
+
+$$
+x(t) = Ce^{-\gamma t}\cos(\omega_d t + \phi)
+$$
+
+Where $C$ and $\phi$ are arbitrary constants.
+
+We can find the value of $C$ and $\phi$ by using the initial conditions.
+
+Back to 
+$$
+x(t) = e^{-\gamma t}(D\cos(\omega_d t) + E\sin(\omega_d t))
+$$
+
+When $t = 0$, $x(0) = x_0$.
+
+$$
+x_0 = e^{-\gamma \cdot 0}(D\cos(\omega_d \cdot 0) + E\sin(\omega_d \cdot 0))
+$$
+
+$$
+x_0 = D\cos(0) + E\sin(0)
+$$
+
+$$
+x_0 = D
+$$
+
+$D$ is the initial position (from the resting position).
+
+To find $E$, we need to use the initial velocity.
+
+$$
+v(t) = \frac{dx}{dt} = -\gamma e^{-\gamma t}(D\cos(\omega_d t) + E\sin(\omega_d t)) + e^{-\gamma t}(-\omega_d D\sin(\omega_d t) + \omega_d E\cos(\omega_d t))
+$$
+
+$$
+v_0 = -\gamma e^{-\gamma \cdot 0}(D\cos(\omega_d \cdot 0) + E\sin(\omega_d \cdot 0)) + e^{-\gamma \cdot 0}(-\omega_d D\sin(\omega_d \cdot 0) + \omega_d E\cos(\omega_d \cdot 0))
+$$
+
+$$
+v_0 = -\gamma D + \omega_d E
+$$
+
+Then
+
+$$
+E = \frac{v_0 + \gamma D}{\omega_d}
+$$
+
+
+Since $D = x_0$, we can rewrite the equation as:
+
+$$
+E = \frac{v_0 + \gamma x_0}{\omega_d}
+$$
+
+Using trigonometry, $C = \sqrt(D^2 + E^2) and tan(\phi) = \frac{E}{D}$ we can find the value of $C$ and $\phi$.
+$$
+C = \sqrt{x_0^2 + \left(\frac{v_0 + \gamma x_0}{\omega_d}\right)^2}
+$$
+
+$$
+\phi = \tan^{-1}\left(\frac{v_0 + \gamma x_0}{\omega_d x_0}\right)
+$$
+
+In Javascript:
+```javascript
+// Damped Harmonic Oscillator
+// x'' + 2γx' + ω0²x = 0, starting at x0 with velocity v0
+function dampedOscillator(t, { mass, stiffness, damping, x0, v0 }) {
+    const w0 = Math.sqrt(stiffness / mass); // ω0 = √(k / m)
+    const gamma = damping / (2 * mass);     // γ = c / 2m
+
+    // γ < ω0 - underdamped: the root is imaginary, so it oscillates
+    // x(t) = e^(-γt) (cos(ωd t) + (γ / ωd) sin(ωd t))
+    if (gamma < w0) {
+        const wd = Math.sqrt(w0 * w0 - gamma * gamma); // damped frequency
+        
+        const D = x0;
+        const E = (v0 + gamma * x0)/wd;
+
+        const C = Math.sqrt(D*D + E*E);
+        const phi = Math.atan2(E, D);
+
+        return C * Math.exp(-gamma * t) * Math.cos(wd * t + phi);
+    }
+
+    // Critically Damped
+    // Overdamped
+}
+```
+
+### Critically Damped
+
+When critically damped, the motion does not oscillate. They smoothly return to the resting position.
+
+<DampingSpring damping={12.65}  />
+
+When $\gamma = \omega_0$, the value under the square root is zero, giving us $r = -\gamma$.
+
+$$
+r = -\gamma
+$$
+
+Since $r_1 = r_2 = -\gamma$, we can rewrite the equation as:
+
+$$
+x(t) = Ae^{rt} + Be^{rt} = (A + B)e^{rt}
+$$
+
+Since A and B are arbitrary constants, we can rewrite the equation as:
+
+$$
+x(t) = Ce^{rt}
+$$
+
+This leaves you with only one constant $C$. Because a second-order differential equation describes a system with two degrees of freedom, its general solution must contain two independent constants to accommodate any starting position $x_0$ and starting velocity $v_0$.
+
+To fix this and find the missing second piece of the solution, we use a method called Reduction of Order.
+
+Since we know $x_1(t) = e^{rt}$ we assume the complete general solution looks like the original solution multiplied by an unknown, moving function of time, $u(t)$:
+
+$$
+x(t) = x_1(t)u(t) = e^{rt}u(t)
+$$
+
+To substitute it into the equation, we need its derivatives. Using the product rule:
+
+$$
+\frac{dx}{dt} = \frac{du}{dt} e^{rt} + re^{rt}u(t) = e^{rt}\left(\frac{du}{dt} + ru(t)\right)
+$$
+
+$$
+\frac{d^2x}{dt^2} = e^{rt}\left(\frac{d^2u}{dt^2} + 2r\frac{du}{dt} + r^2u\right)
+$$
+
+Substituting them into the original equation $\frac{d^2x}{dt^2} + 2\gamma\frac{dx}{dt} + \omega_0^2x = 0$:
+
+$$
+e^{rt}\left(\frac{d^2u}{dt^2} + 2r\frac{du}{dt} + r^2u + 2\gamma\frac{du}{dt} + 2\gamma ru + \omega_0^2u\right) = 0
+$$
+
+Dividing by $e^{rt}$ (which is never zero) and grouping by $u$ and its derivatives:
+
+$$
+\frac{d^2u}{dt^2} + (2r + 2\gamma)\frac{du}{dt} + (r^2 + 2\gamma r + \omega_0^2)u = 0
+$$
+
+Now we use what we know about the critically damped case:
+
+- $r = -\gamma$, so $2r + 2\gamma = 0$
+- $r$ is a root of $r^2 + 2\gamma r + \omega_0^2 = 0$, so the last bracket is also $0$
+
+Both terms vanish, leaving us with:
+
+$$
+\frac{d^2u}{dt^2} = 0
+$$
+
+A function whose second derivative is zero has a constant slope - it is a straight line. Integrating twice:
+
+$$
+u(t) = A + Bt
+$$
+
+Putting it back into $x(t) = e^{rt}u(t)$ with $r = -\gamma$:
+
+$$
+x(t) = (A + Bt)e^{-\gamma t}
+$$
+
+Now we have two constants $A$ and $B$, one for the starting position and one for the starting velocity.
+The extra $t$ is the "second piece" of the solution we were missing.
+
+To find $A$ and $B$, just like the underdamped case, we use the initial conditions.
+
+When $t = 0$, $x(0) = x_0$:
+
+$$
+x_0 = (A + B \cdot 0)e^{-\gamma \cdot 0} = A
+$$
+
+For the velocity, we differentiate $x(t)$:
+
+$$
+v(t) = \frac{dx}{dt} = Be^{-\gamma t} - \gamma(A + Bt)e^{-\gamma t}
+$$
+
+When $t = 0$, $v(0) = v_0$:
+
+$$
+v_0 = B - \gamma A
+$$
+
+$$
+B = v_0 + \gamma x_0
+$$
+
+So the critically damped motion is:
+
+$$
+x(t) = \left(x_0 + (v_0 + \gamma x_0)t\right)e^{-\gamma t}
+$$
+
+
+```javascript
+// Damped Harmonic Oscillator
+// x'' + 2γx' + ω0²x = 0, starting at x0 with velocity v0
+function dampedOscillator(t, { mass, stiffness, damping, x0, v0 }) {
+    const w0 = Math.sqrt(stiffness / mass); // ω0 = √(k / m)
+    const gamma = damping / (2 * mass);     // γ = c / 2m
+
+    // γ < ω0 - underdamped: the root is imaginary, so it oscillates
+    // x(t) = e^(-γt) (cos(ωd t) + (γ / ωd) sin(ωd t))
+    if (gamma < w0) {
+        const wd = Math.sqrt(w0 * w0 - gamma * gamma); // damped frequency
+        
+        const D = x0;
+        const E = (v0 + gamma * x0)/wd;
+
+        const C = Math.sqrt(D*D + E*E);
+        const phi = Math.atan2(E, D);
+
+        return C * Math.exp(-gamma * t) * Math.cos(wd * t + phi);
+    }
+
+    // Critically Damped
+    // x(t) = (x_0 + (v_0 + \gamma x_0)t) e^(-ω0 t)
+    if (gamma === w0) {
+        const A = x0;
+        const B = v0 + gamma * x0;
+
+        return (A + B * t) * Math.exp(-gamma * t);
+    }
+
+    // Overdamped
+}
+```
+
+### Overdamped
+
+When overdamped, the motion does not oscillate. They smoothly return to the resting position similarly to the critically damped case.
+However, the motion is slower than the critically damped case.
+
+<DampingSpring damping={30}  />
+
+When $\gamma > \omega_0$, the value under the square root is positive, giving us two real roots.
+
+$$
+r_1 = -\gamma + \sqrt{\gamma^2 - \omega_0^2}
+$$
+
+$$
+r_2 = -\gamma - \sqrt{\gamma^2 - \omega_0^2}
+$$
+
+Since $\sqrt{\gamma^2 - \omega_0^2}$ is always smaller than $\gamma$, both roots are negative.
+There is no $i$ this time, so there are no sines or cosines - only two exponential decays:
+
+$$
+x(t) = Ae^{r_1t} + Be^{r_2t}
+$$
+
+Unlike the critically damped case, the two roots are different, so we already have two independent pieces and two constants $A$ and $B$.
+
+When $t = 0$, $x(0) = x_0$:
+
+$$
+x_0 = Ae^{r_1 \cdot 0} + Be^{r_2 \cdot 0} = A + B
+$$
+
+For the velocity, we differentiate $x(t)$:
+
+$$
+v(t) = \frac{dx}{dt} = r_1Ae^{r_1t} + r_2Be^{r_2t}
+$$
+
+When $t = 0$, $v(0) = v_0$:
+
+$$
+v_0 = r_1A + r_2B
+$$
+
+We now have two equations with two unknowns. From the first equation, $B = x_0 - A$. Substituting it into the second:
+
+$$
+v_0 = r_1A + r_2(x_0 - A) = (r_1 - r_2)A + r_2x_0
+$$
+
+$$
+A = \frac{v_0 - r_2x_0}{r_1 - r_2}
+$$
+
+$$
+B = x_0 - A = \frac{r_1x_0 - v_0}{r_1 - r_2}
+$$
+
+Starting at $x_0 = 1$ with no velocity:
+
+$$
+x(t) = \frac{r_1e^{r_2t} - r_2e^{r_1t}}{r_1 - r_2}
+$$
+
+Why is it slower?
+
+The two roots decay at different speeds. $r_2$ is very negative, so $Be^{r_2t}$ disappears almost instantly.
+$r_1$ is close to zero, so $Ae^{r_1t}$ decays slowly - and this is the part that decides how long the weight takes to settle.
+
+Multiplying the two roots together:
+
+$$
+r_1r_2 = (-\gamma)^2 - (\gamma^2 - \omega_0^2) = \omega_0^2
+$$
+
+Their product is always $\omega_0^2$. In the critically damped case, both roots are $-\omega_0$.
+In the overdamped case, one root is more negative than $-\omega_0$, so the other must be closer to zero - which means the slow decay is always slower than the critically damped one.
+
+The more damping we add, the bigger $\gamma$ gets, and the closer $r_1$ gets to zero.
+The damping resists the motion so strongly that it also resists the weight returning to rest - like a door closer filled with thick oil.
+
+In Javascript:
+
+```javascript
+// Damped Harmonic Oscillator
+// x'' + 2γx' + ω0²x = 0, starting at x0 with velocity v0
+function dampedOscillator(t, { mass, stiffness, damping, x0, v0 }) {
+    const w0 = Math.sqrt(stiffness / mass); // ω0 = √(k / m)
+    const gamma = damping / (2 * mass);     // γ = c / 2m
+
+    // γ < ω0 - underdamped: the root is imaginary, so it oscillates
+    // x(t) = e^(-γt) (cos(ωd t) + (γ / ωd) sin(ωd t))
+    if (gamma < w0) {
+        const wd = Math.sqrt(w0 * w0 - gamma * gamma); // damped frequency
+        
+        const D = x0;
+        const E = (v0 + gamma * x0)/wd;
+
+        const C = Math.sqrt(D*D + E*E);
+        const phi = Math.atan2(-E, D);
+
+        return C * Math.exp(-gamma * t) * Math.cos(wd * t + phi);
+    }
+
+    // Critically Damped
+    // x(t) = (x_0 + (v_0 + \gamma x_0)t) e^(-ω0 t)
+    if (gamma === w0) {
+        const A = x0;
+        const B = v0 + gamma * x0;
+
+        return (A + B * t) * Math.exp(-gamma * t);
+    }
+
+    // Overdamped
+    // x(t) = A e^(r1 t) + B e^(r2 t)
+    const root = Math.sqrt(gamma * gamma - w0 * w0);
+    const r1 = -gamma + root;
+    const r2 = -gamma - root;
+
+    const A = (v0 - r2 * x0) / (r1 - r2);
+    const B = (r1 * x0 - v0) / (r1 - r2);
+
+    return (A * Math.exp(r1 * t) + B * Math.exp(r2 * t));
+}
+```
+
+## Let's draw!
+
+Starting at $x = 1$ with no velocity:
+
+<DampedOscillatorGraph />
+
+You can see changing mass stiffness and damping changes the motion of the spring.
+
+### Following a moving target
+
+So far the weight always starts still and settles at one resting position.
+But in an interface, the target moves - the pointer moves, a menu opens and closes - and the spring needs to change direction without jumping.
+
+Since this function can solve for any $x_0$ and $v_0$, we can use it to follow a moving target.
+
+- $x_0$ is the distance from the weight to the target
+- $v_0$ is the current velocity of the weight
+
+Then we move forward by one frame's time $\Delta t$, and use the new position and velocity as the starting point for the next frame.
+Because the velocity is carried over, changing the target mid-motion stays smooth.
+
+To carry the velocity over, `dampedOscillator` now returns the velocity $v(t) = x'(t)$ as well as the position.
+
+```javascript
+// Damped Harmonic Oscillator
+// returns position x(t) and velocity v(t), starting at x0 with velocity v0
+function dampedOscillator(t, { mass, stiffness, damping, x0, v0 }) {
+    const w0 = Math.sqrt(stiffness / mass); // ω0 = √(k / m)
+    const gamma = damping / (2 * mass);     // γ = c / 2m
+
+    // γ < ω0 - underdamped: the root is imaginary, so it oscillates
+    // x(t) = C e^(-γt) cos(ωd t + φ)
+    // v(t) = -C e^(-γt) (γ cos(ωd t + φ) + ωd sin(ωd t + φ))
+    if (gamma < w0) {
+        const wd = Math.sqrt(w0 * w0 - gamma * gamma); // damped frequency
+
+        const D = x0;
+        const E = (v0 + gamma * x0) / wd;
+
+        const C = Math.sqrt(D * D + E * E);
+        const phi = Math.atan2(-E, D);
+
+        const decay = Math.exp(-gamma * t);
+        const angle = wd * t + phi;
+
+        return {
+            x: C * decay * Math.cos(angle),
+            v: -C * decay * (gamma * Math.cos(angle) + wd * Math.sin(angle)),
+        };
+    }
+
+    // Critically Damped
+    // x(t) = (A + Bt) e^(-γt)
+    // v(t) = (B - γ(A + Bt)) e^(-γt)
+    if (gamma === w0) {
+        const A = x0;
+        const B = v0 + gamma * x0;
+
+        const decay = Math.exp(-gamma * t);
+
+        return {
+            x: (A + B * t) * decay,
+            v: (B - gamma * (A + B * t)) * decay,
+        };
+    }
+
+    // Overdamped
+    // x(t) = A e^(r1 t) + B e^(r2 t)
+    // v(t) = r1 A e^(r1 t) + r2 B e^(r2 t)
+    const root = Math.sqrt(gamma * gamma - w0 * w0);
+    const r1 = -gamma + root;
+    const r2 = -gamma - root;
+
+    const A = (v0 - r2 * x0) / (r1 - r2);
+    const B = (r1 * x0 - v0) / (r1 - r2);
+
+    return {
+        x: A * Math.exp(r1 * t) + B * Math.exp(r2 * t),
+        v: r1 * A * Math.exp(r1 * t) + r2 * B * Math.exp(r2 * t),
+    };
+}
+
+let position = 0;
+let velocity = 0;
+
+function update(target, dt) {
+    const x0 = position - target;
+    const v0 = velocity;
+
+    // move forward by one frame
+    const { x, v } = dampedOscillator(dt, { mass, stiffness, damping, x0, v0 });
+
+    position = target + x;
+    velocity = v;
+}
+```
+
+<SpringFollowGraph />
+
+The ball follows the pointer's height, and its path scrolls to the left like a graph being drawn.
+The dashed line is the target - try moving the pointer quickly and compare the three kinds of motion by changing the damping.
+
