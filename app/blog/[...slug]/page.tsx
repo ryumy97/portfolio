@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { BlogMdx } from "@/components/blog-mdx";
 import { BlogPostFooter } from "@/components/blog-post-footer";
 import { BlogTagList } from "@/components/blog-tags";
@@ -15,8 +17,6 @@ import {
   getBlogPost,
   getBlogPosts,
 } from "@/lib/blog";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
 function slugFromParams(slug: string | string[]) {
   return Array.isArray(slug) ? slug.join("/") : slug;

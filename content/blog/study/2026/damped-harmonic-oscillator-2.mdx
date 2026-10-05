@@ -1,0 +1,317 @@
+---
+title: Damped Harmonic Oscillator 2. | 2026
+date: "2026-10-05 23:50"
+description: How to create a spring easing function using the damped harmonic oscillator.
+tags: Spring, Easing
+---
+
+import { DampedOscillatorGraph, DampingSpring, LinearGraph, SpringEasingGraph, SpringFollowGraph } from "@/components/blog/study/2026/damped-harmonic-oscillator"
+
+## Damped Harmonic Oscillator - Easing
+
+Easing function is a function that describes the motion of a object.
+It is usually take input from 0 to 1, and transform it to value from 0 to 1 
+
+where:
+- 0 represents the value at the start of the motion.
+- 1 represents the value at the end of the motion.
+
+<SpringEasingGraph />
+
+## From 1 → 0 to 0 → 1
+
+In the previous post, $x(t)$ was the **distance from the resting position**.
+We started the weight at $x_0 = 1$ with no velocity, and it settled at $x = 0$.
+
+$$
+x(0) = 1, \quad x(\infty) = 0
+$$
+
+In an animation, the resting position is where we want to end up - the target.
+So $x(t)$ is "how much of the distance is still left to travel".
+The progress is what is left subtracted from the whole:
+
+$$
+progress(t) = 1 - x(t)
+$$
+
+
+```javascript
+// Progress 0 → 1 at normalized time p (0 → 1)
+function springEasing(p, params, settle) {
+    return 1 - dampedOscillator(p * settle, params).x;
+}
+```
+
+## When does the spring stop?
+
+Look at the underdamped solution again:
+
+$$
+x(t) = Ce^{-\gamma t}\cos(\omega_d t + \phi)
+$$
+
+$e^{-\gamma t}$ gets smaller and smaller, but it never reaches 0. Mathematically, the spring moves forever.
+
+So we choose a small number $\delta$ and say the spring is at rest once it stays within $\delta$ of the target.
+If we are moving a box by 300px, $\delta = 0.001$ means "within 0.3px" - nobody can see that.
+
+### Using the envelope
+
+Since $\cos$ is always between -1 and 1, $x(t)$ can never be bigger than its envelope:
+
+$$
+|x(t)| \le Ce^{-\gamma t}
+$$
+
+So the spring is surely at rest once the envelope is smaller than $\delta$:
+
+$$
+Ce^{-\gamma t} = \delta
+$$
+
+$$
+-\gamma t = \ln\left(\frac{\delta}{C}\right)
+$$
+
+$$
+T = \frac{1}{\gamma}\ln\left(\frac{C}{\delta}\right)
+$$
+
+Starting at $x_0 = 1$ with no velocity, $C = \frac{\omega_0}{\omega_d}$.
+
+For the default graph ($m = 1$, $k = 100$, $c = 10$): $\gamma = 5$, $C \approx 1.155$, so $T \approx \frac{\ln(1155)}{5} \approx 1.41s$.
+
+This is an upper bound. The real motion is usually inside the envelope (the $\cos$ is rarely exactly ±1), so it settles a bit earlier.
+It also only works for underdamped motion - the critically damped $(A + Bt)e^{-\gamma t}$ cannot be solved for $t$ with simple algebra.
+
+### Sampling
+
+The simpler way that works for all three kinds of motion is to just walk through time, frame by frame, and remember the last moment the spring was outside $\delta$:
+
+```javascript
+const REST_DELTA = 0.001;
+const MAX_DURATION = 10;
+
+// Seconds until the spring stays within REST_DELTA of its target
+function springSettleTime(params) {
+    const dt = 1 / 60;
+    let last = 0;
+    for (let t = 0; t <= MAX_DURATION; t += dt) {
+        if (Math.abs(dampedOscillator(t, params).x) > REST_DELTA) last = t;
+    }
+    return last + dt;
+}
+```
+
+We keep going after the first time we are inside $\delta$, because an underdamped spring passes through the target on every bounce.
+For the default graph this gives $T \approx 1.28s$ - a bit earlier than the envelope said.
+
+This $T$ is the `t = 1` on the right of the graph above.
+
+## Bounce and Duration
+
+Mass, stiffness and damping are hard to design with. Increasing the stiffness makes the spring faster **and** bouncier at the same time.
+What we really want to say is "a little bouncy, and done in 0.5 seconds".
+
+### Bounce
+
+Instead of $\gamma$, it is easier to compare it with $\omega_0$. This is called the damping ratio $\zeta$:
+
+$$
+\zeta = \frac{\gamma}{\omega_0} = \frac{c}{2\sqrt{km}}
+$$
+
+- $\zeta < 1$ is underdamped
+- $\zeta = 1$ is critically damped
+- $\zeta > 1$ is overdamped
+
+$\zeta$ alone decides how bouncy the spring is, no matter how fast it is. So we define bounce as:
+
+$$
+bounce = 1 - \zeta
+$$
+
+A bounce of 0 is critically damped - the fastest motion without overshooting. The closer it gets to 1, the bouncier.
+
+### Duration
+
+With $\zeta$ fixed, the only thing left is $\omega_0$ - how fast the spring is.
+
+Write the time as $\omega_0 t$, and replace $\gamma = \zeta\omega_0$ and $\omega_d = \omega_0\sqrt{1 - \zeta^2}$:
+
+$$
+x(t) = Ce^{-\gamma t}\cos(\omega_d t + \phi)
+$$
+
+$$
+x(t) = Ce^{-\zeta(\omega_0 t)}\cos\left(\sqrt{1 - \zeta^2}(\omega_0 t) + \phi\right)
+$$
+
+What about $C$ and $\phi$? From the previous post, they come from the starting position and velocity:
+
+$$
+D = x_0, \quad E = \frac{v_0 + \gamma x_0}{\omega_d}, \quad C = \sqrt{D^2 + E^2}, \quad \cos\phi = \frac{D}{C}, \quad \sin\phi = -\frac{E}{C}
+$$
+
+An easing always starts at $x_0 = 1$ with no velocity $v_0 = 0$:
+
+$$
+D = 1, \quad E = \frac{\gamma}{\omega_d} = \frac{\zeta\omega_0}{\omega_0\sqrt{1 - \zeta^2}} = \frac{\zeta}{\sqrt{1 - \zeta^2}}
+$$
+
+The $\omega_0$ cancels out. Then:
+
+$$
+C = \sqrt{1 + \frac{\zeta^2}{1 - \zeta^2}} = \sqrt{\frac{1 - \zeta^2 + \zeta^2}{1 - \zeta^2}} = \frac{1}{\sqrt{1 - \zeta^2}}
+$$
+
+$$
+\cos\phi = \frac{D}{C} = \sqrt{1 - \zeta^2}, \quad \sin\phi = -\frac{E}{C} = -\zeta
+$$
+
+$$
+\phi = -\sin^{-1}\zeta
+$$
+
+This is also where $C = \frac{\omega_0}{\omega_d}$ in the envelope came from, since $\omega_d = \omega_0\sqrt{1 - \zeta^2}$.
+
+So $C$ and $\phi$ only depend on $\zeta$ too, and $x$ is a function of $\omega_0 t$ - a faster spring plays the exact same motion, just squeezed in time.
+
+That means the settle time is inversely proportional to $\omega_0$:
+
+$$
+T = \frac{\tau(\zeta)}{\omega_0}
+$$
+
+where $\tau(\zeta)$ is the settle time of a spring with $\omega_0 = 1$. We measure it once with `springSettleTime`, and then:
+
+$$
+\omega_0 = \frac{\tau(\zeta)}{T}
+$$
+
+### Putting it together
+
+From $m = 1$, $\omega_0 = \sqrt{\frac{k}{m}}$ and $\zeta = \frac{c}{2\sqrt{km}}$:
+
+$$
+m = 1, \quad k = \omega_0^2, \quad c = 2\zeta\omega_0
+$$
+
+```javascript
+const REST_DELTA = 0.001;
+const MAX_DURATION = 10;
+ 
+// Seconds until the spring stays within REST_DELTA of its target
+function springSettleTime(params) {
+    const dt = 1 / 60;
+    let last = 0;
+    for (let t = 0; t <= MAX_DURATION; t += dt) {
+        if (Math.abs(dampedOscillator(t, params).x) > REST_DELTA) last = t;
+    }
+    return last + dt;
+}
+
+function springFromDuration({ bounce, duration }) {
+    const zeta = 1 - bounce;
+
+    // settle time of the same spring with ω0 = 1
+    const tau = springSettleTime({ mass: 1, stiffness: 1, damping: 2 * zeta });
+    const w0 = tau / duration;
+
+    return { mass: 1, stiffness: w0 * w0, damping: 2 * zeta * w0 };
+}
+```
+
+`MAX_DURATION` needs to be long enough here - with $\omega_0 = 1$, a bouncy spring takes over a minute to settle.
+
+For example, bounce 0.3 and 1 second: $\zeta = 0.7$, $\tau \approx 10.3$, so $\omega_0 \approx 10.3$, $k \approx 106$ and $c \approx 14.4$.
+
+<SpringEasingGraph controls="duration" />
+
+## CSS `linear()`
+
+The easing curve is a JavaScript function. CSS cannot run it, but it can follow a list of points.
+
+`linear()` is a timing function made of straight lines between points:
+
+```css
+transition-timing-function: linear(0, 0.25, 1);
+```
+
+The points are spread evenly across the time - `0` at 0%, `0.25` at 50%, `1` at 100% - and the browser draws straight lines between them.
+You can also place a point at a specific time, like `linear(0, 0.25 75%, 1)`.
+
+Unlike `cubic-bezier()`, the values can go below 0 and above 1, so it can show the overshoot of a spring.
+
+<LinearGraph func="linear(0, 0.25 75%, 1)" />
+
+Check out the [MDN documentation for `linear()`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/easing-function/linear).
+
+
+
+### Getting the values
+
+We already have everything. We sample `springEasing` at evenly spaced $p$:
+
+$$
+p_i = \frac{i}{N}, \quad i = 0, 1, \ldots, N
+$$
+
+```javascript
+const SAMPLES = 30;
+
+function springCssLinear(params, settle) {
+    const points = Array.from({ length: SAMPLES + 1 }, (_, i) =>
+        Number(springEasing(i / SAMPLES, params, settle).toFixed(3)),
+    );
+    points[0] = 0;
+    points[SAMPLES] = 1;
+    return `linear(${points.join(", ")})`;
+}
+```
+
+- The first and last points are forced to exactly 0 and 1.
+- More samples follow the curve more closely, but make the string longer. Bouncier springs need more samples, because each bounce needs a few points to look round.
+
+With 10 samples, the default spring gives:
+
+```css
+linear(0, 0.494, 1.041, 1.159, 1.063, 0.985, 0.976, 0.993, 1.003, 1.004, 1)
+```
+
+<LinearGraph func="linear(0, 0.494, 1.041, 1.159, 1.063, 0.985, 0.976, 0.993, 1.003, 1.004, 1)" />
+
+You can see it rush past 1, peak at 1.159 - a 16% overshoot - then come back and wobble around 1.
+
+### Duration
+
+`linear()` only describes the shape in normalized time. The real time comes from `transition-duration`, which must be the settle time $T$ we used to stretch $p$:
+
+```css
+.box {
+    transition-property: translate;
+    transition-duration: 1283ms;
+    transition-timing-function: linear(0, 0.494, 1.041, 1.159, ...);
+}
+```
+
+```javascript
+function springTransition(params) {
+    const settle = springSettleTime(params);
+
+    return {
+        duration: Math.round(settle * 1000), // ms
+        easing: springCssLinear(params, settle),
+    };
+}
+
+const { duration, easing } = springTransition({ mass: 1, stiffness: 100, damping: 10 });
+```
+
+## Summary
+
+- The progress is $1 - x(t)$, because $x(t)$ is the distance left to the target.
+- The spring never stops in theory, so we pick a small $\delta$ and find the time $T$ it stays within it.
+- Mass and amplitude do not change the shape. The bounce decides $\zeta$, and the duration decides $\omega_0$.
+- `linear()` takes evenly sampled points of the easing, and `transition-duration` takes $T$.

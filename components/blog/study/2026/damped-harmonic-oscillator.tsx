@@ -83,7 +83,9 @@ function dampedOscillator(
   // Critically Damped
   // x(t) = (A + Bt) e^(-γt)
   // v(t) = (B - γ(A + Bt)) e^(-γt)
-  if (gamma === w0) {
+  // Derived parameters (e.g. stiffness = ω0²) can miss γ = ω0 by a rounding error,
+  // which would divide by ~0 in the other branches.
+  if (Math.abs(gamma - w0) < 1e-9 * w0) {
     const A = x0;
     const B = v0 + gamma * x0;
 
@@ -319,13 +321,40 @@ const SPRING_EASING_HOLD = 0.8;
 const SPRING_CSS_SAMPLES = 30;
 
 /** Seconds until the spring stays within SPRING_REST_DELTA of its target. */
-function springSettleTime(params: OscillatorParams) {
+function springSettleTime(
+  params: OscillatorParams,
+  maxDuration = SPRING_MAX_DURATION,
+) {
   const dt = 1 / 60;
   let last = 0;
-  for (let t = 0; t <= SPRING_MAX_DURATION; t += dt) {
+  for (let t = 0; t <= maxDuration; t += dt) {
     if (Math.abs(dampedOscillator(t, params).x) > SPRING_REST_DELTA) last = t;
   }
   return last + dt;
+}
+
+type SpringDurationParams = { bounce: number; duration: number };
+
+const SPRING_DURATION_DEFAULTS: SpringDurationParams = {
+  bounce: 0.3,
+  duration: 1,
+};
+
+/**
+ * Mass, stiffness and damping that settle in `duration` seconds with ζ = 1 - bounce.
+ * x(t) only depends on ω0·t for a fixed ζ, so we measure the settle time at ω0 = 1 and scale.
+ */
+function springFromDuration({
+  bounce,
+  duration,
+}: SpringDurationParams): OscillatorParams {
+  const zeta = 1 - bounce;
+  const reference = springSettleTime(
+    { mass: 1, stiffness: 1, damping: 2 * zeta },
+    200,
+  );
+  const w0 = reference / duration;
+  return { mass: 1, stiffness: w0 * w0, damping: 2 * zeta * w0 };
 }
 
 /** Progress 0 → 1 at normalized time p (0 → 1). */
@@ -342,12 +371,26 @@ function springCssLinear(params: OscillatorParams, settle: number) {
   return `linear(${points.join(", ")})`;
 }
 
-/** The oscillator flipped into an easing: progress = 1 - x(t), on normalized time. */
-export function SpringEasingGraph({ className }: { className?: string }) {
+/**
+ * The oscillator flipped into an easing: progress = 1 - x(t), on normalized time.
+ * `controls="duration"` swaps the mass/stiffness/damping sliders for bounce and duration.
+ */
+export function SpringEasingGraph({
+  className,
+  controls = "physics",
+}: {
+  className?: string;
+  controls?: "physics" | "duration";
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const paramsRef = useRef(SPRING_EASING_DEFAULTS);
-  const settleRef = useRef(springSettleTime(SPRING_EASING_DEFAULTS));
-  const [params, setParams] = useState(SPRING_EASING_DEFAULTS);
+  const settleRef = useRef(0);
+  const [physics, setPhysics] = useState(SPRING_EASING_DEFAULTS);
+  const [perceptual, setPerceptual] = useState(SPRING_DURATION_DEFAULTS);
+  const params = useMemo(
+    () => (controls === "duration" ? springFromDuration(perceptual) : physics),
+    [controls, perceptual, physics],
+  );
   const settle = useMemo(() => springSettleTime(params), [params]);
   const css = useMemo(() => springCssLinear(params, settle), [params, settle]);
 
@@ -480,6 +523,8 @@ export function SpringEasingGraph({ className }: { className?: string }) {
       ctx.fillText(`ζ = ${zeta.toFixed(2)}  ·  ${regime}`, right, 10);
       ctx.fillStyle = muted;
       ctx.fillText(`progress = ${value.toFixed(2)}`, right, 26);
+      ctx.textAlign = "left";
+      ctx.fillText(`overshoot = ${((maxP - 1) * 100).toFixed(1)}%`, left, 10);
     };
 
     const tick = (time: number) => {
@@ -532,15 +577,33 @@ export function SpringEasingGraph({ className }: { className?: string }) {
   }, []);
 
   const sliders: {
-    key: keyof OscillatorParams;
+    key: string;
     min: number;
     max: number;
     step: number;
-  }[] = [
-    { key: "mass", min: 0.5, max: 5, step: 0.1 },
-    { key: "stiffness", min: 10, max: 300, step: 1 },
-    { key: "damping", min: 1, max: 40, step: 0.5 },
-  ];
+    value: number;
+    onChange: (value: number) => void;
+  }[] =
+    controls === "duration"
+      ? [
+          { key: "bounce" as const, min: 0, max: 0.9, step: 0.05 },
+          { key: "duration" as const, min: 0.2, max: 3, step: 0.05 },
+        ].map((slider) => ({
+          ...slider,
+          value: perceptual[slider.key],
+          onChange: (value: number) =>
+            setPerceptual((current) => ({ ...current, [slider.key]: value })),
+        }))
+      : [
+          { key: "mass" as const, min: 0.5, max: 5, step: 0.1 },
+          { key: "stiffness" as const, min: 10, max: 300, step: 1 },
+          { key: "damping" as const, min: 1, max: 40, step: 0.5 },
+        ].map((slider) => ({
+          ...slider,
+          value: physics[slider.key],
+          onChange: (value: number) =>
+            setPhysics((current) => ({ ...current, [slider.key]: value })),
+        }));
 
   return (
     <div
@@ -560,14 +623,17 @@ export function SpringEasingGraph({ className }: { className?: string }) {
             size="icon"
             className="rounded-full bg-background"
             aria-label="Reset spring easing graph"
-            onClick={() => setParams(SPRING_EASING_DEFAULTS)}
+            onClick={() => {
+              setPhysics(SPRING_EASING_DEFAULTS);
+              setPerceptual(SPRING_DURATION_DEFAULTS);
+            }}
           >
             <RotateCcw />
           </Button>
         </PointerEventHandler>
       </div>
       <div className="flex flex-col gap-2 border-b border-border px-3 py-2 font-mono text-xs text-muted-foreground">
-        {sliders.map(({ key, min, max, step }) => (
+        {sliders.map(({ key, min, max, step, value, onChange }) => (
           <div key={key} className="flex items-center gap-3">
             <span className="w-20">{key}</span>
             <Slider
@@ -575,17 +641,21 @@ export function SpringEasingGraph({ className }: { className?: string }) {
               min={min}
               max={max}
               step={step}
-              value={[params[key]]}
+              value={[value]}
               aria-label={key}
-              onValueChange={([value]) =>
-                setParams((current) => ({ ...current, [key]: value }))
-              }
+              onValueChange={([next]) => onChange(next)}
             />
             <span className="w-12 text-right text-foreground">
-              {params[key]}
+              {Number(value.toFixed(2))}
             </span>
           </div>
         ))}
+        {controls === "duration" && (
+          <div className="text-foreground">
+            mass = {params.mass} · stiffness = {params.stiffness.toFixed(1)} ·
+            damping = {params.damping.toFixed(2)}
+          </div>
+        )}
       </div>
       <div className="relative aspect-4/3 w-full">
         <canvas
@@ -596,8 +666,289 @@ export function SpringEasingGraph({ className }: { className?: string }) {
         />
       </div>
       <div className="border-t border-border px-3 py-2 font-mono text-[11px] break-all text-muted-foreground">
+        <div>
+          <span className="text-foreground">transition-duration:</span>{" "}
+          {`${Math.round(settle * 1000)}ms;`}
+        </div>
+        <div>
+          <span className="text-foreground">transition-timing-function:</span>{" "}
+          {`${css};`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type LinearStop = { input: number; output: number };
+
+/** Parses a CSS `linear()` string into stops with every input resolved, following the CSS Easing spec. */
+function parseCssLinear(func: string): LinearStop[] {
+  const body = func.trim().match(/^linear\(([\s\S]*)\)$/)?.[1] ?? "";
+  const stops: { input: number | null; output: number }[] = [];
+  for (const part of body.split(",")) {
+    const [value, ...percents] = part.trim().split(/\s+/);
+    const output = Number(value);
+    if (!Number.isFinite(output)) continue;
+    if (percents.length === 0) stops.push({ input: null, output });
+    for (const percent of percents.slice(0, 2)) {
+      stops.push({ input: Number.parseFloat(percent) / 100, output });
+    }
+  }
+  if (stops.length === 0) return [];
+
+  // First and last default to 0% and 100%; an input can't go back before an earlier one.
+  if (stops[0].input === null) stops[0].input = 0;
+  const last = stops[stops.length - 1];
+  if (last.input === null)
+    last.input = Math.max(1, ...stops.map((s) => s.input ?? 0));
+  let max = 0;
+  for (const stop of stops) {
+    if (stop.input === null) continue;
+    max = Math.max(max, stop.input);
+    stop.input = max;
+  }
+
+  // Runs of missing inputs are spread evenly between their neighbours.
+  for (let i = 1; i < stops.length; i++) {
+    if (stops[i].input !== null) continue;
+    let end = i;
+    while (stops[end].input === null) end++;
+    const from = stops[i - 1].input as number;
+    const to = stops[end].input as number;
+    for (let j = i; j < end; j++) {
+      stops[j].input = from + ((to - from) * (j - i + 1)) / (end - i + 1);
+    }
+  }
+
+  return stops as LinearStop[];
+}
+
+function evaluateCssLinear(stops: LinearStop[], p: number) {
+  if (stops.length === 0) return p;
+  if (p <= stops[0].input) return stops[0].output;
+  for (let i = 1; i < stops.length; i++) {
+    const a = stops[i - 1];
+    const b = stops[i];
+    if (p <= b.input) {
+      if (b.input === a.input) return b.output;
+      return (
+        a.output + ((p - a.input) / (b.input - a.input)) * (b.output - a.output)
+      );
+    }
+  }
+  return stops[stops.length - 1].output;
+}
+
+const LINEAR_GRAPH_DURATION = 2;
+const LINEAR_GRAPH_HOLD = 0.8;
+
+/** Plots a CSS `linear()` timing function: its stops, the straight lines between them, and a box moving with it. */
+export function LinearGraph({
+  func,
+  className,
+}: {
+  func: string;
+  className?: string;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stops = useMemo(() => parseCssLinear(func), [func]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let color = "#1e1e1e";
+    let primary = "#f75d5d";
+    let muted = "#9a9a9a";
+    let raf = 0;
+    let running = true;
+    let visible = false;
+    let clock = 0;
+    let lastTime = 0;
+
+    const draw = () => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      if (width <= 0 || height <= 0) return;
+
+      const left = 28;
+      const right = width - 16;
+      const top = 28;
+      const bottom = height - 84;
+
+      const outputs = stops.map((s) => s.output);
+      const yMin = Math.min(0, ...outputs) - 0.05;
+      const yMax = Math.max(1, ...outputs) + 0.05;
+      const toX = (p: number) => left + p * (right - left);
+      const toY = (v: number) =>
+        bottom - ((v - yMin) / (yMax - yMin)) * (bottom - top);
+
+      ctx.font = "500 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+
+      // 0 and 1 guides
+      ctx.strokeStyle = muted;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      for (const v of [0, 1]) {
+        ctx.moveTo(left, toY(v));
+        ctx.lineTo(right, toY(v));
+      }
+      ctx.stroke();
+
+      // Each stop's input on the time axis
+      ctx.beginPath();
+      for (const { input, output } of stops) {
+        ctx.moveTo(toX(input), toY(output));
+        ctx.lineTo(toX(input), bottom);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = muted;
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText("0", left - 8, toY(0));
+      ctx.fillText("1", left - 8, toY(1));
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (const { input } of stops) {
+        ctx.fillText(`${Math.round(input * 100)}%`, toX(input), bottom + 8);
+      }
+
+      // Straight lines between the stops
+      ctx.strokeStyle = primary;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      stops.forEach(({ input, output }, i) => {
+        if (i === 0) ctx.moveTo(toX(input), toY(output));
+        else ctx.lineTo(toX(input), toY(output));
+      });
+      ctx.stroke();
+
+      ctx.fillStyle = primary;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      for (const { input, output } of stops) {
+        ctx.beginPath();
+        ctx.arc(toX(input), toY(output), 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Playback position
+      const phase = clock % (LINEAR_GRAPH_DURATION + LINEAR_GRAPH_HOLD);
+      const p = Math.min(phase / LINEAR_GRAPH_DURATION, 1);
+      const value = evaluateCssLinear(stops, p);
+      ctx.beginPath();
+      ctx.arc(toX(p), toY(value), 5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      // Track preview
+      const trackY = height - 26;
+      const trackEnd = left + (right - left) / (yMax - 0.05);
+      ctx.strokeStyle = muted;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(left, trackY);
+      ctx.lineTo(right, trackY);
+      for (const x of [left, trackEnd]) {
+        ctx.moveTo(x, trackY - 8);
+        ctx.lineTo(x, trackY + 8);
+      }
+      ctx.stroke();
+      ctx.fillStyle = muted;
+      ctx.textBaseline = "bottom";
+      ctx.textAlign = "center";
+      ctx.fillText("from", left, trackY - 10);
+      ctx.fillText("to", trackEnd, trackY - 10);
+      ctx.fillStyle = primary;
+      ctx.fillRect(left + value * (trackEnd - left) - 7, trackY - 7, 14, 14);
+
+      ctx.fillStyle = muted;
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
+      ctx.fillText(`progress = ${value.toFixed(2)}`, right, 10);
+    };
+
+    const tick = (time: number) => {
+      raf = 0;
+      if (!running || !visible) return;
+      if (lastTime) clock += Math.min((time - lastTime) / 1000, 0.1);
+      lastTime = time;
+      draw();
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const startLoop = () => {
+      if (!running || !visible || raf) return;
+      lastTime = 0;
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const stopLoop = () => {
+      if (!raf) return;
+      window.cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
+      dpr = size.w / Math.max(canvas.clientWidth, 1);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      const styles = getComputedStyle(canvas);
+      color = styles.color || color;
+      primary = styles.getPropertyValue("--primary").trim() || primary;
+      muted = styles.getPropertyValue("--muted-foreground").trim() || muted;
+      draw();
+    });
+
+    const disconnectVisibility = observeElementVisible(canvas, (isVisible) => {
+      visible = isVisible;
+      if (visible) {
+        startLoop();
+        return;
+      }
+      stopLoop();
+    });
+
+    return () => {
+      running = false;
+      stopLoop();
+      disconnectVisibility();
+      disconnectResize();
+    };
+  }, [stops]);
+
+  return (
+    <div
+      className={cn(
+        "relative mt-6 w-full overflow-hidden border border-border bg-background text-foreground",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-3">
+        <CVSubHeading className="uppercase text-muted-foreground">
+          CSS linear()
+        </CVSubHeading>
+      </div>
+      <div className="relative aspect-2/1 w-full">
+        <canvas
+          ref={canvasRef}
+          aria-label={`Graph of the CSS timing function ${func}, with straight lines between its stops`}
+          className="h-full w-full"
+          style={CANVAS_STYLE}
+        />
+      </div>
+      <div className="border-t border-border px-3 py-2 font-mono text-[11px] break-all text-muted-foreground">
         <span className="text-foreground">transition-timing-function:</span>{" "}
-        {`${css};`}
+        {`${func};`}
       </div>
     </div>
   );
