@@ -1,0 +1,480 @@
+---
+title: The nature of the code - Particle Systems
+date: "2026-10-06 22:37"
+description: 4.0 Particle Systems - The nature of code by Daniel Shiffman
+tags: The nature of code
+---
+
+import { ColorsAndShapes, FireParticleSystem, Particle, ParticleSystem, ParticleSystemWithOrigin, ParticlesInArray, ShootingUpFromTheBottom, WindAndLift } from "@/components/blog/the-nature-of-code/particle-systems"
+
+## Particle System
+
+Particle systems are a way to manage a large number of independent objects called particles, often with simple shapes.
+
+Particle systems are responsible for
+1. Creating new particles
+2. Updating the particles' location
+4. Drawing the particles
+3. Removing particles when they are no longer needed
+
+## Particle
+
+We need to define a Particle class.
+Particle class needs to solve the following problems:
+
+1. Where is the particle?
+2. Where does the particles moving to?
+3. How does the particle look like?
+4. Is the particle alive or dead?
+
+```javascript
+class Particle {
+    constructor(x, y) {
+        // Drift in a random direction
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = 0.3;
+
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed);
+        this.acceleration = new Vector2D(0, 0);
+        this.lifetime = 255;
+    }
+
+    update() {
+        this.velocity.add(this.acceleration);
+        this.position.add(this.velocity);
+        this.lifetime--;
+    }
+
+    show() {
+        // Fade out as the lifetime runs down
+        ctx.globalAlpha = Math.max(this.lifetime, 0) / 255;
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.closePath();
+        ctx.globalAlpha = 1;
+    }
+
+    isDead() {
+        // This time we are using a simple lifetime counter to determine if the particle is dead.
+        return this.lifetime < 0;
+    }
+}
+
+let particle = new Particle(canvas.width / 2, canvas.height / 2);
+
+function run() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (particle === null)  {
+        return;
+    }
+
+    particle.update();
+    particle.show();
+
+    if (particle.isDead()) {
+        particle = null;
+    }
+
+    window.requestAnimationFrame(run);
+}
+
+run();
+
+```
+
+<Particle />
+
+## Let's put them into a collection
+
+For multiple particles, we need to store them in a collection.
+We can use an array to store the particles.
+
+```javascript
+let particles = [];
+
+function addParticle(x, y) {
+    particles.push(new Particle(x, y));
+}
+
+function update() {
+    // A new particle every frame
+    addParticle(canvas.width / 2, canvas.height / 2);
+
+    for (let particle of particles) {
+        particle.update();
+    }
+    particles = particles.filter(particle => !particle.isDead());
+}
+
+function show() {
+    for (let particle of particles) {
+        particle.show();
+    }
+}
+
+function run() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    update();
+    show();
+
+    window.requestAnimationFrame(run);
+}
+
+run();
+```
+
+<ParticlesInArray />
+
+## Particle Systems
+
+Looking at the code above, we can see that these functions are solving the responsibilities of a particle system.
+
+Again, Particle systems are responsible for
+1. Creating new particles - addParticles(x, y)
+2. Updating the particles - update() with a loop containing particle.update();
+4. Drawing the particles - show()
+3. Removing particles when they are no longer needed - update() with particles.filter()
+
+We can create a ParticleSystem class to encapsulate these functions.
+```javascript
+class ParticleSystem {
+    constructor() {
+        this.particles = [];
+    }
+
+    // Creating a new particle
+    addParticle(x, y) {
+        this.particles.push(new Particle(x, y));
+    }
+
+    // Updating the particles
+    update() {
+        for (let particle of this.particles) {
+            // Updating the particles' location
+            particle.update();
+        }
+
+        // Removing particles when they are no longer needed
+        this.particles = this.particles.filter(particle => !particle.isDead());
+    }
+
+    // Drawing the particles
+    show() {
+        for (let particle of this.particles) {
+            particle.show();
+        }
+    }
+}
+
+let particleSystem = new ParticleSystem();
+
+function run() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particleSystem.addParticle(canvas.width / 2, canvas.height / 2);
+    particleSystem.update();
+    particleSystem.show();
+
+    window.requestAnimationFrame(run);
+}
+
+run();
+```
+
+<ParticleSystem />
+
+We can also pass in the position of the particle system to use as the origin of the particles.
+
+```javascript
+class ParticleSystem {
+    constructor(x, y) {
+        this.particles = [];
+        this.origin = new Vector2D(x, y);
+    }
+    
+    addParticle() {
+        this.particles.push(new Particle(this.origin.x, this.origin.y));
+    }
+    
+    update() {
+        for (let particle of this.particles) {
+            particle.update();
+        }
+    }
+    
+    show() {
+        for (let particle of this.particles) {
+            particle.show();
+        }
+    }
+}
+
+let particleSystems = [];
+
+function run() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let particleSystem of particleSystems) {
+        particleSystem.update();
+        particleSystem.show();
+    }
+
+    window.requestAnimationFrame(run);
+}
+
+run();
+
+window.addEventListener("click", () => {
+    particleSystems.push(new ParticleSystem(mouseX, mouseY));
+});
+```
+
+<ParticleSystemWithOrigin />
+
+## Let there be fire!
+
+We can apply different forces to the particles to create different visual effects.
+
+Let's try to create a fire effects by applying a force to the particles.
+
+### Applying forces
+
+We can apply a force to the particle to change its acceleration.
+
+```javascript
+class Particle {
+    // ... other code ...
+    
+    applyForce(force) {
+        this.acceleration.add(force);
+    }
+
+    // ... other code ...
+}
+```
+
+Let's have a moment to think about the fires.
+
+Fire starts from a single spot and spreads out and goes up.
+Sometimes wind blows the fire into certain direction.
+
+What forces are action on the fire?
+
+The fire is affected by the following forces:
+1. Wind - blows the fire around
+2. Hot air - rises up
+
+Let's apply the wind force to the fire.
+
+```javascript
+class ParticleSystem {
+    constructor(x, y) {
+        this.particles = [];
+        this.origin = new Vector2D(x, y);
+        this.wind = new Vector2D(0.01, 0);
+        this.lift = new Vector2D(0, -0.05);
+    }
+
+    // ... other code ...
+
+    update() {
+        for (let particle of this.particles) {
+            particle.applyForce(this.wind);
+            particle.applyForce(this.lift);
+            particle.update();
+        }
+    }
+
+    // ... other code ...
+}
+```
+
+<WindAndLift />
+
+### Applying right colors and shapes
+
+The core of the fire looks lot more like yellow, then as it goes away it looks more like red.
+As it cools down, it also shrinks and becomes more transparent until it disappears.
+
+In the draw function, we can use the lifetime to change the color of the particle.
+
+```javascript
+class Particle {
+    constructor(x, y) {
+        // ... other code ...
+        this.lifetime = 64;
+    }
+
+    // ... other code ...
+    
+    show() {
+        const life = Math.max(this.lifetime, 0) / 64; // 1 → 0
+        ctx.globalAlpha = life * 0.8;
+        ctx.fillStyle = `hsl(${55 * life}, 100%, ${45 + 15 * life}%)`;
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, life * 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        ctx.globalAlpha = 1;
+    }
+}
+```
+
+<ColorsAndShapes />
+
+### Shooting outwards from the bottom
+
+The fire starts from the bottom with high velocity upwards, and could fire outwards.
+
+```javascript
+class ParticleSystem {
+    constructor(x, y) {
+        this.particles = [];
+        this.origin = new Vector2D(x, y);
+        // ... other properties ...
+    }
+
+    addParticle() {
+        const particle = new Particle(this.origin.x, this.origin.y);
+        particle.velocity.set(
+            (Math.random() - 0.5) * 2, // -1 to 1, sideways
+            -Math.random() * 2,        // -2 to 0, upwards
+        );
+        this.particles.push(particle);
+    }
+
+    // ... other code ...
+}
+```
+
+
+<ShootingUpFromTheBottom />
+
+### Spawning fire
+
+We can create new instance of the `ParticleSystem` to spawn fire.
+Let's attach to the event `click` to light a fire.
+
+```javascript
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
+
+class Particle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.lifetime = 64;
+    }
+
+    applyForce(force) {
+        this.acceleration.add(force);
+    }
+
+    update() {
+        this.velocity.add(this.acceleration);
+        this.position.add(this.velocity);
+        this.acceleration.set(0, 0); // forces only last for one frame
+        this.lifetime--;
+    }
+
+    show() {
+        const life = Math.max(this.lifetime, 0) / 64; // 1 → 0
+        ctx.globalAlpha = life * 0.8;
+        ctx.fillStyle = `hsl(${55 * life}, 100%, ${45 + 15 * life}%)`;
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, life * 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        ctx.globalAlpha = 1;
+    }
+
+    isDead() {
+        return this.lifetime < 0;
+    }
+}
+
+class ParticleSystem {
+    constructor(x, y) {
+        this.particles = [];
+        this.origin = new Vector2D(x, y);
+        this.wind = new Vector2D(0, 0);
+        this.lift = new Vector2D(0, -0.05);
+    }
+
+    addParticle() {
+        const particle = new Particle(this.origin.x, this.origin.y);
+        particle.velocity.set(
+            (Math.random() - 0.5) * 2, // -1 to 1, sideways
+            -Math.random() * 2,        // -2 to 0, upwards
+        );
+        this.particles.push(particle);
+    }
+
+    update() {
+        for (let particle of this.particles) {
+            particle.applyForce(this.wind);
+            particle.applyForce(this.lift);
+            particle.update();
+        }
+        this.particles = this.particles.filter(particle => !particle.isDead());
+    }
+
+    show() {
+        for (let particle of this.particles) {
+            particle.show();
+        }
+    }
+}
+
+let particleSystems = [];
+let wind = 0;
+
+// Click to light a fire at the pointer
+canvas.addEventListener("click", (event) => {
+    const rect = canvas.getBoundingClientRect();
+    particleSystems.push(
+        new ParticleSystem(event.clientX - rect.left, event.clientY - rect.top),
+    );
+});
+
+// Pointer on the left blows left, on the right blows right: -0.03 to 0.03
+canvas.addEventListener("pointermove", (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width; // 0 to 1
+    wind = (x - 0.5) * 2 * 0.03;
+});
+
+canvas.addEventListener("pointerleave", () => {
+    wind = 0;
+});
+
+function run() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let particleSystem of particleSystems) {
+        particleSystem.wind.set(wind, 0);
+        particleSystem.addParticle();
+        particleSystem.update();
+        particleSystem.show();
+    }
+
+    window.requestAnimationFrame(run);
+}
+
+run();
+```
+
+Click to light a fire, and move the pointer left and right to blow it around.
+
+<FireParticleSystem />
+
+## Summary
+
+Particle system are an easy way to control and interact with a large number of individual objects.
+It determines how to create new particles, update their location, draw them, and remove them when they are no longer needed.
