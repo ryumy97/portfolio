@@ -1341,3 +1341,279 @@ function WindAndLiftSketch({
     </div>
   );
 }
+
+const CONFETTI_SIZE = 10;
+const CONFETTI_WIND_RANGE = 0.01;
+const CONFETTI_GRAVITY = 0.01;
+/** Frames at the end of a confetti's life spent fading out, so it doesn't pop out of existence. */
+const CONFETTI_FADE_FRAMES = 40;
+
+/** Matches the ConfettiParticle class in the polymorphism post: a particle that spins as it moves. */
+export class ConfettiParticle extends ParticleBody {
+  angle = Math.random() * 2 * Math.PI;
+  angularVelocity = Math.random() * 0.1 - 0.05;
+  color = `hsl(${Math.floor(Math.random() * 360)}, 80%, 60%)`;
+
+  update() {
+    super.update();
+    this.angle += this.angularVelocity;
+  }
+
+  protected shape(ctx: CanvasRenderingContext2D) {
+    ctx.rect(
+      -CONFETTI_SIZE / 2,
+      -CONFETTI_SIZE / 2,
+      CONFETTI_SIZE,
+      CONFETTI_SIZE,
+    );
+  }
+
+  showConfetti(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(
+      Math.max(this.lifetime, 0) / CONFETTI_FADE_FRAMES,
+      1,
+    );
+    ctx.translate(this.position.x, this.position.y);
+    ctx.rotate(this.angle);
+    ctx.beginPath();
+    this.shape(ctx);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+export class CircleConfettiParticle extends ConfettiParticle {
+  protected shape(ctx: CanvasRenderingContext2D) {
+    ctx.arc(0, 0, CONFETTI_SIZE / 2, 0, Math.PI * 2);
+  }
+}
+
+export class SquareConfettiParticle extends ConfettiParticle {}
+
+export class TriangleConfettiParticle extends ConfettiParticle {
+  protected shape(ctx: CanvasRenderingContext2D) {
+    const r = CONFETTI_SIZE / 2;
+    ctx.moveTo(0, -r);
+    ctx.lineTo(r, r);
+    ctx.lineTo(-r, r);
+    ctx.closePath();
+  }
+}
+
+/** Matches the ConfettiSystem class in the polymorphism post: it only knows its particles are ConfettiParticles. */
+export class ConfettiSystemBody {
+  particles: ConfettiParticle[] = [];
+  origin: Vector2D;
+  /** In the post's units, before scaling to the canvas: -0.005 to 0.005. */
+  windX = Math.random() * CONFETTI_WIND_RANGE - CONFETTI_WIND_RANGE / 2;
+  wind = new Vector2D(this.windX, 0);
+  gravity = new Vector2D(0, CONFETTI_GRAVITY);
+
+  constructor(width: number) {
+    this.origin = new Vector2D(width / 2, 0);
+  }
+
+  addParticle(particle: ConfettiParticle) {
+    this.particles.push(particle);
+  }
+
+  update() {
+    for (const particle of this.particles) {
+      particle.applyForce(this.wind);
+      particle.applyForce(this.gravity);
+      particle.update();
+    }
+    this.particles = this.particles.filter((particle) => !particle.isDead());
+  }
+
+  show(ctx: CanvasRenderingContext2D) {
+    for (const particle of this.particles) {
+      particle.showConfetti(ctx);
+    }
+  }
+
+  isDead() {
+    return this.particles.length === 0;
+  }
+}
+
+function createRandomConfettiParticle(x: number, y: number, scale: number) {
+  const pick = Math.random() * 3;
+  const particle =
+    pick < 1
+      ? new CircleConfettiParticle(x, y)
+      : pick < 2
+        ? new SquareConfettiParticle(x, y)
+        : new TriangleConfettiParticle(x, y);
+  particle.velocity.set(
+    (Math.random() - 0.5) * 2 * scale, // -1 to 1, sideways
+    Math.random() * scale, // 0 to 1, downwards
+  );
+  return particle;
+}
+
+/** One ConfettiSystem filled with circle, square and triangle confetti, all drawn through the same show() call. */
+export function ConfettiSystem({ className }: { className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const resetRef = useRef(() => {});
+  const playingRef = useRef(true);
+  const [playing, setPlaying] = useState(true);
+  playingRef.current = playing;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let color = "#1e1e1e";
+    let muted = "#9a9a9a";
+    let raf = 0;
+    let running = true;
+    let visible = false;
+    let confettiSystem = new ConfettiSystemBody(0);
+
+    const draw = () => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      if (width <= 0 || height <= 0) return;
+
+      confettiSystem.show(ctx);
+
+      ctx.font = "500 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = color;
+      ctx.fillText(
+        `confettiSystem.particles.length = ${confettiSystem.particles.length}`,
+        12,
+        12,
+      );
+      ctx.fillStyle = muted;
+      ctx.fillText(`wind = (${confettiSystem.windX.toFixed(4)}, 0)`, 12, 28);
+    };
+
+    const update = () => {
+      const speed = (Math.min(width, height) * 0.35) / PARTICLE_LIFETIME;
+      const scale = speed / POST_PARTICLE_SPEED;
+      confettiSystem.origin.set(width / 2, 0);
+      confettiSystem.wind.set(confettiSystem.windX * scale, 0);
+      confettiSystem.gravity.set(0, CONFETTI_GRAVITY * scale);
+      const { origin } = confettiSystem;
+      confettiSystem.addParticle(
+        createRandomConfettiParticle(origin.x, origin.y, scale),
+      );
+      confettiSystem.update();
+    };
+
+    const reset = () => {
+      confettiSystem = new ConfettiSystemBody(width);
+      draw();
+    };
+
+    resetRef.current = reset;
+
+    const tick = () => {
+      raf = 0;
+      if (!running || !visible) return;
+      if (playingRef.current) {
+        update();
+        draw();
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const startLoop = () => {
+      if (!running || !visible || raf) return;
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const stopLoop = () => {
+      if (!raf) return;
+      window.cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
+      dpr = size.w / Math.max(canvas.clientWidth, 1);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      const styles = getComputedStyle(canvas);
+      color = styles.color || color;
+      muted = styles.getPropertyValue("--muted-foreground").trim() || muted;
+      draw();
+    });
+
+    const disconnectVisibility = observeElementVisible(canvas, (isVisible) => {
+      visible = isVisible;
+      if (visible) {
+        startLoop();
+        return;
+      }
+      stopLoop();
+    });
+
+    return () => {
+      running = false;
+      stopLoop();
+      disconnectVisibility();
+      disconnectResize();
+      resetRef.current = () => {};
+    };
+  }, []);
+
+  return (
+    <div
+      className={cn(
+        "relative mt-6 w-full overflow-hidden border border-border bg-background text-foreground",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-3">
+        <CVSubHeading className="uppercase text-muted-foreground">
+          Confetti system
+        </CVSubHeading>
+        <div className="flex items-center gap-2">
+          <PointerEventHandler asChild type="hide">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-background"
+              aria-label={`${playing ? "Stop" : "Play"} confetti system sketch`}
+              onClick={() => setPlaying((current) => !current)}
+            >
+              {playing ? <Square /> : <Play />}
+            </Button>
+          </PointerEventHandler>
+          <PointerEventHandler asChild type="hide">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-background"
+              aria-label="Reset confetti system sketch"
+              onClick={() => resetRef.current()}
+            >
+              <RotateCcw />
+            </Button>
+          </PointerEventHandler>
+        </div>
+      </div>
+      <div className="relative aspect-2/1 w-full">
+        <canvas
+          ref={canvasRef}
+          aria-label="Spinning circle, square and triangle confetti bursting from the top center and falling with gravity and a light random wind"
+          className="h-full w-full"
+          style={CANVAS_STYLE}
+        />
+      </div>
+    </div>
+  );
+}

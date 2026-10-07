@@ -1,0 +1,307 @@
+---
+title: The nature of the code - Particle Systems | Polymorphism
+date: "2026-10-07 01:30"
+description: 4.0 Particle Systems | Polymorphism - The nature of code by Daniel Shiffman
+tags: The nature of code
+---
+
+import { ConfettiSystem } from "@/components/blog/the-nature-of-code/particle-systems"
+
+# Inheritance and Polymorphism
+
+From previous post, we have looked at a simple particle and how to modify to make it more interesting.
+This post will look at how to clean and organize the code to make it more maintainable and extendable 
+by using Object Oriented Programming (OOP) principles - Inheritance and Polymorphism.
+
+## Fire particle
+
+Looking back at the particle class that we created for the fire effect, 
+we can see that it is following the responsibility of a particle described below:
+
+1. Where is the particle?
+2. Where does the particles moving to?
+3. How does the particle look like?
+4. Is the particle alive or dead?
+
+The simple particle class that we created at first looks like this:
+```javascript
+class Particle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.lifetime = 255;
+    }
+
+    update() {
+        this.velocity.add(this.acceleration);
+        this.position.add(this.velocity);
+        this.acceleration.set(0, 0); // forces only last for one frame
+        this.lifetime--;
+    }
+
+    show() {
+        // Drawing red circle
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    isDead() {
+        return this.lifetime < 0;
+    }
+}
+```
+
+The fire particle class that we created looks like this:
+```javascript
+class FireParticle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.lifetime = 64; // shorter lifetime for fire particles
+    }
+
+    applyForce(force) {
+        this.acceleration.add(force);
+    }
+
+    update() {
+        this.velocity.add(this.acceleration);
+        this.position.add(this.velocity);
+        this.acceleration.set(0, 0); // forces only last for one frame
+        this.lifetime--;
+    }
+
+    show() {
+        const life = Math.max(this.lifetime, 0) / 64; // 1 → 0
+        ctx.globalAlpha = life * 0.8;
+        ctx.fillStyle = `hsl(${55 * life}, 100%, ${45 + 15 * life}%)`;
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, life * 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        ctx.globalAlpha = 1;
+    }
+
+    isDead() {
+        return this.lifetime < 0;
+    }
+}
+```
+
+You can see that there are some common code between the two particle classes, 
+and FireParticle class that used in the fire system a one of a way to solve the responsibility of a particle.
+
+We can reduce the duplications by using inheritance.
+
+## Inheritance
+
+Inheritance is a relationship between a parent class and a child class.
+The child class inherits the properties and methods of the parent class.
+
+Particle class has properties like position, velocity, and acceleration to store the locomotion of a particle.
+also has methods like update, show, and isDead to solve the responsibility of a particle.
+
+These are the common properties and methods that all particles should have to solve the responsibility of a particle.
+
+In javascript, we can use the `extends` keyword to inherit the properties and methods of the parent class.
+
+Since Particle would be more broader term than FireParticle, 
+we can make Particle as the parent class and FireParticle as the child class.
+
+```javascript
+class FireParticle extends Particle {
+    constructor(x, y) {
+        super(x, y);
+        this.lifetime = 64;
+    }
+
+    applyForce(force) {
+        this.acceleration.add(force);
+    }
+
+    update() {
+        super.update();
+    }
+
+    show() {
+        const life = Math.max(this.lifetime, 0) / 64; // 1 → 0
+        ctx.globalAlpha = life * 0.8;
+        ctx.fillStyle = `hsl(${55 * life}, 100%, ${45 + 15 * life}%)`;
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, life * 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        ctx.globalAlpha = 1;
+    }
+}
+```
+
+`super` keyword is used to call the parent class's constructor and methods.
+
+This change brings:
+1. FireParticle inherits the properties and methods of Particle 
+2. FireParticle have its own properties and methods that are specific to fire particles. e.g. applyForce method
+3. FireParticle have overridden the methods to make it more specific to fire particles while maintaining the responsibility of a particle.
+
+The most benefit of this change is that while being able to modify the behaviour of a particle,
+the generic concept of how particle should work is kept and reused.
+
+## Polymorphism
+
+Polymorphism is a concept that allows us to treat objects of different classes as if they were of the same class.
+
+For this example, let's create multiple confetti particle classes that inherits the properties and methods of Particle.
+
+```javascript
+class ConfettiParticle extends Particle {
+    constructor(x, y) {
+        super(x, y);
+        this.angle = Math.random() * 2 * Math.PI;
+        this.angularVelocity = Math.random() * 0.1 - 0.05;
+        this.color = `hsl(${Math.floor(Math.random() * 360)}, 80%, 60%)`; // random hue
+    }
+
+    // We can actually define the applyForce method in the parent class to make it more generic
+    applyForce(force) {
+        this.acceleration.add(force);
+    }
+
+    update() {
+        super.update();
+        this.angle += this.angularVelocity;
+    }
+
+    show() {
+        // Nothing to show
+    }
+}
+
+class CircleConfettiParticle extends ConfettiParticle {
+    constructor(x, y) {
+        super(x, y);
+    }
+
+    show() {
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+        ctx.restore();
+    }
+}
+
+class SquareConfettiParticle extends ConfettiParticle {
+    constructor(x, y) {
+        super(x, y);
+    }
+
+    show() {
+        ctx.save();
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.rect(-5, -5, 10, 10);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+class TriangleConfettiParticle extends ConfettiParticle {
+    constructor(x, y) {
+        super(x, y);
+    }
+
+    show() {
+        ctx.save();
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.moveTo(0, -5);
+        ctx.lineTo(5, 5);
+        ctx.lineTo(-5, 5);
+        ctx.closePath();
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+```
+
+Now we can create a confetti system that uses multiple confetti particle classes.
+
+```javascript
+class ConfettiSystem {
+    constructor() {
+        this.particles = [];
+        this.origin = new Vector2D(canvas.width / 2, 0);
+        this.wind = new Vector2D(Math.random() * 0.01 - 0.005, 0);
+        this.gravity = new Vector2D(0, 0.01);
+    }
+
+    addParticle() {
+        let particle;
+        if (Math.random() > 0.5) {
+            particle = new CircleConfettiParticle(this.origin.x, this.origin.y);
+        } else if (Math.random() > 0.5) {
+            particle = new SquareConfettiParticle(this.origin.x, this.origin.y);
+        } else {
+            particle = new TriangleConfettiParticle(this.origin.x, this.origin.y);
+        }
+        this.particles.push(particle);
+    }
+
+    update() {
+        for (let particle of this.particles) {
+            particle.applyForce(this.wind);
+            particle.applyForce(this.gravity);
+            particle.update();
+        }
+
+        this.particles = this.particles.filter(particle => !particle.isDead());
+    }
+    
+    show() {
+        for (let particle of this.particles) {
+            particle.show();
+        }
+    }
+}
+
+let confettiSystem = new ConfettiSystem();
+
+function run() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confettiSystem.addParticle();
+    confettiSystem.update();
+    confettiSystem.show();
+    window.requestAnimationFrame(run);
+}
+
+run();
+```
+
+<ConfettiSystem />
+
+Although, due to the nature of the javascript that it lacks the concept of types - which makes us to write the code without `this.particles` being an array specifically to store ConfettiParticle classes,
+we can think of CircleConfettiParticle, SquareConfettiParticle, TriangleConfettiParticle as ConfettiParticle classes 
+even though they have different shapes and behaviours when they are drawn.
+
+
+## Summary
+
+Polymorphism allows us to call the same method on different objects, and each responds in its own way.
+
+Since parent class (in this example, ConfettiParticle) has the common properties and methods of all child classes,
+we can call the same method on all child classes. But since each child class has its own implementation of the method,
+the response is different depending on the class.
+
+We have designed the Particle / ConfettiParticle classes by stating the core responsibility to solve as a Particle.
+Inheritance and Polymorphism helps us to keep the responsibility while being able to modify the behaviour - making the code more maintainable and extendable.
