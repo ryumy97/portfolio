@@ -1,0 +1,415 @@
+---
+title: The nature of the code - Autonomous Agents
+date: "2026-10-07 23:22"
+description: 6.0 Autonomous Agents - The nature of code by Daniel Shiffman
+tags: The nature of code
+---
+
+import { VehicleArriving, VehiclePsuedoRandomAhead, VehicleRandomSteering, VehicleSimple, VehicleWandering, VehicleWanderingAhead, VehicleWanderingWithinWalls } from "@/components/blog/the-nature-of-code/autonomous-agents"
+
+## Autonomous Agents
+
+The term autonomous agents refers to agents that are able to make decisions and actions based on their own environment and goals.
+
+There are three key components of autonomous agents that we'll want to keep in mind:
+
+- An autonomous agent has a limited ability to perceive environment.
+- An autonomous agent processes the information from its environment and calculates an action.
+- An autonomous agent has no leader.
+
+Think of a self-driving car. The car is able to make decisions and actions based on its own environment and goals.
+The car is able to perceive the environment around it, and make decisions based on the environment - and as a name self-driving car suggests, there is no external leading component that overrides the behaviour of the car.*
+
+<br/><i>*Some times there would be a leading component that overrides the behaviour of the car, but in this study, we will focus on the autonomous agent itself and how it makes decisions and actions based on its own environment and goals.*</i>
+<br/>
+<br/>
+
+Here the actions in this study will be <i>forces</i> - applying forces to it's own position, or exserting forces to other objects.
+
+
+## Vehicles and steering
+
+In the late 1980s, computer scientist Craig Reynolds developed algorithmic steering behaviors for animated characters.
+These behaviors allowed individual elements to navigate their digital environments in a "lifelike" manner with strategies for different scenarios.
+In his paper "Steering Behaviours for Autonomous Characters" (1999), Reynolds uses the word "vehicle" to describe his autonomous agents.
+
+He describes the motion of this idealized `vehicles` as a series of three layers:
+1. **Action Selection** - A vehicle has a goal (or goals) an can select an action (or actions) to achieve the goal.
+    <br/><br/>
+    This <i>selection</i> requires the vehicle to take information from its environment and make a decision based on the information.
+    <br/><br/>
+2. **Steering** - The vehicle has to calculate its next move (or moves) to achieve the action.
+    <br/><br/>
+    For current study, this will be the calculation of forces to apply to the vehicle to achieve the action. Reynolds has developed a simple steering force formula: $F_{steer} = v_{desired} - v_{current}$
+    <br/><br/>
+3. **Locomotion** - The vehicle moves the body parts in order to achieve the action.
+    <br/><br/>
+    For current study, we will going to ignore this layer for now. Although the vehicle has wheels, and wheels is the body part that make the vehicle move, 
+    we will simply move the location of the vehicle based on the simple forces and physics applied to it.
+    <br/><br/>
+    <i>You will notice that this layer is not regularly present in the computer graphics and animation industry. 
+    Sometimes what matters are the final result of the locomotion, not the process of the locomotion.
+    For example, the robot in the game would have legs, but the legs are not the one that make the robot to sit, stand, walk, or run.
+    Instead, the legs are part of the robot's body that will animate depending on the action of the robot, while robot's location is calculated seperately.</i>
+    <br/><br/>
+
+
+### Vehicle class
+
+Let's begin with creating a `Vehicle` class. For now we will look at Steering logic first.
+
+The steering force formula describes the force applied to the vehicle should be desired velocity minus the current velocity.
+
+$$
+F_{steer} = v_{desired} - v_{current}
+$$
+
+Since we want to move the vehicle towards a target, we can describe the desired velocity as the position of the vehicle minus the position of the target, normallised then multiplied by the desired speed.
+
+```javascript
+class Vehicle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.speed = 4; // the desired speed of the vehicle towards the target
+        this.maxSpeed = 5; // the maximum speed of the vehicle
+        this.maxForce = 0.1; // how sharply the vehicle can turn
+        this.size = 6;
+    }
+
+    applyForce(force) {
+        this.acceleration.add(force);
+    }
+
+    seek(target) {
+        // Steering: F_steer = v_desired - v_current
+        const desired = Vector2D.sub(target, this.position);
+        desired.normalize();
+        desired.multiply(this.speed);
+
+        const steer = Vector2D.sub(desired, this.velocity);
+        steer.limit(this.maxForce);
+
+        this.applyForce(steer);
+    }
+
+    update() {
+        this.velocity.add(this.acceleration);
+        this.velocity.limit(this.maxSpeed);
+        this.position.add(this.velocity);
+        this.acceleration.set(0, 0);
+    }
+
+    show() {
+        const angle = Math.atan2(this.velocity.y, this.velocity.x);
+
+        ctx.save();
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(this.size * 2, 0);
+        ctx.lineTo(-this.size * 2, -this.size);
+        ctx.lineTo(-this.size * 2, this.size);
+        ctx.closePath();
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.restore();
+    }
+}
+```
+
+<VehicleSimple />
+
+### Arriving behavior
+
+Looking at the above example, most of the time the vehicle will be moving pass the target.
+Why would this happen?
+
+The autonomous agent going through the steering logic every frame, 
+which current seek model steers the vehicle towards the target with the constant desired speed.
+
+What we want it to do is to move fast when the vehicle is far from the target, and move slow when the vehicle is close to the target. 
+
+We can achieve this by multiplying the desired speed by the magnitude of the vector from the current position to the target by a factor of the distance to the target.
+
+```javascript
+class Vehicle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.maxSpeed = 5; // the maximum speed of the vehicle
+        this.maxForce = 0.1; // how sharply the vehicle can turn
+        this.size = 6;
+    }
+
+
+    seek(target) {
+        // Steering: F_steer = v_desired - v_current
+        const desired = Vector2D.sub(target, this.position);
+        const distance = desired.magnitude();
+        const distanceOfInterest = 100;
+
+        desired.normalize();
+
+        if (distance < distanceOfInterest) {
+            const factor = distance / distanceOfInterest;
+            desired.multiply(this.maxSpeed * factor);
+        } else {
+            desired.multiply(this.maxSpeed);
+        }
+
+        const steer = Vector2D.sub(desired, this.velocity);
+        steer.limit(this.maxForce);
+
+        this.applyForce(steer);
+    }
+
+    // ... other methods ...
+}
+
+```
+
+<VehicleArriving />
+
+### Wandering behavior
+
+Sometimes the vehicle will wander around the environment.
+
+Reynolds defines the desired velocity for his wandering behaviour as follows:
+<br/>
+<i>"Wandering is a type of random steering which has some long term order: the steering direction on one frame is related to the steering direction on the next frame. This produces more interesting motion than, for example ,simply generating a random steering direction each frame."</i>
+
+To see what Reynolds means, let's first try the simpler version: generating a random steering direction each frame.
+
+```javascript
+class Vehicle {
+    // ... other code ...
+
+    randomSteer() {
+        // A brand new random direction every frame, unrelated to the last one
+        const angle = Math.random() * 2 * Math.PI;
+        const steer = new Vector2D(Math.cos(angle), Math.sin(angle));
+        steer.multiply(this.maxForce);
+
+        this.applyForce(steer);
+    }
+}
+```
+
+<VehicleRandomSteering />
+
+Each frame's push is unrelated to the previous one, so over a few frames they mostly cancel each other out.
+Instead of turning, the vehicle just keeps sliding in whatever direction its velocity happens to drift towards - an almost straight.
+
+Instead, we can calculate the steering direction based on the next frame's steering direction.
+
+One way we can do this by calculating the steering direction based on the "next frame's" location of the vehicle.
+
+The next frame's location of the vehicle will be the current position plus the velocity.
+We can use this new position + the random direction of the vehicle to steer the vehicle towards be the target.
+
+```javascript
+class Vehicle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.maxSpeed = 5; // the maximum speed of the vehicle
+        this.maxForce = 0.1; // how sharply the vehicle can turn
+        this.size = 6;
+
+        this.wanderRadius = 25;    // how big the circle is
+    }
+
+    wander() {
+        const wanderTheta = Math.random() * 2 * Math.PI;
+
+        // The center of the circle, ahead of the vehicle
+        const circleCenter = this.velocity.copy();
+        circleCenter.add(this.position); // next frame's location of the vehicle
+
+        // The point on the circle, relative to the direction the vehicle is heading
+        const heading = Math.atan2(this.velocity.y, this.velocity.x);
+        const target = new Vector2D(
+            circleCenter.x + this.wanderRadius * Math.cos(wanderTheta + heading),
+            circleCenter.y + this.wanderRadius * Math.sin(wanderTheta + heading),
+        );
+
+        this.seek(target); // Apply the seek behavior to the vehicle
+    }
+}
+```
+
+<VehicleWandering />
+
+Now the vehicle is wandering around the environment, but it is very jiggly and slow.
+
+We can resolve this by making the random direction to be pseudo-random, meaning the direction is related to the previous direction.
+
+```javascript
+class Vehicle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.maxSpeed = 5; // the maximum speed of the vehicle
+        this.maxForce = 0.1; // how sharply the vehicle can turn
+        this.size = 6;
+
+        this.wanderTheta = 0; // the angle of the target on the wander circle
+        this.wanderRadius = 25;    // how big the circle is
+        this.minimumWanderDistance = 20; // the minimum distance from the vehicle to the circle center
+    }
+
+    wander() {
+        this.wanderTheta += Math.random() * 2 * Math.PI / 10 - Math.PI / 10;
+
+        // The center of the circle, ahead of the vehicle
+        const circleCenter = this.velocity.copy();
+        circleCenter.add(this.position); // next frame's location of the vehicle
+
+        // The point on the circle, relative to the direction the vehicle is heading
+        const heading = Math.atan2(this.velocity.y, this.velocity.x);
+        const target = new Vector2D(
+            circleCenter.x + this.wanderRadius * Math.cos(this.wanderTheta + heading),
+            circleCenter.y + this.wanderRadius * Math.sin(this.wanderTheta + heading),
+        );
+
+        this.seek(target); // Apply the seek behavior to the vehicle
+    }
+}
+```
+
+<VehiclePsuedoRandomAhead />
+
+Now it is much smoother and faster. However, one last issue is that the vehicle will get stuck in one position with direction changing randomly.
+
+We can resolve this by making the vehicle's target to be ahead of the vehicle at least a certain distance.
+
+```javascript
+class Vehicle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.maxSpeed = 5; // the maximum speed of the vehicle
+        this.maxForce = 0.1; // how sharply the vehicle can turn
+        this.size = 6;
+
+        this.wanderTheta = 0; // the angle of the target on the wander circle
+        this.wanderRadius = 25;    // how big the circle is
+        this.minimumWanderDistance = 25; // the minimum distance from the vehicle to the circle center
+    }
+
+    wander() {
+        this.wanderTheta += Math.random() * 2 * Math.PI / 10 - Math.PI / 10;
+
+        // The distance to the next position of the vehicle
+        let nextPositionDistance = this.velocity.magnitude();
+        // If the distance is less than the minimum distance, set it to the minimum distance
+        if (nextPositionDistance < this.minimumWanderDistance) {
+            nextPositionDistance = this.minimumWanderDistance;
+        }
+            // The center of the circle, ahead of the vehicle
+        const circleCenter = this.velocity.copy();
+        circleCenter.normalize();
+        circleCenter.multiply(nextPositionDistance);
+        circleCenter.add(this.position); // next frame's location of the vehicle
+
+        // The point on the circle, relative to the direction the vehicle is heading
+        const heading = Math.atan2(this.velocity.y, this.velocity.x);
+        const target = new Vector2D(
+            circleCenter.x + this.wanderRadius * Math.cos(this.wanderTheta + heading),
+            circleCenter.y + this.wanderRadius * Math.sin(this.wanderTheta + heading),
+        );
+
+        this.seek(target); // Apply the seek behavior to the vehicle
+    }
+}
+```
+
+<VehicleWanderingAhead />
+
+I want the wander to be with in the wall. We can achieve this by checking if the target is within the wall - if so the desired location to be the perpendicular direction of the wall.
+
+```javascript
+class Vehicle {
+    constructor(x, y) {
+        this.position = new Vector2D(x, y);
+        this.velocity = new Vector2D(0, 0);
+        this.acceleration = new Vector2D(0, 0);
+        this.maxSpeed = 5; // the maximum speed of the vehicle
+        this.maxForce = 0.1; // how sharply the vehicle can turn
+        this.size = 6;
+
+        this.wanderTheta = 0; // the angle of the target on the wander circle
+        this.wanderRadius = 25;    // how big the circle is
+        this.minimumWanderDistance = 25; // the minimum distance from the vehicle to the circle center
+
+        this.edgeSpace = 25;
+    }
+
+    wander(width, height) {
+        let desiredVelocityDueToEdge = null;
+        if (this.position.x < this.edgeSpace) {
+            desiredVelocityDueToEdge = new Vector2D(this.maxSpeed, this.velocity.y);
+        }
+        else if (this.position.x > width - this.edgeSpace) {
+            desiredVelocityDueToEdge = new Vector2D(-this.maxSpeed, this.velocity.y);
+        }
+        if (this.position.y < this.edgeSpace) {
+            desiredVelocityDueToEdge = new Vector2D(this.velocity.x, this.maxSpeed);
+        }
+        else if (this.position.y > height - this.edgeSpace) {
+            desiredVelocityDueToEdge = new Vector2D(this.velocity.x, -this.maxSpeed);
+        }
+
+        if (desiredVelocityDueToEdge) {
+            desiredVelocityDueToEdge.normalize();
+            desiredVelocityDueToEdge.multiply(this.maxSpeed);
+            const steer = Vector2D.sub(desiredVelocityDueToEdge, this.velocity);
+            steer.limit(0.5);
+            this.applyForce(steer);
+            return;
+        }
+
+        this.wanderTheta += Math.random() * 2 * Math.PI / 10 - Math.PI / 10;
+
+        // The distance to the next position of the vehicle
+        let nextPositionDistance = this.velocity.magnitude();
+        // If the distance is less than the minimum distance, set it to the minimum distance
+        if (nextPositionDistance < this.minimumWanderDistance) {
+            nextPositionDistance = this.minimumWanderDistance;
+        }
+            // The center of the circle, ahead of the vehicle
+        const circleCenter = this.velocity.copy();
+        circleCenter.normalize();
+        circleCenter.multiply(nextPositionDistance);
+        circleCenter.add(this.position); // next frame's location of the vehicle
+
+        // The point on the circle, relative to the direction the vehicle is heading
+        const heading = Math.atan2(this.velocity.y, this.velocity.x);
+        const target = new Vector2D(
+            circleCenter.x + this.wanderRadius * Math.cos(this.wanderTheta + heading),
+            circleCenter.y + this.wanderRadius * Math.sin(this.wanderTheta + heading),
+        );
+
+        this.seek(target); // Apply the seek behavior to the vehicle
+    }
+}
+```
+
+<VehicleWanderingWithinWalls />
+
+## Summary
+
+Using the steering force formula to smooth natural movement of the autonomous agent, we could achieve different behaviours.
+
+From this post we had looked at the following behaviours:
+- Arriving behavior
+- Wandering behavior
+
+From these behaviours, we could learn how the desired velocity could be calculated based on the environment and the goals of the vehicle. If we know what this autonomous agent wants to achieve, we could calculate the desired velocity, and thus, the steering force applied to the vehicle.
+

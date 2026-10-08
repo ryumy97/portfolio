@@ -203,6 +203,39 @@ class Vector2D {
 
 <VectorMath />
 
+### Vector2D class with static methods
+
+Static methods are methods that are called on the class itself, rather than on an instance of the class.
+
+```javascript
+class Vector2D {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+static add(a, b) {
+  return new Vector2D(a.x + b.x, a.y + b.y);
+}
+
+static subtract(a, b) {
+  return new Vector2D(a.x - b.x, a.y - b.y);
+}
+
+// ... more static methods ...
+```
+
+This allows us to write code in style like this:
+```javascript
+const vector1 = new Vector2D(1, 2);
+const vector2 = new Vector2D(3, 4);
+const result1 = vector1.add(vector2);
+const result2 = Vector2D.add(vector1, vector2);
+console.log(result1.x, result1.y); // 4, 6
+console.log(result2.x, result2.y); // 4, 6
+```
+
 ## Vectors in nature
 
 From previous examples, we can see that vectors are used to describe the location, velocity.
