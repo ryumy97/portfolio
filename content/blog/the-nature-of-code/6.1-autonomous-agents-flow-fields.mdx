@@ -1,0 +1,216 @@
+---
+title: The nature of the code - Autonomous Agents - Flow Fields
+date: "2026-10-09 18:18"
+description: 6.1 Autonomous Agents - Flow Fields - The nature of code by Daniel Shiffman
+tags: The nature of code
+---
+
+import { FlowFieldArrows, FlowFieldArrowsPerlin, FlowFieldArrowsRandom, FlowFieldArrowsTexture, FlowFieldArrowsTextureVideo, FlowFieldVehicle } from "@/components/blog/the-nature-of-code/autonomous-agents"
+
+## Flow Fields
+
+Flow field follwing is one of he Reynold's steering behaviours for autonomous agents.
+
+We can think of the flow field as a grid of vectors that represent the direction and strength of the flow at each point in the environment.
+
+```javascript
+class FlowField {
+    field = [];
+    cols, rows;
+    resolution;
+
+    constructor(width, height, resolution) {
+        this.resolution = resolution;
+        this.cols = width / this.resolution;
+        this.rows = height / this.resolution;
+        
+        for (let j = 0; j < this.rows; j++) {
+            for (let i = 0; i < this.cols; i++) {
+                this.field[j][i] = new Vector2D(1, 0);
+            }
+        }
+    }
+
+    lookup(lookup) {
+        const column = Math.floor(lookup.x / this.resolution);
+        const row = Math.floor(lookup.y / this.resolution);
+        return this.field[row][column];
+    }
+}
+```
+
+<FlowFieldArrows />
+
+Note that we don't need to create a new vector for each pixel in the canvas.
+Creating a grid of vectors with some size is much more efficient than creating a new vector for each pixel - while achieving the same/similar result.
+
+Let's see how we can use the flow field to steer the agent.
+
+```javascript
+class Vehicle {
+    // ... other code ...
+
+    follow(flowField) {
+        const desired = flowField.lookup(this.position);
+        desired.mult(maxSpeed);
+
+        const steer = Vector2D.sub(desired, this.velocity);
+        steer.limit(maxForce);
+        this.applyForce(steer);
+    }
+}
+```
+
+<FlowFieldVehicle />
+
+### Random Flow Field
+
+What if we put it random vectors in the grid?
+
+```javascript
+class FlowField {
+    field = [];
+    cols, rows;
+    resolution;
+
+    constructor(width, height, resolution) {
+        this.resolution = resolution;
+        this.cols = width / this.resolution;
+        this.rows = height / this.resolution;
+
+        for (let j = 0; j < this.rows; j++) {
+            for (let i = 0; i < this.cols; i++) {
+                this.field[j][i] = new Vector2D(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
+            }
+        }
+    }
+
+    // ... other code ...
+}
+```
+
+<FlowFieldArrowsRandom />
+
+How about 2D Perlin noise?
+
+```javascript
+const GRAD2 = [
+  [1, 1], [-1, 1], [1, -1], [-1, -1],
+  [1, 0], [-1, 0], [0, 1], [0, -1],
+];
+
+function lerp(a, b, t) {
+  return a + t * (b - a);
+}
+
+function fade(t) {
+  return 6 * t ** 5 - 15 * t ** 4 + 10 * t ** 3;
+}
+
+// Deterministic gradient pick from a lattice index
+function gradient(ix, iy) {
+  let n = (ix * 374761393 + iy * 668265263) | 0;
+  n = (n ^ (n >>> 13)) >>> 0;
+  return GRAD2[n & 7];
+}
+
+function noise2D(x, y) {
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const xf = x - x0;
+  const yf = y - y0;
+
+  const g00 = gradient(x0, y0);
+  const g10 = gradient(x0 + 1, y0);
+  const g01 = gradient(x0, y0 + 1);
+  const g11 = gradient(x0 + 1, y0 + 1);
+
+  // Dot product: gradient · distance from corner to (x, y)
+  const n00 = g00[0] * xf + g00[1] * yf;
+  const n10 = g10[0] * (xf - 1) + g10[1] * yf;
+  const n01 = g01[0] * xf + g01[1] * (yf - 1);
+  const n11 = g11[0] * (xf - 1) + g11[1] * (yf - 1);
+
+  const u = fade(xf);
+  const v = fade(yf);
+  const nx0 = lerp(n00, n10, u);
+  const nx1 = lerp(n01, n11, u);
+  const raw = lerp(nx0, nx1, v);
+
+  return (raw + 1) / 2; // map roughly [-1, 1] → [0, 1]
+}
+
+class FlowField {
+    field = [];
+    cols, rows;
+    resolution;
+
+    constructor(width, height, resolution) {
+        this.resolution = resolution;
+        this.cols = width / this.resolution;
+        this.rows = height / this.resolution;
+
+        for (let j = 0; j < this.rows; j++) {
+            for (let i = 0; i < this.cols; i++) {
+                const theta = perlinNoise(i * 0.1, j * 0.1) * Math.PI * 2;
+                this.field[j][i] = new Vector2D(Math.cos(theta), Math.sin(theta));
+            }
+        }
+    }
+
+    // ... other code ...
+}
+```
+
+<FlowFieldArrowsPerlin />
+
+### Using a image texture
+
+We can also create a flow field from the texture.
+
+Note that we are using the pixel data of the texture to create the flow field.
+Which means that since the texture itself is a 2D array of pixels, 
+we can use the x and y coordinates of the lookup vector to get the pixel data.
+
+```javascript
+class ImageFlowField {
+    constructor(texture) {
+        this.texture = texture;
+    }
+    
+    lookup(lookup) {
+        const x = lookup.x * this.texture.width;
+        const y = lookup.y * this.texture.height;
+        const index = (Math.floor(y) * this.texture.width + Math.floor(x)) * 4;
+        const r = this.texture.data[index];
+        const g = this.texture.data[index + 1];
+        const b = this.texture.data[index + 2];
+        const angle = (r + g + b) / 3 / 255 * Math.PI * 2;
+        return new Vector2D(Math.cos(angle), Math.sin(angle));
+    }
+}
+```
+
+![Here is the texture](/blog/studying-the-nature-of-code/flow-fields-noise.png)
+
+<FlowFieldArrowsTexture />
+
+### Changing flow field over time
+
+We can change the flow field over time by using a time variable.
+
+Imagine if the Image texture is a video, that updates the texture every frame - the pixel data that we look up will change over time.
+
+![Here is the video texture](/blog/studying-the-nature-of-code/flow-fields-perlin.mp4)
+
+<FlowFieldArrowsTextureVideo />
+
+## Summary
+
+We had look at behaviour called flow fields following.
+It is essentially a way to steer an agent based on the flow field.
+Flow field is defined as a grid of vectors that represent the direction and strength of the flow at each point in the environment.
+
+We learnt how to create a flow field from a random vector, a 2D Perlin noise, an image and a video texture.
+
+

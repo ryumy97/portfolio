@@ -816,3 +816,656 @@ function FreeVehicleSketch({
     </div>
   );
 }
+
+const FLOW_FIELD_RESOLUTION = 25;
+const FLOW_FIELD_NOISE_STEP = 0.1;
+
+type FlowFieldKind = "uniform" | "random" | "perlin" | "texture" | "video";
+
+const TEXTURE_ARROW_LENGTH = 40;
+const FLOW_FIELD_MAX_VEHICLES = 20;
+const FLOW_FIELD_VIDEO_SRC =
+  "/blog/studying-the-nature-of-code/flow-fields-perlin.mp4";
+const FLOW_FIELD_TEXTURE_SRC =
+  "/blog/studying-the-nature-of-code/flow-fields-noise.png";
+
+const GRAD2 = [
+  [1, 1],
+  [-1, 1],
+  [1, -1],
+  [-1, -1],
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+];
+
+function noiseLerp(a: number, b: number, t: number) {
+  return a + t * (b - a);
+}
+
+function noiseFade(t: number) {
+  return 6 * t ** 5 - 15 * t ** 4 + 10 * t ** 3;
+}
+
+/** Deterministic gradient pick from a lattice index. */
+function noiseGradient(ix: number, iy: number) {
+  let n = (ix * 374761393 + iy * 668265263) | 0;
+  n = (n ^ (n >>> 13)) >>> 0;
+  return GRAD2[n & 7];
+}
+
+/** Matches noise2D in the flow fields post: 2D gradient noise, roughly in [0, 1]. */
+function noise2D(x: number, y: number) {
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const xf = x - x0;
+  const yf = y - y0;
+
+  const g00 = noiseGradient(x0, y0);
+  const g10 = noiseGradient(x0 + 1, y0);
+  const g01 = noiseGradient(x0, y0 + 1);
+  const g11 = noiseGradient(x0 + 1, y0 + 1);
+
+  const n00 = g00[0] * xf + g00[1] * yf;
+  const n10 = g10[0] * (xf - 1) + g10[1] * yf;
+  const n01 = g01[0] * xf + g01[1] * (yf - 1);
+  const n11 = g11[0] * (xf - 1) + g11[1] * (yf - 1);
+
+  const u = noiseFade(xf);
+  const v = noiseFade(yf);
+  const nx0 = noiseLerp(n00, n10, u);
+  const nx1 = noiseLerp(n01, n11, u);
+  const raw = noiseLerp(nx0, nx1, v);
+
+  return (raw + 1) / 2;
+}
+
+/** Matches the ImageFlowField in the flow fields post: looks up a direction straight from the texture, with lookup.x and lookup.y from 0 to 1. */
+export class ImageFlowFieldBody {
+  texture: ImageData;
+
+  constructor(texture: ImageData) {
+    this.texture = texture;
+  }
+
+  lookup(lookup: Vector2D) {
+    const x = Math.min(
+      this.texture.width - 1,
+      Math.max(0, lookup.x * this.texture.width),
+    );
+    const y = Math.min(
+      this.texture.height - 1,
+      Math.max(0, lookup.y * this.texture.height),
+    );
+    const index = (Math.floor(y) * this.texture.width + Math.floor(x)) * 4;
+    const r = this.texture.data[index];
+    const g = this.texture.data[index + 1];
+    const b = this.texture.data[index + 2];
+    const angle = ((r + g + b) / 3 / 255) * Math.PI * 2;
+    return new Vector2D(Math.cos(angle), Math.sin(angle));
+  }
+}
+
+/** Matches the FlowFields in the flow fields post: a grid of vectors, one per resolution-sized cell. */
+export class FlowFieldBody {
+  field: Vector2D[][] = [];
+  cols: number;
+  rows: number;
+  resolution: number;
+
+  constructor(
+    width: number,
+    height: number,
+    resolution: number,
+    kind: FlowFieldKind = "uniform",
+    imageField: ImageFlowFieldBody | null = null,
+  ) {
+    this.resolution = resolution;
+    this.cols = Math.ceil(width / this.resolution);
+    this.rows = Math.ceil(height / this.resolution);
+
+    // noise2D always returns the same field, so each new field samples a different region of it
+    const noiseOffsetX = Math.floor(Math.random() * 1000);
+    const noiseOffsetY = Math.floor(Math.random() * 1000);
+
+    for (let j = 0; j < this.rows; j++) {
+      this.field[j] = [];
+      for (let i = 0; i < this.cols; i++) {
+        if (imageField) {
+          // Only for drawing: a sample of the image field at each cell's centre
+          this.field[j][i] = imageField.lookup(
+            new Vector2D(
+              ((i + 0.5) * this.resolution) / width,
+              ((j + 0.5) * this.resolution) / height,
+            ),
+          );
+        } else if (kind === "perlin") {
+          const theta =
+            noise2D(
+              noiseOffsetX + i * FLOW_FIELD_NOISE_STEP,
+              noiseOffsetY + j * FLOW_FIELD_NOISE_STEP,
+            ) *
+            Math.PI *
+            2;
+          this.field[j][i] = new Vector2D(Math.cos(theta), Math.sin(theta));
+        } else if (kind === "random") {
+          this.field[j][i] = new Vector2D(
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1,
+          ).normalize();
+        } else {
+          this.field[j][i] = new Vector2D(1, 0);
+        }
+      }
+    }
+  }
+
+  lookup(position: Vector2D) {
+    const column = Math.min(
+      this.cols - 1,
+      Math.max(0, Math.floor(position.x / this.resolution)),
+    );
+    const row = Math.min(
+      this.rows - 1,
+      Math.max(0, Math.floor(position.y / this.resolution)),
+    );
+    return this.field[row][column].copy();
+  }
+}
+
+/** Matches the flow field following Vehicle in the flow fields post. */
+export class FlowFieldVehicleBody extends VehicleBody {
+  follow(flowField: { lookup(position: Vector2D): Vector2D }) {
+    const desired = flowField.lookup(this.position);
+    desired.multiply(this.maxSpeed);
+
+    const steer = Vector2D.sub(desired, this.velocity);
+    steer.limit(this.maxForce);
+    this.applyForce(steer);
+  }
+}
+
+function drawArrow(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  vector: Vector2D,
+  length: number,
+) {
+  const angle = Math.atan2(vector.y, vector.x);
+  const head = length * 0.3;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(-length / 2, 0);
+  ctx.lineTo(length / 2, 0);
+  ctx.moveTo(length / 2 - head, -head * 0.6);
+  ctx.lineTo(length / 2, 0);
+  ctx.lineTo(length / 2 - head, head * 0.6);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** A flow field where every cell holds the same vector pointing right, drawn as a grid of arrows. */
+export function FlowFieldArrows({ className }: { className?: string }) {
+  return <FlowFieldSketch className={className} title="Flow field" />;
+}
+
+/** A vehicle following the flow field where every cell points right. */
+export function FlowFieldVehicle({ className }: { className?: string }) {
+  return (
+    <FlowFieldSketch
+      className={className}
+      title="Following a flow field"
+      vehicle
+    />
+  );
+}
+
+/** A vehicle following a flow field where every cell holds a random unit vector. */
+export function FlowFieldArrowsRandom({ className }: { className?: string }) {
+  return (
+    <FlowFieldSketch
+      className={className}
+      title="Random flow field"
+      kind="random"
+      vehicle
+    />
+  );
+}
+
+/** A vehicle following a flow field whose angles come from the brightness of a texture image. */
+export function FlowFieldArrowsTexture({ className }: { className?: string }) {
+  return (
+    <FlowFieldSketch
+      className={className}
+      title="Texture flow field"
+      kind="texture"
+      vehicle
+    />
+  );
+}
+
+/** Vehicles following a flow field read from a looping Perlin noise video, so the field changes every frame. */
+export function FlowFieldArrowsTextureVideo({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <FlowFieldSketch
+      className={className}
+      title="Video flow field"
+      kind="video"
+      vehicle
+    />
+  );
+}
+
+/** A vehicle following a flow field whose angles come from 2D Perlin noise, so neighbouring cells point in similar directions. */
+export function FlowFieldArrowsPerlin({ className }: { className?: string }) {
+  return (
+    <FlowFieldSketch
+      className={className}
+      title="Perlin noise flow field"
+      kind="perlin"
+      vehicle
+    />
+  );
+}
+
+const FLOW_FIELD_LABELS: Record<FlowFieldKind, string> = {
+  uniform:
+    "A grid of cells, each holding the same vector pointing right, drawn as arrows",
+  random:
+    "A grid of cells, each holding a random unit vector, drawn as arrows pointing in every direction",
+  perlin:
+    "A grid of cells whose vectors come from Perlin noise, drawn as arrows that turn smoothly from cell to cell",
+  texture:
+    "A streaky black and white texture stretched over the canvas, with an arrow at the vehicle showing the direction looked up from the brightness under it",
+  video:
+    "A looping video of drifting black and white Perlin noise stretched over the canvas, with an arrow at each vehicle showing the direction looked up from the current frame",
+};
+
+function FlowFieldSketch({
+  className,
+  title,
+  kind = "uniform",
+  vehicle: withVehicle = false,
+}: {
+  className?: string;
+  title: string;
+  kind?: FlowFieldKind;
+  vehicle?: boolean;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const resetRef = useRef(() => {});
+  const playingRef = useRef(true);
+  const [playing, setPlaying] = useState(true);
+  playingRef.current = playing;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let color = "#1e1e1e";
+    let primary = "#f75d5d";
+    let muted = "#9a9a9a";
+    let raf = 0;
+    let running = true;
+    let visible = false;
+    let flowField: FlowFieldBody | null = null;
+    // Each vehicle with its recent positions; null breaks the line where it wrapped around
+    let vehicles: { body: FlowFieldVehicleBody; trail: (Vector2D | null)[] }[] =
+      [];
+    const textured = kind === "texture" || kind === "video";
+    let textureImage: HTMLImageElement | HTMLVideoElement | null = null;
+    let video: HTMLVideoElement | null = null;
+    const offscreen = document.createElement("canvas");
+    const offscreenCtx = offscreen.getContext("2d", {
+      willReadFrequently: true,
+    });
+    let imageField: ImageFlowFieldBody | null = null;
+
+    const draw = () => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      if (width <= 0 || height <= 0 || !flowField) return;
+
+      const { resolution } = flowField;
+
+      if (textureImage) {
+        // Stretched over the whole canvas, as lookup maps 0 to 1 onto the full texture
+        ctx.globalAlpha = 0.35;
+        ctx.drawImage(textureImage, 0, 0, width, height);
+        ctx.globalAlpha = 1;
+      }
+
+      // The cells the vehicles are looking up; the image field has no cells
+      if (!imageField) {
+        ctx.fillStyle = muted;
+        ctx.globalAlpha = 0.2;
+        for (const { body } of vehicles) {
+          const column = Math.floor(body.position.x / resolution);
+          const row = Math.floor(body.position.y / resolution);
+          ctx.fillRect(
+            column * resolution,
+            row * resolution,
+            resolution,
+            resolution,
+          );
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // Cell grid; the image field has no cells
+      if (!imageField) {
+        ctx.strokeStyle = muted;
+        ctx.globalAlpha = 0.3;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 1; i < flowField.cols; i++) {
+          ctx.moveTo(i * resolution, 0);
+          ctx.lineTo(i * resolution, height);
+        }
+        for (let j = 1; j < flowField.rows; j++) {
+          ctx.moveTo(0, j * resolution);
+          ctx.lineTo(width, j * resolution);
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // One arrow per cell, at the cell's centre
+      ctx.strokeStyle = withVehicle ? muted : color;
+      ctx.lineWidth = 1;
+      if (!imageField) {
+        for (let j = 0; j < flowField.rows; j++) {
+          for (let i = 0; i < flowField.cols; i++) {
+            drawArrow(
+              ctx,
+              (i + 0.5) * resolution,
+              (j + 0.5) * resolution,
+              flowField.field[j][i],
+              resolution * 0.6,
+            );
+          }
+        }
+      }
+
+      for (const { body, trail } of vehicles) {
+        // The image field's direction at the vehicle, from its lookup
+        if (imageField) {
+          const { position } = body;
+          const direction = imageField.lookup(
+            new Vector2D(position.x / width, position.y / height),
+          );
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.5;
+          // drawArrow centres the arrow, so shift it forward to start at the vehicle
+          drawArrow(
+            ctx,
+            position.x + (direction.x * TEXTURE_ARROW_LENGTH) / 2,
+            position.y + (direction.y * TEXTURE_ARROW_LENGTH) / 2,
+            direction,
+            TEXTURE_ARROW_LENGTH,
+          );
+          ctx.lineWidth = 1;
+        }
+
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        let drawing = false;
+        for (const point of trail) {
+          if (!point) {
+            drawing = false;
+            continue;
+          }
+          if (drawing) ctx.lineTo(point.x, point.y);
+          else ctx.moveTo(point.x, point.y);
+          drawing = true;
+        }
+        ctx.stroke();
+
+        body.show(ctx, primary);
+      }
+    };
+
+    const spawnVehicle = (x: number, y: number) => {
+      vehicles.push({ body: new FlowFieldVehicleBody(x, y), trail: [] });
+      if (vehicles.length > FLOW_FIELD_MAX_VEHICLES) vehicles.shift();
+    };
+
+    const update = () => {
+      if (!flowField) return;
+      // A video texture changes every frame, so read its pixels again
+      if (video && imageField && video.readyState >= 2) {
+        const texture = readTexture();
+        if (texture) imageField.texture = texture;
+      }
+      const field = flowField;
+      const image = imageField;
+      for (const { body, trail } of vehicles) {
+        if (image) {
+          // The image field takes positions from 0 to 1
+          body.follow({
+            lookup: (position) =>
+              image.lookup(
+                new Vector2D(position.x / width, position.y / height),
+              ),
+          });
+        } else {
+          body.follow(field);
+        }
+        body.update();
+        if (body.edges(width, height)) trail.push(null);
+        trail.push(body.position.copy());
+        if (trail.length > WANDER_TRAIL_LENGTH) trail.shift();
+      }
+    };
+
+    /** The texture's own pixels, at its original size. */
+    function readTexture() {
+      if (!textureImage || !offscreenCtx) return null;
+      const textureWidth =
+        textureImage instanceof HTMLVideoElement
+          ? textureImage.videoWidth
+          : textureImage.naturalWidth;
+      const textureHeight =
+        textureImage instanceof HTMLVideoElement
+          ? textureImage.videoHeight
+          : textureImage.naturalHeight;
+      if (textureWidth <= 0 || textureHeight <= 0) return null;
+      if (offscreen.width !== textureWidth) offscreen.width = textureWidth;
+      if (offscreen.height !== textureHeight) offscreen.height = textureHeight;
+      offscreenCtx.drawImage(textureImage, 0, 0);
+      return offscreenCtx.getImageData(0, 0, textureWidth, textureHeight);
+    }
+
+    const reset = () => {
+      if (textured && !textureImage) return;
+      const texture = textured ? readTexture() : null;
+      imageField = texture ? new ImageFlowFieldBody(texture) : null;
+      flowField = new FlowFieldBody(
+        width,
+        height,
+        FLOW_FIELD_RESOLUTION,
+        kind,
+        imageField,
+      );
+      vehicles = [];
+      if (withVehicle) {
+        spawnVehicle(Math.random() * width, Math.random() * height);
+      }
+      draw();
+    };
+
+    resetRef.current = reset;
+
+    const tick = () => {
+      raf = 0;
+      if (!running || !visible) return;
+      if (video) {
+        if (playingRef.current && video.paused) void video.play();
+        else if (!playingRef.current && !video.paused) video.pause();
+      }
+      if (playingRef.current) {
+        update();
+        draw();
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const startLoop = () => {
+      if (!withVehicle || !running || !visible || raf) return;
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const stopLoop = () => {
+      video?.pause();
+      if (!raf) return;
+      window.cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!withVehicle) return;
+      const rect = canvas.getBoundingClientRect();
+      spawnVehicle(event.clientX - rect.left, event.clientY - rect.top);
+      draw();
+    };
+    canvas.addEventListener("pointerdown", onPointerDown);
+
+    const disconnectResize = observeCanvasPixelSize(canvas, (size) => {
+      dpr = size.w / Math.max(canvas.clientWidth, 1);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      const styles = getComputedStyle(canvas);
+      color = styles.color || color;
+      primary = styles.getPropertyValue("--primary").trim() || primary;
+      muted = styles.getPropertyValue("--muted-foreground").trim() || muted;
+
+      const cols = Math.ceil(width / FLOW_FIELD_RESOLUTION);
+      const rows = Math.ceil(height / FLOW_FIELD_RESOLUTION);
+      if (
+        !flowField ||
+        flowField.cols !== cols ||
+        flowField.rows !== rows ||
+        textured
+      ) {
+        reset();
+      } else {
+        draw();
+      }
+    });
+
+    if (kind === "texture") {
+      const image = new Image();
+      image.onload = () => {
+        if (!running) return;
+        textureImage = image;
+        reset();
+      };
+      image.src = FLOW_FIELD_TEXTURE_SRC;
+    }
+
+    const videoElement =
+      kind === "video" ? document.createElement("video") : null;
+    if (videoElement) {
+      const element = videoElement;
+      element.muted = true;
+      element.loop = true;
+      element.playsInline = true;
+      element.preload = "auto";
+      element.onloadeddata = () => {
+        if (!running) return;
+        video = element;
+        textureImage = element;
+        reset();
+      };
+      element.src = FLOW_FIELD_VIDEO_SRC;
+    }
+
+    const disconnectVisibility = observeElementVisible(canvas, (isVisible) => {
+      visible = isVisible;
+      if (visible) {
+        startLoop();
+        return;
+      }
+      stopLoop();
+    });
+
+    return () => {
+      running = false;
+      stopLoop();
+      if (videoElement) {
+        videoElement.pause();
+        videoElement.removeAttribute("src");
+        videoElement.load();
+      }
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      disconnectVisibility();
+      disconnectResize();
+      resetRef.current = () => {};
+    };
+  }, [kind, withVehicle]);
+
+  return (
+    <div
+      className={cn(
+        "relative mt-6 w-full overflow-hidden border border-border bg-background text-foreground",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-3">
+        <CVSubHeading className="uppercase text-muted-foreground">
+          {title}
+        </CVSubHeading>
+        {withVehicle ? (
+          <div className="flex items-center gap-2">
+            <PointerEventHandler asChild type="hide">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="rounded-full bg-background"
+                aria-label={`${playing ? "Stop" : "Play"} ${title.toLowerCase()} sketch`}
+                onClick={() => setPlaying((current) => !current)}
+              >
+                {playing ? <Square /> : <Play />}
+              </Button>
+            </PointerEventHandler>
+            <PointerEventHandler asChild type="hide">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="rounded-full bg-background"
+                aria-label={`Reset ${title.toLowerCase()} sketch`}
+                onClick={() => resetRef.current()}
+              >
+                <RotateCcw />
+              </Button>
+            </PointerEventHandler>
+          </div>
+        ) : null}
+      </div>
+      <div className="relative aspect-2/1 w-full">
+        <canvas
+          ref={canvasRef}
+          aria-label={`${FLOW_FIELD_LABELS[kind]}${withVehicle ? ". Vehicles steer by the vector in whichever cell they are in. Click to add a vehicle" : ""}`}
+          className="h-full w-full"
+          style={CANVAS_STYLE}
+        />
+      </div>
+    </div>
+  );
+}
