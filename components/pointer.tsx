@@ -1,12 +1,13 @@
 "use client";
 
-import { cubicBezier, motion, useAnimationFrame } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { lerp } from "@/lib/math";
 import { themeClassName } from "@/lib/page-color";
 import { pointerColor, useHeaderTheme } from "@/lib/use-header-theme";
 import { cn } from "@/lib/utils";
 import { pointer } from "@/stores/pointer";
+import { cubicBezier, motion, useAnimationFrame } from "motion/react";
+import { Slot } from "radix-ui";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useScrollEvent } from "./smooth-scroll";
 
 type PointerEventType =
@@ -174,6 +175,8 @@ export const PointerEventHandler = ({
   asChild?: boolean;
   type?: PointerEventType;
 } & PointerEventProps) => {
+  const Component = asChild ? Slot.Root : "span";
+
   const ref = useRef<HTMLSpanElement | null>(null);
 
   const { onPointerEnter, onPointerLeave } = usePointerEvent({
@@ -194,7 +197,7 @@ export const PointerEventHandler = ({
   }, []);
 
   return (
-    <span
+    <Component
       ref={ref}
       className={asChild ? undefined : "block"}
       onPointerEnter={onPointerEnter}
@@ -202,7 +205,7 @@ export const PointerEventHandler = ({
       {...props}
     >
       {children}
-    </span>
+    </Component>
   );
 };
 

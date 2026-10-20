@@ -10,8 +10,8 @@ import docs from "./assets/docs.png";
 import home1 from "./assets/home-1.png";
 import reflct from "./assets/main.png";
 import logo from "./assets/reflct_logo.png";
-import share from "./assets/share.png";
 import shareMobile from "./assets/share-mobile.png";
+import share from "./assets/share.png";
 
 export default function Page() {
   return (
@@ -72,7 +72,7 @@ export default function Page() {
 
           <div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
             <Title className="">
-              <div className="text-primary">Links</div>
+              <div className="text-secondary">Links</div>
             </Title>
 
             <PageLink className="w-full mt-[2em]">

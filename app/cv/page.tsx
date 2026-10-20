@@ -394,6 +394,24 @@ export default function Page() {
                 <CVList className="mt-2">
                   <PointerEventHandler type="bullet" asChild>
                     <Link
+                      href="https://www.fantasyherd.co.nz/"
+                      target="_blank"
+                      className="underline text-secondary"
+                    >
+                      <CVListItem className="w-fit">Fantasy Herd</CVListItem>
+                    </Link>
+                  </PointerEventHandler>
+                  <CVSubList>
+                    <CVListItem>2026 Best Awards Game Design - Gold</CVListItem>
+                    <CVListItem>
+                      2026 Best Awards Digital Campaigns - Gold
+                    </CVListItem>
+                    <CVListItem>
+                      2026 Cannes Lion Creative Data Lions - Bronze****
+                    </CVListItem>
+                  </CVSubList>
+                  <PointerEventHandler type="bullet" asChild>
+                    <Link
                       href="/work/fola"
                       className="underline text-secondary"
                     >
@@ -487,20 +505,6 @@ export default function Page() {
                   <CVSubList>
                     <CVListItem>
                       2023 Best Awards Large Scale Websites - Bronze
-                    </CVListItem>
-                  </CVSubList>
-                  <PointerEventHandler type="bullet" asChild>
-                    <Link
-                      href="https://www.fantasyherd.co.nz/"
-                      target="_blank"
-                      className="underline text-secondary"
-                    >
-                      <CVListItem className="w-fit">Fantasy Herd</CVListItem>
-                    </Link>
-                  </PointerEventHandler>
-                  <CVSubList>
-                    <CVListItem>
-                      2026 Cannes Lion Creative Data Lions - Bronze****
                     </CVListItem>
                   </CVSubList>
                 </CVList>

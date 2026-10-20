@@ -41,7 +41,7 @@ export default function Page() {
 
           <div className="md:max-w-[30vw] max-w-[100vw] w-[80vw]">
             <Title className="">
-              <div className="text-primary">Links</div>
+              <div className="text-secondary">Links</div>
             </Title>
 
             <PageLink className="w-full mt-[2em]">

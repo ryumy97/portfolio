@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { PointerEventHandler } from "@/components/pointer";
 import SplitText from "@/components/split-text";
 import { Grid } from "@/components/ui/grid";
 import { PageDescription, Title } from "@/components/ui/typography";
+import Link from "next/link";
 
 const LabVideo = () => {
   return (
@@ -21,7 +21,7 @@ const LabVideo = () => {
         <source src="/videos/lab.mov" type="video/quicktime" />
       </video>
       <div className="pt-20 col-start-2 col-end-9 md:col-end-7">
-        <PointerEventHandler type="bullet" asChild>
+        <PointerEventHandler type="bullet" offsetX={-10} asChild>
           <Title className="text-coral" asChild>
             <Link href="/lab">Lab</Link>
           </Title>
