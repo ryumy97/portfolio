@@ -1,0 +1,447 @@
+---
+title: The nature of the code - Autonomous Agents - Path Following
+date: "2026-10-20 21:58"
+description: 6.2 Autonomous Agents - Path Following - The nature of code by Daniel Shiffman
+tags: The nature of code
+---
+
+import { AlongPath, DotProduct, MultipleSegments, MultipleSegmentsFollowing, Normal, Path, PathFollowing } from "@/components/blog/the-nature-of-code/path-following"
+
+## Path Following
+
+Reynold's path-following algorithm is a way to steer an agent along a path.
+That means we need to derive a desired velocity for the agent based on the given path.
+
+## Define a path
+
+A path is a two points connected by a line. Let's create a path with straight line between two points.
+
+```javascript
+class Path {
+    constructor(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+
+    draw(ctx) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(this.start.x, this.start.y);
+        ctx.lineTo(this.end.x, this.end.y);
+        ctx.stroke();
+    }
+}
+```
+
+<Path />
+
+## Path Following Algorithm
+
+Path following algorithm can be described as:
+1. Take the future position of the agent
+2. If the future position is far from the path, calculate the steering force to steer the agent to the path
+3. If the future position is not far from the path, continue moving forward
+
+```javascript
+class Vehicle {
+    // ... other code ...
+
+    follow(path, radius) {
+        // 1. Take the future position of the agent
+        const vel = this.velocity.copy();
+        vel.normalize();
+        vel.mult(maxSpeed);
+
+        const futurePosition = Vector2D.add(this.position, vel);
+
+        // 2. If the future position is far from the path, calculate the steering force to steer the agent to the path
+        // 3. If the future position is not far from the path, continue moving forward
+
+        // How can we know the future position is far from the path?
+
+    }
+}
+```
+
+How can we know if the future position is not far from the path?
+
+If we draw a straight line normal from the future position to the path, you can see that 
+using trigonometry, we can calculate the distance between the future position and the path.
+
+<Normal />
+
+Say the position vector from start point to the future position as `A`, and the vector from start point to the end point as `B`.
+We know that the position from start point to the normal point can be calculated by $||A|| \cos(\theta)$.
+
+```javascript
+const a = Vector2D.sub(futurePosition, path.start);
+const b = Vector2D.sub(path.end, path.start);
+
+const d = a.magnitude() * Math.cos(a.angleBetween(b));
+```
+
+Since we know the distance from the start point to the normal point, we can calculate the position of the normal point by adding the vector `B` to the start point.
+
+```javascript
+const normal = Vector2D.add(path.start, b.copy().normalize().mult(d));
+```
+
+We can then continue:
+
+```javascript
+class Vehicle {
+    // ... other code ...
+
+    follow(path, radius) {
+        // 1. Take the future position of the agent
+        const vel = this.velocity.copy();
+        vel.normalize();
+        vel.mult(maxSpeed);
+
+        const futurePosition = Vector2D.add(this.position, vel);
+
+        const a = Vector2D.sub(futurePosition, path.start);
+        const b = Vector2D.sub(path.end, path.start);
+
+        const d = a.magnitude() * Math.cos(a.angleBetween(b));
+        
+        const normalOnPath = b.copy().normalize().mult(d);
+        
+        const normalPoint = Vector2D.add(path.start, normalOnPath);
+
+        const distance = Vector2D.sub(futurePosition, normalPoint).magnitude();
+
+        // 2. If the future position is far from the path, calculate the steering force to steer the agent to the path
+        if (distance > radius) {
+            const desired = Vector2D.sub(normalPoint, this.position);
+            desired.normalize();
+            desired.multiply(this.speed);
+
+            const steer = Vector2D.sub(desired, this.velocity);
+            steer.limit(this.maxForce);
+
+            this.applyForce(steer);
+        }
+
+        // 3. If the future position is not far from the path, continue moving forward
+        // don't exert any force
+    
+    }
+}
+```
+
+<PathFollowing />
+
+### "Along" the path
+
+The agent is moving along the path, but it is taking a heavy steer to the normal point first then it continues to move along the path.
+
+What we really want is the agent to move "along" the path. 
+That means the agent should be steering to the direction of the path when it is close to the path.
+
+Let target position be the point a little bit ahead of the normal point along the path.
+Which way is "ahead" depends on the agent's velocity: if it is heading towards the path end, the target is past the normal point towards the end; if it is heading towards the path start, the target is past the normal point towards the start.
+We can tell which by the cosine of the angle between the velocity and `B`: positive (angle under 90°) means it is moving with the path direction, negative (angle over 90°) means against it.
+
+
+```javascript
+class Vehicle {
+    // ... other code ...
+
+    follow(path, radius) {
+        // 1. Take the future position of the agent
+        const vel = this.velocity.copy();
+        vel.normalize();
+        vel.mult(maxSpeed);
+
+        const futurePosition = Vector2D.add(this.position, vel);
+
+        const a = Vector2D.sub(futurePosition, path.start);
+        const b = Vector2D.sub(path.end, path.start);
+
+        const d = a.magnitude() * Math.cos(a.angleBetween(b));
+        
+        const normalOnPath = b.copy().normalize().mult(d);
+        
+        const normalPoint = Vector2D.add(path.start, normalOnPath);
+
+        const distance = Vector2D.sub(futurePosition, normalPoint).magnitude();
+
+        // 2. If the future position is far from the path, calculate the steering force to steer the agent to the path
+        if (distance > radius) {
+            const unitB = b.copy().normalize();
+
+            // Heading towards the start? Then "ahead" points back towards the start
+            if (Math.cos(this.velocity.angleBetween(b)) < 0) {
+                unitB.multiply(-1);
+            }
+
+            const target = Vector2D.add(normalPoint, unitB.multiply(25)); // 25 is the distance ahead of the normal point
+
+            const desired = Vector2D.sub(target, this.position);
+            desired.normalize();
+            desired.multiply(this.speed);
+
+            const steer = Vector2D.sub(desired, this.velocity);
+            steer.limit(this.maxForce);
+
+            this.applyForce(steer);
+        }
+
+        // 3. If the future position is not far from the path, continue moving forward
+        // don't exert any force
+    
+    }
+}
+```
+
+<AlongPath />
+
+### Dot product
+
+We can simplify the calculation of the distance between the future position and the normal point by using dot product.
+
+Dot product is a vector operation that returns a scalar value that represents the magnitude of the two vectors.
+
+In math, the dot product is defined as:
+
+$$
+\vec{a} \cdot \vec{b} = a_x b_x + a_y b_y
+$$
+
+$$
+\vec{a} \cdot \vec{b} = |\vec{a}| |\vec{b}| \cos(\theta)
+$$
+
+We can add function dot() to calculate the dot product of two vectors in the Vector2D class.
+
+```javascript
+class Vector2D {
+    // ... other code ...
+
+    static dot(a, b) {
+        return a.x * b.x + a.y * b.y;
+    }
+
+    dot(v) {
+        return this.x * v.x + this.y * v.y;
+    }
+
+    // ... other code ...
+}
+```
+
+<DotProduct />
+
+As you can see here, dot product of vector `a` and `b` shows the distance from the origin to the normal point of the vector `b` along the vector `a`.
+
+If we make B a unit vector, then the dot product of vector `a` and `b` shows the distance from the origin to the normal point of the vector `b` along the vector `a`.
+
+$$
+\vec{a} \cdot \vec{b} = |\vec{a}| |\vec{b}| \cos(\theta)
+$$
+
+$$
+\vec{a} \cdot \vec{unit(b)} = |\vec{a}| \cos(\theta)
+$$
+
+```javascript
+class Vehicle {
+    // ... other code ...
+
+    follow(path, radius) {
+        // 1. Take the future position of the agent
+        const vel = this.velocity.copy();
+        vel.normalize();
+        vel.mult(maxSpeed);
+
+        const futurePosition = Vector2D.add(this.position, vel);
+
+        const a = Vector2D.sub(futurePosition, path.start);
+        const b = Vector2D.sub(path.end, path.start);
+
+        const unitB = b.copy().normalize();
+
+        const d = a.dot(unitB);
+
+        const normalOnPath = unitB.copy().mult(d);
+
+        const normalPoint = Vector2D.add(path.start, normalOnPath);
+
+        const distance = Vector2D.sub(futurePosition, normalPoint).magnitude();
+
+        // 2. If the future position is far from the path, calculate the steering force to steer the agent to the path
+        if (distance > radius) {
+            const direction = unitB.copy();
+
+            // Heading towards the start? Then "ahead" points back towards the start
+            if (this.velocity.dot(direction) < 0) {
+                direction.multiply(-1);
+            }
+
+            const target = Vector2D.add(normalPoint, direction.multiply(25)); // 25 is the distance ahead of the normal point
+
+            const desired = Vector2D.sub(target, this.position);
+            desired.normalize();
+            desired.multiply(this.speed);
+
+            const steer = Vector2D.sub(desired, this.velocity);
+            steer.limit(this.maxForce);
+
+            this.applyForce(steer);
+        }
+
+        // 3. If the future position is not far from the path, continue moving forward
+        // don't exert any force
+    
+    }
+}
+```
+
+We can make functions in Path class to calculate the direction of the path and the normal point on the path.
+
+```javascript
+class Path {
+    // ... other code ...
+
+    direction() {
+        return Vector2D.sub(this.end, this.start).normalize();
+    }
+
+    normalPoint(futurePosition) {
+        const a = Vector2D.sub(futurePosition, this.start);
+        const unitB = this.direction();
+        const d = a.dot(unitB);
+        const normalOnPath = unitB.mult(d);
+        return Vector2D.add(this.start, normalOnPath);
+    }
+}
+
+class Vehicle {
+    // ... other code ...
+
+    follow(path, radius) {
+        const vel = this.velocity.copy();
+        vel.normalize();
+        vel.mult(maxSpeed);
+
+        const futurePosition = Vector2D.add(this.position, vel);
+
+        const normalPoint = path.normalPoint(futurePosition);
+        const distance = Vector2D.sub(futurePosition, normalPoint).magnitude();
+
+        if (distance > radius) {
+            const direction = path.direction();
+            if (this.velocity.dot(direction) < 0) {
+                direction.multiply(-1);
+            }
+
+            const target = Vector2D.add(normalPoint, direction.multiply(25));
+
+            const desired = Vector2D.sub(target, this.position);
+            desired.normalize();
+            desired.multiply(this.speed);
+
+            const steer = Vector2D.sub(desired, this.velocity);
+            steer.limit(this.maxForce);
+            this.applyForce(steer);
+        }
+    }
+}
+```
+
+## Path finding on multiple segments
+
+When the path is connected with multiple other paths, 
+the agent needs to find which path to follow.
+
+```javascript
+class MultipleSegments {
+    constructor() {
+        this.paths = [];
+    }
+
+    addPath(path) {
+        this.paths.push(path);
+    }
+
+    draw(ctx) {
+        this.paths.forEach(path => path.draw(ctx));
+    }
+}
+```
+
+<MultipleSegments />
+
+The agent know where current position is, 
+where it is heading towards,
+where the shortest normal point on each path is against the future position.
+
+And we ultimately want to find the target location.
+
+Let's set up a question that the agent needs to answer:
+
+1. For each path, does the normal lie within the path's start and end?
+2. Which normal is closest to the future position?
+
+```javascript
+class Vehicle {
+    // ... other code ...
+
+    follow(paths, radius) {
+        const vel = this.velocity.copy();
+        vel.normalize();
+        vel.mult(maxSpeed);
+
+        const futurePosition = Vector2D.add(this.position, vel);
+
+        let closestDistance = Infinity;
+        let closestNormalPoint = null;
+        let closestPath = null;
+
+        for (const path of paths) {
+            // 1. Does the normal lie within the path's start and end?
+            let normalPoint = path.normalPoint(futurePosition);
+
+            const a = Vector2D.sub(normalPoint, path.start);
+            const b = Vector2D.sub(path.end, path.start);
+            const pathLength = b.magnitude();
+            const along = a.dot(b.copy().normalize());
+
+            // If not, clamp it onto the segment (Nature of Code: fall back to an endpoint)
+            if (along < 0) {
+                normalPoint = path.start.copy();
+            } else if (along > pathLength) {
+                normalPoint = path.end.copy();
+            }
+
+            // 2. Which normal is closest to the future position?
+            const distance = Vector2D.sub(futurePosition, normalPoint).magnitude();
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestNormalPoint = normalPoint;
+                closestPath = path;
+            }
+        }
+
+        if (closestDistance > radius) {
+            const direction = closestPath.direction();
+            if (this.velocity.dot(direction) < 0) {
+                direction.multiply(-1);
+            }
+
+            const target = Vector2D.add(closestNormalPoint, direction.multiply(25));
+
+            const desired = Vector2D.sub(target, this.position);
+            desired.normalize();
+            desired.multiply(this.speed);
+
+            const steer = Vector2D.sub(desired, this.velocity);
+            steer.limit(this.maxForce);
+            this.applyForce(steer);
+        }
+    }
+}
+```
+
+<MultipleSegmentsFollowing />
